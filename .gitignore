@@ -8,6 +8,7 @@
 
 # Build results
 
+[Oo]ut/
 [Dd]ebug/
 [Rr]elease/
 x64/
@@ -149,3 +150,9 @@ $RECYCLE.BIN/
 
 # Mac crap
 .DS_Store
+
+# Keil
+*.uvgui.*
+*.uvopt
+*.dep
+*.bak

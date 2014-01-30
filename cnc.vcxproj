@@ -1,0 +1,214 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|ARM">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM">
+      <Configuration>Release</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{273E7E2E-996A-412F-A5F8-680C5C72BB6C}</ProjectGuid>
+    <Keyword>MakeFileProj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <PlatformToolset>v120</PlatformToolset>
+    <ConfigurationType>Makefile</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <NMakeBuildCommandLine>build.bat build</NMakeBuildCommandLine>
+    <NMakeOutput>cnc.axf</NMakeOutput>
+    <NMakeCleanCommandLine>build.bat clean</NMakeCleanCommandLine>
+    <NMakeReBuildCommandLine>build.bat rebuild</NMakeReBuildCommandLine>
+    <NMakePreprocessorDefinitions>STM32F10X_HD;USE_STDPERIPH_DRIVER;__CC_ARM;__ARMCC_VERSION=400700</NMakePreprocessorDefinitions>
+    <OutDir>.\out</OutDir>
+    <IntDir>.\out</IntDir>
+    <ExecutablePath />
+    <IncludePath>.\src\application;.\src\libhardware;.\src\liblcd;.\src\libtools;.\src\libcmsis</IncludePath>
+    <ReferencePath />
+    <LibraryPath />
+    <LibraryWPath />
+    <SourcePath />
+    <ExcludePath />
+    <NMakeIncludeSearchPath>C:\Tools\Keil5\ARM\ARMCC\include</NMakeIncludeSearchPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <NMakeBuildCommandLine>build.bat build</NMakeBuildCommandLine>
+    <NMakeOutput>cnc.axf</NMakeOutput>
+    <NMakeCleanCommandLine>build.bat clean</NMakeCleanCommandLine>
+    <NMakeReBuildCommandLine>build.bat rebuild</NMakeReBuildCommandLine>
+    <NMakePreprocessorDefinitions>WIN32;NDEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <TargetExt>.axf</TargetExt>
+    <ExecutablePath />
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="src\application\Crc32.c" />
+    <ClCompile Include="src\application\encoder.c" />
+    <ClCompile Include="src\application\gcode.c" />
+    <ClCompile Include="src\application\gcode_exec.c" />
+    <ClCompile Include="src\application\hw_config.c" />
+    <ClCompile Include="src\application\keyboard.c" />
+    <ClCompile Include="src\application\limits.c" />
+    <ClCompile Include="src\application\main.c" />
+    <ClCompile Include="src\application\manualmode.c" />
+    <ClCompile Include="src\application\mass_mal.c" />
+    <ClCompile Include="src\application\memory.c" />
+    <ClCompile Include="src\application\rs232_interface.c" />
+    <ClCompile Include="src\application\scsi_data.c" />
+    <ClCompile Include="src\application\stepmotor.c" />
+    <ClCompile Include="src\application\stm32f10x_it.c" />
+    <ClCompile Include="src\application\usb_bot.c" />
+    <ClCompile Include="src\application\usb_desc.c" />
+    <ClCompile Include="src\application\usb_endp.c" />
+    <ClCompile Include="src\application\usb_istr.c" />
+    <ClCompile Include="src\application\usb_prop.c" />
+    <ClCompile Include="src\application\usb_pwr.c" />
+    <ClCompile Include="src\application\usb_scsi.c" />
+    <ClCompile Include="src\libcmsis\core_cm3.c" />
+    <ClCompile Include="src\libcmsis\system_stm32f10x.c" />
+    <ClCompile Include="src\libhardware\misc.c" />
+    <ClCompile Include="src\libhardware\stm32f10x_adc.c" />
+    <ClCompile Include="src\libhardware\stm32f10x_bkp.c" />
+    <ClCompile Include="src\libhardware\stm32f10x_can.c" />
+    <ClCompile Include="src\libhardware\stm32f10x_crc.c" />
+    <ClCompile Include="src\libhardware\stm32f10x_dma.c" />
+    <ClCompile Include="src\libhardware\stm32f10x_exti.c" />
+    <ClCompile Include="src\libhardware\stm32f10x_flash.c" />
+    <ClCompile Include="src\libhardware\stm32f10x_fsmc.c" />
+    <ClCompile Include="src\libhardware\stm32f10x_gpio.c" />
+    <ClCompile Include="src\libhardware\stm32f10x_i2c.c" />
+    <ClCompile Include="src\libhardware\stm32f10x_pwr.c" />
+    <ClCompile Include="src\libhardware\stm32f10x_rcc.c" />
+    <ClCompile Include="src\libhardware\stm32f10x_rtc.c" />
+    <ClCompile Include="src\libhardware\stm32f10x_sdio.c" />
+    <ClCompile Include="src\libhardware\stm32f10x_spi.c" />
+    <ClCompile Include="src\libhardware\stm32f10x_tim.c" />
+    <ClCompile Include="src\libhardware\stm32f10x_usart.c" />
+    <ClCompile Include="src\liblcd\ili9320.c" />
+    <ClCompile Include="src\liblcd\ili9320_api.c" />
+    <ClCompile Include="src\liblcd\ili9320_touch.c" />
+    <ClCompile Include="src\liblcd\scr_io.c" />
+    <ClCompile Include="src\libtools\ccsbcs.c" />
+    <ClCompile Include="src\libtools\diskio.c" />
+    <ClCompile Include="src\libtools\fattime.c" />
+    <ClCompile Include="src\libtools\ff.c" />
+    <ClCompile Include="src\libtools\rtc.c" />
+    <ClCompile Include="src\libtools\sdcard.c" />
+    <ClCompile Include="src\libtools\usb_core.c" />
+    <ClCompile Include="src\libtools\usb_init.c" />
+    <ClCompile Include="src\libtools\usb_int.c" />
+    <ClCompile Include="src\libtools\usb_mem.c" />
+    <ClCompile Include="src\libtools\usb_regs.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\libcmsis\startup\arm\startup_stm32f10x_hd.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\application\Crc32.h" />
+    <ClInclude Include="src\application\crt.h" />
+    <ClInclude Include="src\application\encoder.h" />
+    <ClInclude Include="src\application\gcode.h" />
+    <ClInclude Include="src\application\global.h" />
+    <ClInclude Include="src\application\hw_config.h" />
+    <ClInclude Include="src\application\keyboard.h" />
+    <ClInclude Include="src\application\limits.h" />
+    <ClInclude Include="src\application\mass_mal.h" />
+    <ClInclude Include="src\application\memory.h" />
+    <ClInclude Include="src\application\rs232_interface.h" />
+    <ClInclude Include="src\application\stepmotor.h" />
+    <ClInclude Include="src\application\stm32f10x_conf.h" />
+    <ClInclude Include="src\application\stm32f10x_it.h" />
+    <ClInclude Include="src\application\usb_bot.h" />
+    <ClInclude Include="src\application\usb_desc.h" />
+    <ClInclude Include="src\application\usb_istr.h" />
+    <ClInclude Include="src\application\usb_prop.h" />
+    <ClInclude Include="src\application\usb_pwr.h" />
+    <ClInclude Include="src\application\usb_scsi.h" />
+    <ClInclude Include="src\libcmsis\core_cm3.h" />
+    <ClInclude Include="src\libcmsis\stm32f10x.h" />
+    <ClInclude Include="src\libcmsis\system_stm32f10x.h" />
+    <ClInclude Include="src\libhardware\misc.h" />
+    <ClInclude Include="src\libhardware\stm32f10x_adc.h" />
+    <ClInclude Include="src\libhardware\stm32f10x_bkp.h" />
+    <ClInclude Include="src\libhardware\stm32f10x_can.h" />
+    <ClInclude Include="src\libhardware\stm32f10x_crc.h" />
+    <ClInclude Include="src\libhardware\stm32f10x_dac.h" />
+    <ClInclude Include="src\libhardware\stm32f10x_dbgmcu.h" />
+    <ClInclude Include="src\libhardware\stm32f10x_dma.h" />
+    <ClInclude Include="src\libhardware\stm32f10x_exti.h" />
+    <ClInclude Include="src\libhardware\stm32f10x_flash.h" />
+    <ClInclude Include="src\libhardware\stm32f10x_fsmc.h" />
+    <ClInclude Include="src\libhardware\stm32f10x_gpio.h" />
+    <ClInclude Include="src\libhardware\stm32f10x_i2c.h" />
+    <ClInclude Include="src\libhardware\stm32f10x_iwdg.h" />
+    <ClInclude Include="src\libhardware\stm32f10x_pwr.h" />
+    <ClInclude Include="src\libhardware\stm32f10x_rcc.h" />
+    <ClInclude Include="src\libhardware\stm32f10x_rtc.h" />
+    <ClInclude Include="src\libhardware\stm32f10x_sdio.h" />
+    <ClInclude Include="src\libhardware\stm32f10x_spi.h" />
+    <ClInclude Include="src\libhardware\stm32f10x_tim.h" />
+    <ClInclude Include="src\libhardware\stm32f10x_usart.h" />
+    <ClInclude Include="src\libhardware\stm32f10x_wwdg.h" />
+    <ClInclude Include="src\liblcd\ili9320.h" />
+    <ClInclude Include="src\liblcd\ili9320_font.h" />
+    <ClInclude Include="src\liblcd\scr_io.h" />
+    <ClInclude Include="src\libtools\Config.h" />
+    <ClInclude Include="src\libtools\diskio.h" />
+    <ClInclude Include="src\libtools\fattime.h" />
+    <ClInclude Include="src\libtools\ff.h" />
+    <ClInclude Include="src\libtools\integer.h" />
+    <ClInclude Include="src\libtools\rtc.h" />
+    <ClInclude Include="src\libtools\sdcard.h" />
+    <ClInclude Include="src\libtools\usb_conf.h" />
+    <ClInclude Include="src\libtools\usb_core.h" />
+    <ClInclude Include="src\libtools\usb_def.h" />
+    <ClInclude Include="src\libtools\usb_init.h" />
+    <ClInclude Include="src\libtools\usb_int.h" />
+    <ClInclude Include="src\libtools\usb_lib.h" />
+    <ClInclude Include="src\libtools\usb_mem.h" />
+    <ClInclude Include="src\libtools\usb_regs.h" />
+    <ClInclude Include="src\libtools\usb_type.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
