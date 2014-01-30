@@ -1,9 +1,11 @@
-@ECHO ON
+@ECHO OFF
 SET KEIL=C:\Tools\Keil5\UV4
 SET OUTDIR=%CD%\out
 
-IF "%1*"=="build*" GOTO :BUILD
+IF "%1*"=="build*"   GOTO :BUILD
+IF "%1*"=="clean*"   GOTO :CLEAN
 IF "%1*"=="rebuild*" GOTO :REBUILD
+GOTO :BUILD
 
 :CLEAN
 FOR %%i IN ("%OUTDIR%\*.*") DO IF NOT "%%~nxi"=="cnc.log" DEL /F /S /Q "%%i" >nul
