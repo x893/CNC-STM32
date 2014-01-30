@@ -46,8 +46,8 @@ void Lcd_Configuration(void)
 	GPIO_InitStructure.GPIO_Pin = LCD_RST_PIN;
 	GPIO_Init(LCD_RST_PORT, &GPIO_InitStructure);
 	
-	GPIO_InitStructure.GPIO_Pin = LCD_PWM_PIN;
-	GPIO_Init(LCD_PWM_PORT, &GPIO_InitStructure);
+	GPIO_InitStructure.GPIO_Pin = LCD_BACKLIGHT_PIN;
+	GPIO_Init(LCD_BACKLIGHT_PORT, &GPIO_InitStructure);
 
 	//------------------------- FSMC pins ---------------
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;

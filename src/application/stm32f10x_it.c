@@ -111,22 +111,37 @@ void TIM1_TRG_COM_IRQHandler(void) { }
 void TIM1_CC_IRQHandler(void) { }
 
 void stepm_proc(uint8_t id);
-void TIM2_IRQHandler(void)
+
+#ifdef M0_TIM_IRQHandler
+void M0_TIM_IRQHandler(void)
 {
-	TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
+	TIM_ClearITPendingBit(M0_TIM, TIM_IT_Update);
 	stepm_proc(0);
 }
+#endif
 
-void TIM3_IRQHandler(void)
+#ifdef M1_TIM_IRQHandler
+void M1_TIM_IRQHandler(void)
 {
-	TIM_ClearITPendingBit(TIM3, TIM_IT_Update);
+	TIM_ClearITPendingBit(M1_TIM, TIM_IT_Update);
 	stepm_proc(1);
 }
-void TIM4_IRQHandler(void)
+#endif
+#ifdef M2_TIM_IRQHandler
+void M2_TIM_IRQHandler(void)
 {
-	TIM_ClearITPendingBit(TIM4, TIM_IT_Update);
+	TIM_ClearITPendingBit(M2_TIM, TIM_IT_Update);
 	stepm_proc(2);
 }
+#endif
+
+#ifdef M3_TIM_IRQHandler
+void M3_TIM_IRQHandler(void)
+{
+	TIM_ClearITPendingBit(M3_TIM, TIM_IT_Update);
+	stepm_proc(3);
+}
+#endif
 
 void I2C1_EV_IRQHandler(void) { }
 void I2C1_ER_IRQHandler(void) { }
@@ -163,14 +178,7 @@ void TIM8_CC_IRQHandler(void) { }
 void ADC3_IRQHandler(void) { }
 void FSMC_IRQHandler(void) { }
 
-// перенесена в модуль sdio.cpp
 void SDIO_IRQHandler(void) { }
-
-void TIM5_IRQHandler(void)
-{
-	TIM_ClearITPendingBit(TIM5, TIM_IT_Update);
-	stepm_proc(3);
-}
 
 void SPI3_IRQHandler(void) { }
 void UART4_IRQHandler(void) { }

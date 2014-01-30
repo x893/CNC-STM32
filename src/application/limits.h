@@ -12,9 +12,9 @@
 #include "global.h"
 
 void limits_init(void);
-__STATIC_INLINE uint8_t limitX_chk(void) { return !(XPORT->IDR & XPIN); }
-__STATIC_INLINE uint8_t limitY_chk(void) { return !(YPORT->IDR & YPIN); }
-__STATIC_INLINE uint8_t limitZ_chk(void) { return !(ZPORT->IDR & ZPIN); }
+__STATIC_INLINE uint8_t limitX_chk(void) { return !(LIMIT_X_PORT->IDR & LIMIT_X_PIN); }
+__STATIC_INLINE uint8_t limitY_chk(void) { return !(LIMIT_Y_PORT->IDR & LIMIT_Y_PIN); }
+__STATIC_INLINE uint8_t limitZ_chk(void) { return !(LIMIT_Z_PORT->IDR & LIMIT_Z_PIN); }
 __STATIC_INLINE uint8_t limits_chk(void) { return limitX_chk() || limitY_chk() || limitZ_chk(); }
 
 

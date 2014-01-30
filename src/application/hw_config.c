@@ -10,10 +10,10 @@ RCC_ClocksTypeDef RCC_Clocks;
 #ifdef  __cplusplus
 extern "C" {
 #endif
-	uint32_t GetCpuClock()
-	{
-		return RCC_Clocks.SYSCLK_Frequency;
-	}
+uint32_t GetCpuClock()
+{
+	return RCC_Clocks.SYSCLK_Frequency;
+}
 #ifdef  __cplusplus
 }
 #endif

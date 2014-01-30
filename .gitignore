@@ -156,3 +156,6 @@ $RECYCLE.BIN/
 *.uvopt
 *.dep
 *.bak
+
+*.s#*
+*.b#*
