@@ -1,12 +1,12 @@
-#ifdef _WINDOWS
-	#include "stdafx.h"
-#else
-	#include "global.h"
-#endif
-
-#include <math.h>
 #include <stdlib.h>
+#include <math.h>
 #include <string.h>
+
+#ifdef _WINDOWS
+#include "stdafx.h"
+#else
+#include "global.h"
+#endif
 
 #include "gcode.h"
 
@@ -24,7 +24,7 @@ int curGCodeMode;
 uint32_t commonTimeIdeal, commonTimeReal, startWorkTime;
 uint8_t isGcodeStop;
 #ifdef HAS_EXTRUDER
-	uint8_t isExtruderOn;
+uint8_t isExtruderOn;
 #endif
 double minX, maxX, minY, maxY, minZ, maxZ;
 
@@ -53,8 +53,7 @@ typedef struct {
 #define TABLE_CENTER_X MAX_TABLE_SIZE_X/4
 #define TABLE_CENTER_Y MAX_TABLE_SIZE_Y/4
 
-
-static struct {
+struct {
 #ifndef NO_ACCELERATION_CORRECTION
 	MVECTOR mvector[MVECTOR_SZ];
 	int32_t mvectPtrCur, mvectCnt;
@@ -65,18 +64,20 @@ static struct {
 	int32_t stepsX, stepsY, stepsZ;
 } linesBuffer;
 
-static short crdXtoScr(double x) { return (short)(x*k_scr + 0.5) + 8; }
-static short crdYtoScr(double y) {
+short crdXtoScr(double x) { return (short)(x*k_scr + 0.5) + 8; }
+short crdYtoScr(double y) {
 	short v = (short)(y*k_scr + 0.5);
 	return v > 239 ? 0 : 239 - v;
 }
 
-static void initGcodeProc(void) {
+void initGcodeProc(void)
+{
 	double kx = 310.0 / MAX_TABLE_SIZE_X;
 	double ky = 238.0 / MAX_TABLE_SIZE_Y;
 	k_scr = kx > ky ? ky : kx;
 
 	ili9320_Clear(0);
+
 	memset(&linesBuffer, 0, sizeof(linesBuffer));
 #ifndef NO_ACCELERATION_CORRECTION
 	linesBuffer.mvectPtrCur = 0;
@@ -90,8 +91,10 @@ static void initGcodeProc(void) {
 	isExtruderOn = FALSE;
 #endif
 	minX = maxX = minY = maxY = minZ = maxZ = 0;
-	gc_init(); stepm_init();
-	commonTimeIdeal = commonTimeReal = 0; isGcodeStop = FALSE;
+	gc_init();
+	stepm_init();
+	commonTimeIdeal = commonTimeReal = 0;
+	isGcodeStop = FALSE;
 	startWorkTime = RTC_GetCounter();
 }
 
@@ -101,12 +104,11 @@ void cnc_gfile(char *fileName, int mode)
 {
 	int n;
 	FIL fid;
-	FRESULT res;
 	int lineNum;
 	uint8_t hasMoreLines;
 
 	initGcodeProc();
-	res = f_open(&fid, fileName, FA_READ);
+	FRESULT res = f_open(&fid, fileName, FA_READ);
 	if (res != FR_OK)
 	{
 		win_showErrorWin();
@@ -259,7 +261,7 @@ uint16_t calcColor(uint8_t val)
 	if (val < 40) return (uint16_t)0x07FF - ((val - 32) << 2);
 	if (val < 48) return (uint16_t)0x1F70 + ((val - 40) << 13);
 	if (val < 64) return (uint16_t)0xFF00 - ((val - 48) << 6);
-	return 0x80f0;
+	return 0x80F0;
 }
 
 void cnc_dwell(int pause)
@@ -270,9 +272,14 @@ void cnc_dwell(int pause)
 //=================================================================================================================================
 
 extern const char axisName[5];
+const double axisK[4] = {
+	SM_X_STEPS_PER_MM,
+	SM_Y_STEPS_PER_MM,
+	SM_Z_STEPS_PER_MM,
+	SM_E_STEPS_PER_MM
+};
 uint8_t cnc_waitSMotorReady(void)
 {
-	const double axisK[4] = { SM_X_STEPS_PER_MM, SM_Y_STEPS_PER_MM, SM_Z_STEPS_PER_MM, SM_E_STEPS_PER_MM };
 	static uint32_t time = 0;
 	static uint8_t isStepDump = FALSE;
 	int i;
@@ -363,9 +370,11 @@ uint8_t sendLine(uint32_t fxyze[], uint32_t abs_dxyze[], uint8_t dir_xyze[])
 	}
 	// if(abs_dxyze[n] > 20) {
 	//  for(i = 0; i < 4; i++) fxyze[i] = (uint32_t)((uint64_t)f * (uint64_t)abs_dxyze[i]/abs_dxyze[n]);
-	if (abs_dxyze[n] > 10) {
+	if (abs_dxyze[n] > 10)
+	{
 		for (i = 0; i < 4; i++)
-			if (i != n) {
+			if (i != n)
+			{
 				fxyze[i] = (uint32_t)(((uint64_t)f * (uint64_t)abs_dxyze[i]) / abs_dxyze[n]) + 1; //+1 for debug
 			}
 	}
@@ -373,38 +382,36 @@ uint8_t sendLine(uint32_t fxyze[], uint32_t abs_dxyze[], uint8_t dir_xyze[])
 	{
 		int i;
 		for (i = 0; i < 4; i++)
-		{
 			if (fxyze[i] != 0)
 			{
 				commonTimeReal += abs_dxyze[i] * 1000L * K_FRQ / fxyze[i];
 				break;
 			}
-		}
+
 		if ((curGCodeMode & GFILE_MODE_MASK_SHOW) != 0)
 		{
 			double x, y;
 			short scrX, scrY;
 
-			if (dir_xyze[0])
-				linesBuffer.stepsX += abs_dxyze[0];
-			else
-				linesBuffer.stepsX -= abs_dxyze[0];
-			if (dir_xyze[1])
-				linesBuffer.stepsY += abs_dxyze[1];
-			else
-				linesBuffer.stepsY -= abs_dxyze[1];
-			if (dir_xyze[2])
-				linesBuffer.stepsZ += abs_dxyze[2];
-			else
-				linesBuffer.stepsZ -= abs_dxyze[2];
+			if (dir_xyze[0])	linesBuffer.stepsX += abs_dxyze[0];
+			else				linesBuffer.stepsX -= abs_dxyze[0];
+
+			if (dir_xyze[1])	linesBuffer.stepsY += abs_dxyze[1];
+			else				linesBuffer.stepsY -= abs_dxyze[1];
+
+			if (dir_xyze[2])	linesBuffer.stepsZ += abs_dxyze[2];
+			else				linesBuffer.stepsZ -= abs_dxyze[2];
 
 			x = (double)linesBuffer.stepsX / SM_X_STEPS_PER_MM;
 			y = (double)linesBuffer.stepsY / SM_Y_STEPS_PER_MM;
+
 			scrX = crdXtoScr(TABLE_CENTER_X + x);
 			scrY = crdYtoScr(TABLE_CENTER_Y + y);
+
 			if (scrX != prev_scrX || prev_scrY != scrY)
 				GUI_Line(prev_scrX, prev_scrY, scrX, scrY, calcColor((uint8_t)(linesBuffer.stepsZ * 5 / SM_X_STEPS_PER_MM) & 0x1F));
-			prev_scrX = scrX; prev_scrY = scrY;
+			prev_scrX = scrX;
+			prev_scrY = scrY;
 		}
 		return TRUE;
 	}
@@ -458,9 +465,7 @@ uint8_t sendLine(uint32_t fxyze[], uint32_t abs_dxyze[], uint8_t dir_xyze[])
 		scr_gotoxy(1, 13);
 		scr_puts(" PAUSE..'B'-continue 'C'-cancel");
 		scr_clrEndl();
-		while (stepm_inProc())
-		{
-		}
+		while (stepm_inProc()) {}
 		stepm_EmergeStop();
 		while (isPause)
 		{
@@ -582,8 +587,12 @@ __STATIC_INLINE int32_t chk_Speed(int32_t i, uint32_t fxyze[], uint32_t abs_dxyz
 }
 #endif
 
-uint8_t smothLine(int32_t dx, int32_t dy, int32_t dz, int32_t de, int32_t time_msec,
-	double moveLength, uint32_t feed_rate) {
+uint8_t smothLine(
+	int32_t dx, int32_t dy, int32_t dz, int32_t de,
+	int32_t time_msec,
+	double moveLength, uint32_t feed_rate
+	)
+{
 	uint32_t abs_dxyze[4];
 	uint32_t fxyze[4];
 	uint8_t dir_xyze[4];
@@ -593,48 +602,61 @@ uint8_t smothLine(int32_t dx, int32_t dy, int32_t dz, int32_t de, int32_t time_m
 	int32_t i;
 #endif
 
-	abs_dxyze[CRD_X] = labs(dx); abs_dxyze[CRD_Y] = labs(dy);
-	abs_dxyze[CRD_Z] = labs(dz); abs_dxyze[CRD_E] = labs(de);
-	dir_xyze[CRD_X] = dx > 0; dir_xyze[CRD_Y] = dy > 0; dir_xyze[CRD_Z] = dz > 0; dir_xyze[CRD_E] = de > 0;
+	abs_dxyze[CRD_X] = labs(dx);
+	abs_dxyze[CRD_Y] = labs(dy);
+	abs_dxyze[CRD_Z] = labs(dz);
+	abs_dxyze[CRD_E] = labs(de);
+	dir_xyze[CRD_X] = dx > 0;
+	dir_xyze[CRD_Y] = dy > 0;
+	dir_xyze[CRD_Z] = dz > 0;
+	dir_xyze[CRD_E] = de > 0;
 #ifdef DEBUG_MODE
 	{
 		DBG("\n[%d]-> orig.line dx:%d dy:%d dz:%d", linesBuffer.mvectCnt, dx, dy, dz);
-		if (linesBuffer.mvectCnt == 405) {
+		if (linesBuffer.mvectCnt == 405)
+		{
 			Sleep(100);
 		}
 	}
 #endif
-	while (time_msec > 0) {
+	while (time_msec > 0)
+	{
 		DBG(" T:%d", time_msec);
 		fxyze[CRD_Z] = abs_dxyze[CRD_Z] * 1000L * K_FRQ / time_msec;
-		if (fxyze[CRD_Z] > _smParam.maxFeedRate[CRD_Z]) {
+		if (fxyze[CRD_Z] > _smParam.maxFeedRate[CRD_Z])
+		{
 			DBG(" cZ");
 			time_msec = (uint64_t)abs_dxyze[CRD_Z] * (1000L * K_FRQ) / _smParam.maxFeedRate[CRD_Z] + 1;
 			continue;
 		}
-		if ((n = chk_Speed(CRD_Z, fxyze, abs_dxyze)) > 0) {
+		if ((n = chk_Speed(CRD_Z, fxyze, abs_dxyze)) > 0)
+		{
 			DBG(" bZ");
 			time_msec = n; continue;
 		}
 
 		fxyze[CRD_Y] = abs_dxyze[CRD_Y] * 1000L * K_FRQ / time_msec;
-		if (fxyze[CRD_Y] > _smParam.maxFeedRate[CRD_Y]) {
+		if (fxyze[CRD_Y] > _smParam.maxFeedRate[CRD_Y])
+		{
 			DBG(" cY");
 			time_msec = (uint64_t)abs_dxyze[CRD_Y] * (1000L * K_FRQ) / _smParam.maxFeedRate[CRD_Y] + 1;
 			continue;
 		}
-		if ((n = chk_Speed(CRD_Y, fxyze, abs_dxyze)) > 0) {
+		if ((n = chk_Speed(CRD_Y, fxyze, abs_dxyze)) > 0)
+		{
 			DBG(" bY");
 			time_msec = n; continue;
 		}
 
 		fxyze[CRD_X] = (uint64_t)abs_dxyze[CRD_X] * (1000L * K_FRQ) / time_msec;
-		if (fxyze[CRD_X] > _smParam.maxFeedRate[CRD_X]) {
+		if (fxyze[CRD_X] > _smParam.maxFeedRate[CRD_X])
+		{
 			DBG(" cX");
 			time_msec = (uint64_t)abs_dxyze[CRD_X] * (1000L * K_FRQ) / _smParam.maxFeedRate[CRD_X] + 1;
 			continue;
 		}
-		if ((n = chk_Speed(CRD_X, fxyze, abs_dxyze)) > 0) {
+		if ((n = chk_Speed(CRD_X, fxyze, abs_dxyze)) > 0)
+		{
 			DBG(" bX");
 			time_msec = n; continue;
 		}
@@ -657,32 +679,53 @@ uint8_t smothLine(int32_t dx, int32_t dy, int32_t dz, int32_t de, int32_t time_m
 	p_prev = &linesBuffer.mvector[n];
 	//------------------
 
-	if (time_msec == 0) {
-		for (i = 0; i < 4; i++) { p_next->frq[i] = 0; p_next->steps[i] = 0; }
+	if (time_msec == 0)
+	{
+		for (i = 0; i < 4; i++)
+		{
+			p_next->frq[i] = 0;
+			p_next->steps[i] = 0;
+		}
 		p_next->isNullCmd = TRUE;
 	}
-	else {
-		// борьба со странной особенностью ArtCam разбивать длинные участки на мелкие с сохранением скорости!
-		// Объединение этих участков в один.
-		if (p_cur->feed_rate == feed_rate) {
-			for (i = n = 0; i < 3; i++) {
-				if (p_cur->steps[i] == 0 && abs_dxyze[i] == 0) n++;
-				else if (p_cur->dir[i] != dir_xyze[i]) n += 10;
+	else
+	{
+		// ArtCam breaks long sections into small retaining speed!
+		// Combining these portions into one.
+		if (p_cur->feed_rate == feed_rate)
+		{
+			for (i = n = 0; i < 3; i++)
+			{
+				if (p_cur->steps[i] == 0 && abs_dxyze[i] == 0)
+					n++;
+				else if (p_cur->dir[i] != dir_xyze[i])
+					n += 10;
 			}
-			if (n == 2) {
-				for (i = n = 0; i < 4; i++) p_cur->steps[i] += abs_dxyze[i];
-				if (p_cur->frq[0] < fxyze[0] || p_cur->frq[1] < fxyze[1] || p_cur->frq[2] < fxyze[2]) {
-					for (i = n = 0; i < 4; i++) p_cur->frq[i] = fxyze[i];
+			if (n == 2)
+			{
+				for (i = n = 0; i < 4; i++)
+					p_cur->steps[i] += abs_dxyze[i];
+				if (p_cur->frq[0] < fxyze[0] || p_cur->frq[1] < fxyze[1] || p_cur->frq[2] < fxyze[2])
+				{
+					for (i = n = 0; i < 4; i++)
+						p_cur->frq[i] = fxyze[i];
 				}
-				p_cur->length += moveLength; p_cur->isNullCmd = FALSE;
+				p_cur->length += moveLength;
+				p_cur->isNullCmd = FALSE;
 				linesBuffer.mvectPtrCur--;
-				if (linesBuffer.mvectPtrCur < 0) linesBuffer.mvectPtrCur = MVECTOR_SZ - 1;
+				if (linesBuffer.mvectPtrCur < 0)
+					linesBuffer.mvectPtrCur = MVECTOR_SZ - 1;
 				DBG("\nSUM vectors"); return TRUE;
 			}
 		}
-		p_next->isNullCmd = FALSE; p_next->length = moveLength; p_next->feed_rate = feed_rate;
-		for (i = 0; i < 4; i++) {
-			p_next->steps[i] = abs_dxyze[i]; p_next->frq[i] = fxyze[i]; p_next->dir[i] = dir_xyze[i];
+		p_next->isNullCmd = FALSE;
+		p_next->length = moveLength;
+		p_next->feed_rate = feed_rate;
+		for (i = 0; i < 4; i++)
+		{
+			p_next->steps[i] = abs_dxyze[i];
+			p_next->frq[i] = fxyze[i];
+			p_next->dir[i] = dir_xyze[i];
 		}
 	}
 	if (linesBuffer.mvectCnt > 1)
@@ -693,27 +736,36 @@ uint8_t smothLine(int32_t dx, int32_t dy, int32_t dz, int32_t de, int32_t time_m
 			p_next->changeDir = FALSE;
 			for (i = 0; !p_next->changeDir && i < 3; i++)
 			{
-				if (p_next->dir[i] != p_cur->dir[i] || (p_next->steps[i] == 0 && p_cur->steps[i] != 0) || (p_next->steps[i] != 0 && p_cur->steps[i] == 0))
+				if (p_next->dir[i] != p_cur->dir[i]
+					|| (p_next->steps[i] == 0 && p_cur->steps[i] != 0)
+					|| (p_next->steps[i] != 0 && p_cur->steps[i] == 0)
+					)
 					p_next->changeDir = TRUE;
 			}
 			p_next->cos_a = 0;
-			if (!p_next->changeDir) {
-				// Целочисленные расчеты только если перемешения не больще чем уместится степов в 32 битах!!!   
-				static uint32_t k[3] = { SM_X_STEPS_PER_MM, SM_Y_STEPS_PER_MM, SM_Z_STEPS_PER_MM };
-				for (i = 0; i < 3; i++) {
-					int32_t v = (int32_t)((uint32_t)p_next->steps[i] * 1000L / (uint32_t)(p_next->length*k[i])) *
-						(int32_t)((uint32_t)p_cur->steps[i] * 1000L / (uint32_t)(p_cur->length*k[i]));
-					if (p_next->dir[i] == p_cur->dir[i]) p_next->cos_a += v;
-					else p_next->cos_a -= v;
+			if (!p_next->changeDir)
+			{
+				// Integer calculations only if the movement is less than the steps fit in 32 bits
+				const uint32_t k[3] = { SM_X_STEPS_PER_MM, SM_Y_STEPS_PER_MM, SM_Z_STEPS_PER_MM };
+				for (i = 0; i < 3; i++)
+				{
+					int32_t v = (int32_t)((uint32_t)p_next->steps[i] * 1000L / (uint32_t)(p_next->length * k[i]))
+						* (int32_t)((uint32_t)p_cur->steps[i] * 1000L / (uint32_t)(p_cur->length * k[i]));
+					if (p_next->dir[i] == p_cur->dir[i])
+						p_next->cos_a += v;
+					else
+						p_next->cos_a -= v;
 				}
-				if (p_next->cos_a < SM_SMOOTH_COS_A) p_next->changeDir = TRUE;
+				if (p_next->cos_a < SM_SMOOTH_COS_A)
+					p_next->changeDir = TRUE;
 			}
 		}
-		else p_next->changeDir = TRUE;
+		else
+			p_next->changeDir = TRUE;
 	}
 	linesBuffer.mvectCnt++;
-	if (linesBuffer.mvectCnt < 3) return TRUE;
-	if (p_cur->isNullCmd) return TRUE;
+	if (linesBuffer.mvectCnt < 3 || p_cur->isNullCmd)
+		return TRUE;
 	//------------------
 #ifdef DEBUG_MODE
 	DBG("\nl.prev dx:%c%d(%d)\tdy:%c%d(%d)\tdz:%c%d(%d)", p_prev->dir[0] ? '+' : '-', p_prev->steps[0], p_prev->frq[0],
@@ -726,7 +778,7 @@ uint8_t smothLine(int32_t dx, int32_t dy, int32_t dz, int32_t de, int32_t time_m
 		p_next->dir[1] ? '+' : '-', p_next->steps[1], p_next->frq[1],
 		p_next->dir[2] ? '+' : '-', p_next->steps[2], p_next->frq[2], p_next->cos_a / 1000000.0);
 #endif
-	// поиск координат где нужно торможение/ускорение
+	// Search coordinate where necessary braking or acceleration
 	int8_t crd_in, crd_out, has_max_frq = TRUE;
 	int32_t df_in = 0, df_out = 0, frq_in = 0, frq_out = 0, frq;
 
@@ -744,7 +796,7 @@ uint8_t smothLine(int32_t dx, int32_t dy, int32_t dz, int32_t de, int32_t time_m
 	}
 
 	if (crd_in < 0 && crd_out < 0)
-	{	// линия целиком без необходимости ускорения/торможения
+	{	// Entire line without the need to accelerate or brake
 		return sendLine(p_cur->frq, p_cur->steps, p_cur->dir);
 	}
 
@@ -761,8 +813,9 @@ uint8_t smothLine(int32_t dx, int32_t dy, int32_t dz, int32_t de, int32_t time_m
 	}
 	DBG("\nin:%fs %d  out:%f %d", t0, s0, t1, s1);
 	*/
+
 	int32_t fBreakage_out = 0, sBreakage_out = -1;
-	// поиск щага по оси crd_out с которой нужно начать торможение (если надо)
+	// Search pitch axis crd_out want to start braking (if necessary)
 	if (crd_out >= 0)
 	{
 		int32_t tmp_dd = 0, s_in = 0;
@@ -770,151 +823,206 @@ uint8_t smothLine(int32_t dx, int32_t dy, int32_t dz, int32_t de, int32_t time_m
 		int32_t f1 = crd_in >= 0 ? (int32_t)((int64_t)frq_in*p_cur->steps[crd_out] / p_cur->steps[crd_in]) : (int32_t)p_cur->frq[crd_out];
 		int32_t dd_f1 = crd_in >= 0 ? (int32_t)((int64_t)df_in*p_cur->steps[crd_out] / p_cur->steps[crd_in]) : 0;
 
-		sBreakage_out = 0; // sBreakage_out - количество steps от конца
-		for (i = 0; TRUE; i++) {// идем от конца тормозного пути    
+		sBreakage_out = 0;	// sBreakage_out - number of steps from the end
+		for (i = 0; TRUE; i++)
+		{	// We go from the end of the braking distance
 			fBreakage_out = (f2 += df_out);
-			if (crd_in >= 0) {
-				// если не достигли входящей максимальной скорости
-				if ((dd_f1 < 0 && f1 > max_f) || (dd_f1 > 0 && f1 < max_f)) {
-					f1 += dd_f1; s_in += f1*SM_SMOOTH_TFEED / K_FRQ / 1000; // интегрирование по разгонному участку      
+			if (crd_in >= 0)
+			{
+				// If you have not reached a maximum speed of incoming
+				if ((dd_f1 < 0 && f1 > max_f) || (dd_f1 > 0 && f1 < max_f))
+				{
+					f1 += dd_f1;
+					s_in += f1*SM_SMOOTH_TFEED / K_FRQ / 1000; // Integration over the boost phase
 				}
 			}
-			// если достигли максимальной скорости, указанной для вектора торможения - то все..
-			if (f2 > max_f) {
+			if (f2 > max_f)
+			{	// if reached maximum speed specified for the vector braking
 				break;
 			}
-			sBreakage_out += (tmp_dd = f2*SM_SMOOTH_TFEED / K_FRQ / 1000);// интегрирование по времени тормозного участка
-			if (sBreakage_out >= (int32_t)p_cur->steps[crd_out]) {
+			sBreakage_out += (tmp_dd = f2*SM_SMOOTH_TFEED / K_FRQ / 1000);	// Time integration braking area
+			if (sBreakage_out >= (int32_t)p_cur->steps[crd_out])
+			{
 				sBreakage_out = length_steps; crd_in = -1;
 				break;
 			}
-			// если участки разгона и торможения сошлись, не дойдя до максимальной скорости вектора
-			if ((s_in + sBreakage_out) >= length_steps) {
+			// If the acceleration and deceleration areas converged before reaching a maximum speed vector
+			if ((s_in + sBreakage_out) >= length_steps)
+			{
 				has_max_frq = FALSE;
-				if (labs(f1 - f2) > df_out) {
-					if (dd_f1 > 0) {
-						if (f1  < f2) sBreakage_out -= tmp_dd;
-						else {
-							while (labs(f1 - f2) > df_out && sBreakage_out < length_steps) {
-								fBreakage_out = (f2 += df_out); sBreakage_out += f2*SM_SMOOTH_TFEED / K_FRQ / 1000;
-								f1 -= dd_f1;
-							}
+				if (labs(f1 - f2) > df_out && dd_f1 > 0)
+					if (f1  < f2)
+					{
+						sBreakage_out -= tmp_dd;
+					}
+					else
+					{
+						while (labs(f1 - f2) > df_out && sBreakage_out < length_steps)
+						{
+							fBreakage_out = (f2 += df_out);
+							sBreakage_out += f2*SM_SMOOTH_TFEED / K_FRQ / 1000;
+							f1 -= dd_f1;
 						}
 					}
-				}
 				break;
 			}
 		}
 		if (length_steps - sBreakage_out < 2)
 		{
 			crd_in = -1;
-			sBreakage_out = length_steps;  // для случаев, когда длинна отрезка с установившейся скоростью мала.
+			sBreakage_out = length_steps;  // For cases where the length of the segment stabilized speed is low
 		}
 	}
 	DBG("\n crd_out=%d sBreakage_out=%d fBreakage_out=%d", crd_out, sBreakage_out, fBreakage_out);
 	uint8_t isProcess = TRUE;
 	uint32_t remainSteps[4];
-	for (i = 0; i < 4; i++) remainSteps[i] = p_cur->steps[i];
-	// ======== входное торможение/ускорение
-	if (crd_in >= 0) {
+
+	for (i = 0; i < 4; i++)
+		remainSteps[i] = p_cur->steps[i];
+
+	// =========== Input braking / acceleration
+	if (crd_in >= 0)
+	{
 		uint8_t isProcess = TRUE;
 		frq = frq_in + df_in;
-		while (isProcess && ((df_in < 0 && frq >(int32_t)p_cur->frq[crd_in]) || (df_in > 0 && frq < (int32_t)p_cur->frq[crd_in]))) {
-			for (i = 0; i < 4; i++) {
+		while (isProcess && ((df_in < 0 && frq >(int32_t)p_cur->frq[crd_in]) || (df_in > 0 && frq < (int32_t)p_cur->frq[crd_in])))
+		{
+			for (i = 0; i < 4; i++)
+			{
 				fxyze[i] = (uint32_t)((uint64_t)frq * (uint64_t)p_cur->steps[i] / p_cur->steps[crd_in]);
 				abs_dxyze[i] = (uint64_t)fxyze[i] * SM_SMOOTH_TFEED / K_FRQ / 1000;
 			}
-			if (crd_out >= 0 && abs_dxyze[crd_out] >(remainSteps[crd_out] - sBreakage_out)) {
+			if (crd_out >= 0 && abs_dxyze[crd_out] >(remainSteps[crd_out] - sBreakage_out))
+			{
 				n = remainSteps[crd_out] - sBreakage_out;
-				for (i = 0; i < 4; i++) abs_dxyze[i] = (uint64_t)n*p_cur->steps[i] / p_cur->steps[crd_out];
+				for (i = 0; i < 4; i++)
+					abs_dxyze[i] = (uint64_t)n*p_cur->steps[i] / p_cur->steps[crd_out];
 				isProcess = FALSE;
 			}
-			for (i = 0; i < 4; i++) {
-				if (abs_dxyze[i] != 0 && remainSteps[i] <= abs_dxyze[i]) {
-					for (i = 0; i < 4; i++) abs_dxyze[i] = remainSteps[i];
-					isProcess = FALSE; break;
+			for (i = 0; i < 4; i++)
+				if (abs_dxyze[i] != 0 && remainSteps[i] <= abs_dxyze[i])
+				{
+					for (i = 0; i < 4; i++)
+						abs_dxyze[i] = remainSteps[i];
+					isProcess = FALSE;
+					break;
 				}
-			}
-			if (!sendLine(fxyze, abs_dxyze, p_cur->dir)) return FALSE;
-			for (i = 0; i < 4; i++) remainSteps[i] -= abs_dxyze[i];
+
+			if (!sendLine(fxyze, abs_dxyze, p_cur->dir))
+				return FALSE;
+			for (i = 0; i < 4; i++)
+				remainSteps[i] -= abs_dxyze[i];
 			frq += df_in;
 		}
 	}
-	// ========= торможения нет
-	if (crd_out < 0) {
-		if (remainSteps[crd_in] == 0) {
-			// установить входную скорость для следующей линии
-			for (i = 0; i < 4; i++) p_cur->frq[i] = fxyze[i];
+	// ========= No braking
+	if (crd_out < 0)
+	{
+		if (remainSteps[crd_in] == 0)
+		{
+			// Set the input speed to the next line
+			for (i = 0; i < 4; i++)
+				p_cur->frq[i] = fxyze[i];
 			return TRUE;
 		}
-		return sendLine(p_cur->frq, remainSteps, p_cur->dir); //остаток линии
+		return sendLine(p_cur->frq, remainSteps, p_cur->dir); // Remain line
 	}
-	// =========== линия с установившейся частотой.
-	if (remainSteps[crd_out] >(uint32_t)sBreakage_out) {
-		for (i = 0; i < 4; i++) {
+	// =========== Line with established frequency
+	if (remainSteps[crd_out] >(uint32_t)sBreakage_out)
+	{
+		for (i = 0; i < 4; i++)
+		{
 			uint32_t dd = (int64_t)sBreakage_out*p_cur->steps[i] / p_cur->steps[crd_out];
 			abs_dxyze[i] = (dd <= remainSteps[i]) ? remainSteps[i] - dd : 0;
 			remainSteps[i] -= abs_dxyze[i];
-			if (has_max_frq) fxyze[i] = p_cur->frq[i];
+			if (has_max_frq)
+				fxyze[i] = p_cur->frq[i];
 		}
-		if (!sendLine(fxyze, abs_dxyze, p_cur->dir)) return FALSE;
-		if (sBreakage_out == 0) return TRUE;
+		if (!sendLine(fxyze, abs_dxyze, p_cur->dir))
+			return FALSE;
+		if (sBreakage_out == 0)
+			return TRUE;
 		//f_out = p_cur->frq[crd_out];
 	}
-	// ============= торможение  
-	for (frq = fBreakage_out; isProcess && remainSteps[crd_out] > 0;) {
+	// ============= Braking
+	for (frq = fBreakage_out; isProcess && remainSteps[crd_out] > 0;)
+	{
 		frq -= df_out;
-		if (labs(frq - frq_out) < labs(df_out)) {
+		if (labs(frq - frq_out) < labs(df_out))
+		{
 			frq = frq_out < _smParam.smoothStopF_to0[crd_out] ? _smParam.smoothStopF_to0[crd_out] : frq_out;
-			for (i = 0; i < 4; i++) {
+			for (i = 0; i < 4; i++)
+			{
 				fxyze[i] = (uint32_t)((uint64_t)frq * (uint64_t)p_cur->steps[i] / p_cur->steps[crd_out]);
 				abs_dxyze[i] = remainSteps[i];
 			}
 			isProcess = FALSE;
 		}
-		else {
-			for (i = 0; i < 4; i++) {
+		else
+		{
+			for (i = 0; i < 4; i++)
+			{
 				fxyze[i] = (uint32_t)((uint64_t)frq * (uint64_t)p_cur->steps[i] / p_cur->steps[crd_out]);
 				abs_dxyze[i] = (uint64_t)fxyze[i] * SM_SMOOTH_TFEED / K_FRQ / 1000L;
 			}
 		}
-		for (i = 0; i < 4; i++) {
-			if (abs_dxyze[i] > remainSteps[i] || (abs_dxyze[i] != 0 && (abs_dxyze[i] - remainSteps[i]) < 15)) {
-				for (i = 0; i < 4; i++) { abs_dxyze[i] = remainSteps[i]; }
-				isProcess = FALSE; break;
+
+		for (i = 0; i < 4; i++)
+		{
+			if (abs_dxyze[i] > remainSteps[i] || (abs_dxyze[i] != 0 && (abs_dxyze[i] - remainSteps[i]) < 15))
+			{
+				for (i = 0; i < 4; i++)
+				{
+					abs_dxyze[i] = remainSteps[i];
+				}
+				isProcess = FALSE;
+				break;
 			}
 		}
-		if (!sendLine(fxyze, abs_dxyze, p_cur->dir)) return FALSE;
-		for (i = 0; i < 4; i++) remainSteps[i] -= abs_dxyze[i];
+		if (!sendLine(fxyze, abs_dxyze, p_cur->dir))
+			return FALSE;
+		for (i = 0; i < 4; i++)
+			remainSteps[i] -= abs_dxyze[i];
 	}
-	// установить входную скорость для следующей линии
-	for (i = 0; i < 4; i++) p_cur->frq[i] = fxyze[i];
+	// Set the input speed to the next line
+	for (i = 0; i < 4; i++)
+		p_cur->frq[i] = fxyze[i];
 #endif
 	return TRUE;
 }
 
-
-uint8_t cnc_line(double x, double y, double z, double extruder_length,
-	double moveLength, double feed_rate)
+uint8_t cnc_line(
+	double x, double y, double z,
+	double extruder_length,
+	double moveLength,
+	double feed_rate
+	)
 {
 	int32_t
 		newX = lround(x * SM_X_STEPS_PER_360 / MM_PER_360),
 		newY = lround(y * SM_Y_STEPS_PER_360 / MM_PER_360),
 		newZ = lround(z * SM_Z_STEPS_PER_360 / MM_PER_360),
 		newE = lround(extruder_length * SM_E_STEPS_PER_MM);
-	int32_t dx = newX - linesBuffer.stepsFromStartX, dy = newY - linesBuffer.stepsFromStartY;
-	int32_t dz = newZ - linesBuffer.stepsFromStartZ, de = newE - linesBuffer.stepsFromStartE;
-	linesBuffer.stepsFromStartX = newX; linesBuffer.stepsFromStartY = newY;
-	linesBuffer.stepsFromStartZ = newZ; linesBuffer.stepsFromStartE = newE;
-	uint32_t time_msec = (uint32_t)(moveLength*(60000.0 / feed_rate));
+	int32_t dx = newX - linesBuffer.stepsFromStartX;
+	int32_t dy = newY - linesBuffer.stepsFromStartY;
+	int32_t dz = newZ - linesBuffer.stepsFromStartZ;
+	int32_t de = newE - linesBuffer.stepsFromStartE;
+	linesBuffer.stepsFromStartX = newX;
+	linesBuffer.stepsFromStartY = newY;
+	linesBuffer.stepsFromStartZ = newZ;
+	linesBuffer.stepsFromStartE = newE;
+	uint32_t time_msec = (uint32_t)(moveLength * (60000.0 / feed_rate));
 	commonTimeIdeal += time_msec;
 
-	if ((dx != 0 || dy != 0 || dx != 0) && time_msec == 0) time_msec = 1;
-	if (de < 0) de = newE; // 91384.9586 - max value for skeinforge.py
+	if ((dx != 0 || dy != 0 || dx != 0) && time_msec == 0)
+		time_msec = 1;
+	if (de < 0)
+		de = newE; // 91384.9586 - max value for skeinforge.py
 
 	DBG("\n AX:%d AY:%d AZ:%d", newX, newY, newZ);
 
-	if (kbd_getKey() == KEY_C) return FALSE;
+	if (kbd_getKey() == KEY_C)
+		return FALSE;
 	if (x < minX) minX = x;
 	if (x > maxX) maxX = x;
 	if (y < minY) minY = y;
@@ -929,7 +1037,8 @@ uint8_t cnc_line(double x, double y, double z, double extruder_length,
 	// return TRUE;
 }
 
-void cnc_end(void) {
+void cnc_end(void)
+{
 	isGcodeStop = TRUE;
 }
 
@@ -940,8 +1049,12 @@ void cnc_extruder_stop(void)
 	cnc_waitSMotorReady();
 	uint8_t dir[4] = { 0, 0, 0, 1 };
 	uint32_t steps[4] = { 0, 0, 0, SM_E_STEPS_PER_MM / 2 };
-	uint32_t frq[4] = { SM_MANUAL_MODE_STEPS_PER_SEC*K_FRQ, SM_MANUAL_MODE_STEPS_PER_SEC*K_FRQ,
-		SM_MANUAL_MODE_STEPS_PER_SEC*K_FRQ, SM_MANUAL_MODE_STEPS_PER_SEC*K_FRQ };
+	const uint32_t frq[4] = {
+		SM_MANUAL_MODE_STEPS_PER_SEC * K_FRQ,
+		SM_MANUAL_MODE_STEPS_PER_SEC * K_FRQ,
+		SM_MANUAL_MODE_STEPS_PER_SEC * K_FRQ,
+		SM_MANUAL_MODE_STEPS_PER_SEC * K_FRQ
+	};
 	stepm_addMove(steps, frq, dir);
 }
 
@@ -950,16 +1063,25 @@ void cnc_extruder_on(void)
 	isExtruderOn = TRUE;
 }
 
-void cnc_extruder_t(int temperature, int isWait) {
+void cnc_extruder_t(int temperature, int isWait)
+{
 	extrudT_setTemperature((int16_t)temperature);
-	if (isWait) {
-		if ((curGCodeMode & GFILE_MODE_MASK_EXEC) != 0) {
+	if (isWait)
+	{
+		if ((curGCodeMode & GFILE_MODE_MASK_EXEC) != 0)
+		{
 			scr_fontColor(Red, Black);
-			while (!extrudT_isReady()) {
-				scr_gotoxy(3, 2); scr_fontColor(Yellow, Blue); scr_printf("extruder t:%03d/%03d", extrudT_getTemperatureReal(), extrudT_getTemperatureWait());
-				if (kbd_getKey() == KEY_C) return;
+			while (!extrudT_isReady())
+			{
+				scr_gotoxy(3, 2);
+				scr_fontColor(Yellow, Blue);
+				scr_printf("extruder t:%03d/%03d", extrudT_getTemperatureReal(), extrudT_getTemperatureWait());
+				if (kbd_getKey() == KEY_C)
+					return;
 			}
-			scr_gotoxy(3, 2); scr_fontColor(White, Black); scr_puts("                        ");
+			scr_gotoxy(3, 2);
+			scr_fontColor(White, Black);
+			scr_puts("                        ");
 		}
 	}
 }

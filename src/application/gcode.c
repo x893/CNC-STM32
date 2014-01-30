@@ -3,17 +3,18 @@
  * Copyright (c) 2011 Sungeun K. Jeon
  */
 
-#ifdef _WINDOWS
-	#include "stdafx.h"
-#else
-	#include "global.h"
-#endif
-
-#include "gcode.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+
+#ifdef _WINDOWS
+#include "stdafx.h"
+#else
+#include "global.h"
+#endif
+
+#include "gcode.h"
 
 #define X_AXIS 0
 #define Y_AXIS 1
@@ -46,54 +47,95 @@ typedef struct {
 	int16_t s_value;           /* RPM/100 or temperature of the current extruder */
 	uint8_t next_action;  /* The action that will be taken by the parsed line */
 } parser_state_t;
-static parser_state_t gc;
+
+parser_state_t gc;
 
 #define FAIL(status) { gc.status_code = status; return(gc.status_code); }
 
-double strtod_M(const char *str, char **endptr) {
-	double number = 0;
-	int negative;
-	char *p = (char *)str;
-
-	while ((*p < '0' || *p > '9') && *p != '-') p++;
-	negative = FALSE;
-	switch (*p) {
-	case '-': negative = TRUE; // Fall through to increment position
-	case '+': p++;
-	}
-	while (*p >= '0' && *p <= '9') { number = number * 10.0 + (*p - '0'); p++; }
-	if (*p == '.') {
-		double div = 1;
-		p++;
-		while (*p >= '0' && *p <= '9') { div *= 10.0; number = number * 10.0 + (*p - '0'); p++; }
-		number /= div;
+double strtod_M(const char *str, char **endptr)
+{
+	double number = 0.0;
+	double div = 0.0;
+	bool negative = false;
+	bool plus = false;
+	bool skip = true;
+	char c;
+	while ((c = *str) != 0)
+	{
+		if (c == '+')
+		{
+			if (skip && !plus)
+			{
+				plus = true;
+				skip = false;
+			}
+			else
+				break;
+		}
+		else if (skip && !negative && c == '-')
+		{
+			if (skip && !negative)
+			{
+				negative = true;
+				skip = false;
+			}
+			else
+				break;
+		}
+		else if (c == '.')
+		{
+			if (div == 0.0)
+				div = 1.0;
+			else
+				break;
+		}
+		else if (c >= '0' && c <= '9')
+		{
+			skip = false;
+			if (div == 0.0)
+				number = number * 10.0 + (double)(c - '0');
+			else
+			{
+				div *= 10.0;
+				number += ((double)(c - '0') / div);
+			}
+		}
+		else if (!skip)
+		{
+			break;
+		}
+		str++;
 	}
 
 	if (negative) number = -number;
-	if (endptr) *endptr = p;
+	if (endptr != NULL) *endptr = (char *)str;
 	return number;
 }
 
-static int read_double(char *line, int *char_counter, double *double_ptr) {
+static int read_double(char *line, int *char_counter, double *double_ptr)
+{
 	char *start = line + *char_counter;
 	char *end;
 
 	*double_ptr = strtod_M(start, &end);
-	if (end == start) {
+	if (end == start)
+	{
 		gc.status_code = GCSTATUS_BAD_NUMBER_FORMAT;
 		return FALSE;
-	};
+	}
 	*char_counter = (int)(end - line);
 	return TRUE;
 }
 
-static int next_statement(char *letter, double *double_ptr, char *line, int *char_counter) {
+static int next_statement(char *letter, double *double_ptr, char *line, int *char_counter)
+{
 	while (line[*char_counter] == ' ') (*char_counter)++;
 
 	if (line[*char_counter] == 0 || line[*char_counter] == ';' ||
 		line[*char_counter] == '\n' || line[*char_counter] == '\r') return FALSE;
 	*letter = line[*char_counter];
-	if ((*letter < 'A') || (*letter > 'Z')) {
+	if ((*letter < 'A') || (*letter > 'Z'))
+	{
 		gc.status_code = GCSTATUS_EXPECTED_COMMAND_LETTER;
 		return FALSE;
 	}
@@ -101,7 +143,8 @@ static int next_statement(char *letter, double *double_ptr, char *line, int *cha
 	return read_double(line, char_counter, double_ptr);
 }
 
-void gc_init(void) {
+void gc_init(void)
+{
 	memset(&gc, 0, sizeof(gc));
 	gc.feed_rate = SM_DEFAULT_FEED_RATE;
 	gc.seek_rate = SM_DEFAULT_SEEK_RATE;
@@ -112,11 +155,13 @@ void gc_init(void) {
 	gc.next_action = NEXT_ACTION_DEFAULT;
 }
 
-static double to_millimeters(double value) {
-	return(gc.inches_mode ? (value * MM_PER_INCH) : value);
+static double to_millimeters(double value)
+{
+	return (gc.inches_mode ? (value * MM_PER_INCH) : value);
 }
 
-static void mc_arc(double *position, double *target, double *offset, double feed_rate, double radius, uint8_t isclockwise) {
+static void mc_arc(double *position, double *target, double *offset, double feed_rate, double radius, uint8_t isclockwise)
+{
 	double center_axisX = position[X_AXIS] + offset[X_AXIS];
 	double center_axisY = position[Y_AXIS] + offset[Y_AXIS];
 	double move_z = target[Z_AXIS] - position[Z_AXIS];
@@ -186,16 +231,17 @@ static void mc_arc(double *position, double *target, double *offset, double feed
 	// double moveSum = 0;
 	//  uint32_t timeSum = 0;
 
-	for (i = 1; i < segments; i++) { // Increment (segments-1)
-		if (count < N_ARC_CORRECTION) {
-			// Apply vector rotation matrix
+	for (i = 1; i < segments; i++)
+	{	// Increment (segments-1)
+		if (count < N_ARC_CORRECTION)
+		{	// Apply vector rotation matrix
 			r_axisi = r_axisX*sin_T + r_axisY*cos_T;
 			r_axisX = r_axisX*cos_T - r_axisY*sin_T;
 			r_axisY = r_axisi;
 			count++;
 		}
-		else {
-			// Arc correction to radius vector. Computed only every N_ARC_CORRECTION increments.
+		else
+		{	// Arc correction to radius vector. Computed only every N_ARC_CORRECTION increments.
 			// Compute exact location by applying transformation matrix from initial radius vector(=-offset).
 			cos_Ti = cos(i*theta_per_segment);
 			sin_Ti = sin(i*theta_per_segment);
@@ -214,8 +260,10 @@ static void mc_arc(double *position, double *target, double *offset, double feed
 		if (isnan(dx) && isnan(dy) && isnan(dz)) moveLength = 0;
 		else moveLength = sqrt(dx*dx + dy*dy + dz*dz);
 
-		if (!cnc_line(arc_target[X_AXIS], arc_target[Y_AXIS], arc_target[Z_AXIS], 0, moveLength, feed_rate)) {
-			gc.status_code = GCSTATUS_CANCELED; return;
+		if (!cnc_line(arc_target[X_AXIS], arc_target[Y_AXIS], arc_target[Z_AXIS], 0, moveLength, feed_rate))
+		{
+			gc.status_code = GCSTATUS_CANCELED;
+			return;
 		}
 		position[X_AXIS] = arc_target[X_AXIS];
 		position[Y_AXIS] = arc_target[Y_AXIS];
@@ -225,9 +273,12 @@ static void mc_arc(double *position, double *target, double *offset, double feed
 	dx = target[X_AXIS] - arc_target[X_AXIS];
 	dy = target[Y_AXIS] - arc_target[Y_AXIS];
 	dz = target[Z_AXIS] - arc_target[Z_AXIS];
-	if (isnan(dx) && isnan(dy) && isnan(dz)) moveLength = 0;
-	else moveLength = sqrt(dx*dx + dy*dy + dz*dz);
-	if (!cnc_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], 0, moveLength, gc.feed_rate)) {
+	if (isnan(dx) && isnan(dy) && isnan(dz))
+		moveLength = 0;
+	else
+		moveLength = sqrt(dx * dx + dy * dy + dz * dz);
+	if (!cnc_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], 0, moveLength, gc.feed_rate))
+	{
 		gc.status_code = GCSTATUS_CANCELED;
 	}
 }
@@ -246,8 +297,8 @@ uint8_t gc_execute_line(char *line)
 	uint8_t radius_mode = FALSE;
 
 	if (line[0] == ';'
-	|| line[0] == '('
-	|| line[0] == '%'
+		|| line[0] == '('
+		|| line[0] == '%'
 		)
 		return GCSTATUS_OK;	// comments
 
@@ -274,10 +325,10 @@ uint8_t gc_execute_line(char *line)
 			case 92: gc.next_action = NEXT_ACTION_RESET_XYZ_G92; break;
 			case 64:
 			case 40:
-			case 17: //G17 Выбор рабочей плоскости X-Y
+			case 17: // G17 Выбор рабочей плоскости X-Y
 			case 94: // Feedrate per minute
-			case 98: //Feedrate per minute (group type A)
-			case 97: //Constant spindle speed M T Takes an S address integer, which is interpreted as rev/min (rpm). The default speed mode per system parameter if no mode is programmed. 
+			case 98: // Feedrate per minute (group type A)
+			case 97: // Constant spindle speed M T Takes an S address integer, which is interpreted as rev/min (rpm). The default speed mode per system parameter if no mode is programmed. 
 			case 49: // Tool length offset compensation cancel
 				break;
 			default: FAIL(GCSTATUS_UNSUPPORTED_STATEMENT);
@@ -287,12 +338,15 @@ uint8_t gc_execute_line(char *line)
 			switch (int_value)
 			{
 			case 112: // Emergency Stop 
-			case 0: case 1:
-			case 2: case 30: case 60:
+			case 0:
+			case 1:
+			case 2:
+			case 30:
+			case 60:
 				gc.next_action = NEXT_ACTION_STOP;
 				break;
 			case 3: gc.spindle_on = 1; break;
-				//        case 4: gc.spindle_direction = -1; break;
+				//	case 4: gc.spindle_direction = -1; break;
 			case 5: gc.spindle_on = 0; break;
 #ifdef HAS_EXTRUDER
 			case 101: //  M101 Turn extruder 1 on Forward 
@@ -307,15 +361,15 @@ uint8_t gc_execute_line(char *line)
 			case 109: // Set Extruder Temperature Example: M109 S190 
 				gc.next_action = NEXT_ACTION_EXTRUDER_WAIT_T;
 				break;
-			//	case 102: //  M102 Turn extruder 1 on Reverse 
+				//	case 102: //  M102 Turn extruder 1 on Reverse 
 #endif
 			case 23: // Thread gradual pullout ON
 			case 24: // Thread gradual pullout OFF
 			case 52: // Unload Last tool from spindle
 			case 49: // Feedrate override NOT allowed
 			case 48: // Feedrate override allowed
-			case 8:// Coolant on
-			case 9:// Coolant off
+			case 8:  // Coolant on
+			case 9:  // Coolant off
 			case 105: // M105: Get Extruder Temperature Example: M105 Request the temperature of the current extruder and the build base in degrees Celsius. The temperatures are returned to the host computer. For example, the line sent to the host in response to this command looks like 
 			case 106: // M106: Fan On Example: M106 S127 Turn on the cooling fan at half speed. Optional parameter 'S' declares the PWM value (0-255) 
 			case 107: // Fan Off 
@@ -345,42 +399,58 @@ uint8_t gc_execute_line(char *line)
 
 	// Pass 2: Parameters
 	extrudeLength = 0;
-	while (next_statement(&letter, &value, line, &char_counter)) {
+	while (next_statement(&letter, &value, line, &char_counter))
+	{
 		double unit_millimeters_value = to_millimeters(value);
-		switch (letter) {
+		switch (letter)
+		{
 		case 'E': extrudeLength = value; break;
 		case 'F':
-			if (gc.next_action == NEXT_ACTION_SEEK_G0) gc.seek_rate = unit_millimeters_value;
-			else gc.feed_rate = unit_millimeters_value; // millimeters pr min      
-			//      if(unit_millimeters_value > SM_MAX_FEEDRATE)
-			//       FAIL(GCSTATUS_UNSOPORTED_FEEDRATE);
+			if (gc.next_action == NEXT_ACTION_SEEK_G0)
+				gc.seek_rate = unit_millimeters_value;
+			else
+				gc.feed_rate = unit_millimeters_value; // millimeters pr min
+			//	if (unit_millimeters_value > SM_MAX_FEEDRATE)
+			//		FAIL(GCSTATUS_UNSOPORTED_FEEDRATE);
 			break;
 		case 'P': pause_value = (int)value; break;
 		case 'S': gc.s_value = (int16_t)value; break;
-		case 'X': case 'Y': case 'Z':
-			if (gc.absolute_mode) gc.position[letter - 'X'] = unit_millimeters_value;
-			else gc.position[letter - 'X'] += unit_millimeters_value;
+		case 'X':
+		case 'Y':
+		case 'Z':
+			if (gc.absolute_mode)
+				gc.position[letter - 'X'] = unit_millimeters_value;
+			else
+				gc.position[letter - 'X'] += unit_millimeters_value;
 			break;
-		case 'I': case 'J': case 'K': offset[letter - 'I'] = unit_millimeters_value; break;
+		case 'I':
+		case 'J':
+		case 'K': offset[letter - 'I'] = unit_millimeters_value; break;
 		case 'R': radius = unit_millimeters_value; radius_mode = TRUE; break;
-		case 'G': case 'N': case 'M': break;
+		case 'G':
+		case 'N':
+		case 'M':
+			break;
 		default:
 			FAIL(GCSTATUS_UNSUPPORTED_PARAM);
 		}
 	}
-	if (gc.status_code) return gc.status_code;
-	if (gc.next_action == NEXT_ACTION_GO_HOME_G28) {
+	if (gc.status_code)
+		return gc.status_code;
+	if (gc.next_action == NEXT_ACTION_GO_HOME_G28)
+	{
 		gc.position[0] = gc.position[1] = gc.position[2] = 0;
 	}
-	dx = gc.position[X_AXIS] - oldPosition[X_AXIS];  dy = gc.position[Y_AXIS] - oldPosition[Y_AXIS];
+	dx = gc.position[X_AXIS] - oldPosition[X_AXIS];
+	dy = gc.position[Y_AXIS] - oldPosition[Y_AXIS];
 	dz = gc.position[Z_AXIS] - oldPosition[Z_AXIS];
 
 	if (fabs(dx) < SM_TOO_SHORT_SEGMENT_MM) { dx = 0.0; gc.position[X_AXIS] = oldPosition[X_AXIS]; }
 	if (fabs(dy) < SM_TOO_SHORT_SEGMENT_MM) { dy = 0.0; gc.position[Y_AXIS] = oldPosition[Y_AXIS]; }
 	if (fabs(dz) < SM_TOO_SHORT_SEGMENT_MM) { dz = 0.0; gc.position[Z_AXIS] = oldPosition[Z_AXIS]; }
 
-	moveLength = sqrt(dx*dx + dy*dy + dz*dz);
-	feed_rate = gc.next_action == NEXT_ACTION_SEEK_G0 ? gc.seek_rate : gc.feed_rate;
+	moveLength = sqrt(dx * dx + dy * dy + dz * dz);
+	feed_rate = gc.next_action == (NEXT_ACTION_SEEK_G0 ? gc.seek_rate : gc.feed_rate);
 	if (gc.extruder_on)
 	{
 		if (extrudeLength == 0.0)
@@ -393,10 +463,11 @@ uint8_t gc_execute_line(char *line)
 		gc.next_action == NEXT_ACTION_LINEAR_G1 ||
 		gc.next_action == NEXT_ACTION_CW_ARC ||
 		gc.next_action == NEXT_ACTION_CCW_ARC)
-	&& moveLength < SM_TOO_SHORT_SEGMENT_MM)
+		&& moveLength < SM_TOO_SHORT_SEGMENT_MM)
 	{
 		// too short move.. Ignore
-		gc.position[X_AXIS] = oldPosition[X_AXIS]; gc.position[Y_AXIS] = oldPosition[Y_AXIS];
+		gc.position[X_AXIS] = oldPosition[X_AXIS];
+		gc.position[Y_AXIS] = oldPosition[Y_AXIS];
 		gc.position[Z_AXIS] = oldPosition[Z_AXIS];
 		return(gc.status_code);
 	}
@@ -499,15 +570,17 @@ uint8_t gc_execute_line(char *line)
 			// even though it is advised against ever generating such circles in a single line of g-code. By
 			// inverting the sign of h_x2_div_d the center of the circles is placed on the opposite side of the line of
 			// travel and thus we get the unadvisably long arcs as prescribed.
-			if (radius < 0) {
+			if (radius < 0)
+			{
 				h_x2_div_d = -h_x2_div_d;
 				radius = -radius; // Finished with r. Set to positive for mc_arc
 			}
 			// Complete the operation by calculating the actual center of the arc
-			offset[X_AXIS] = 0.5*(dx - (dy*h_x2_div_d));
-			offset[Y_AXIS] = 0.5*(dy + (dx*h_x2_div_d));
+			offset[X_AXIS] = 0.5 * (dx - (dy * h_x2_div_d));
+			offset[Y_AXIS] = 0.5 * (dy + (dx * h_x2_div_d));
 		}
-		else { // Offset mode specific computations
+		else
+		{	// Offset mode specific computations
 			radius = hypot(offset[X_AXIS], offset[Y_AXIS]); // Compute arc radius for mc_arc
 		}
 		mc_arc(oldPosition, gc.position, offset, gc.feed_rate, radius, gc.next_action == NEXT_ACTION_CW_ARC);
@@ -529,4 +602,3 @@ uint8_t gc_execute_line(char *line)
 	}
 	return(gc.status_code);
 }
-

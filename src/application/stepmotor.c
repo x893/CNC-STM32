@@ -272,7 +272,8 @@ void stepm_addMove(uint32_t steps[4], uint32_t frq[4], uint8_t dir[4])
 	uint32_t pscValue;
 
 
-	if (steps[0] == 0 && steps[1] == 0 && steps[2] == 0) return;
+	if (steps[0] == 0 && steps[1] == 0 && steps[2] == 0)
+		return;
 
 	while (steps_buf_sz >= STEPS_BUF_SZ)
 		__NOP();

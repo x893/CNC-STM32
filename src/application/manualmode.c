@@ -6,10 +6,14 @@ const char axisName[5] = "XYZE";
 void manualMode(void)
 {
 	static uint8_t limits = 0xFF;
-	static const double axisK[4] = { SM_X_STEPS_PER_MM, SM_Y_STEPS_PER_MM, SM_Z_STEPS_PER_MM, SM_E_STEPS_PER_MM };
+	const double axisK[4] = { SM_X_STEPS_PER_MM, SM_Y_STEPS_PER_MM, SM_Z_STEPS_PER_MM, SM_E_STEPS_PER_MM };
 	int i, k = SM_X_STEPS_PER_MM;
-	uint32_t frq[4] = { SM_MANUAL_MODE_STEPS_PER_SEC * K_FRQ, SM_MANUAL_MODE_STEPS_PER_SEC*K_FRQ,
-		SM_MANUAL_MODE_STEPS_PER_SEC * K_FRQ, SM_MANUAL_MODE_STEPS_PER_SEC * K_FRQ };
+	uint32_t frq[4] = {
+		SM_MANUAL_MODE_STEPS_PER_SEC * K_FRQ,
+		SM_MANUAL_MODE_STEPS_PER_SEC * K_FRQ,
+		SM_MANUAL_MODE_STEPS_PER_SEC * K_FRQ,
+		SM_MANUAL_MODE_STEPS_PER_SEC * K_FRQ
+	};
 	uint8_t dir[4] = { 0, 0, 0, 0 };
 	uint32_t steps[4] = { 0, 0, 0, 0 };
 
@@ -66,7 +70,7 @@ void manualMode(void)
 			break;
 		case KEY_6: steps[0] = k; dir[0] = 1; stepm_addMove(steps, frq, dir); break;
 		case KEY_4: steps[0] = k; dir[0] = 0; stepm_addMove(steps, frq, dir); break;
-		case KEY_2: steps[1] = k; dir[1] = 1; stepm_addMove(steps, frq, dir);  break;
+		case KEY_2: steps[1] = k; dir[1] = 1; stepm_addMove(steps, frq, dir); break;
 		case KEY_8: steps[1] = k; dir[1] = 0; stepm_addMove(steps, frq, dir); break;
 		case KEY_1: steps[2] = k; dir[2] = 1; stepm_addMove(steps, frq, dir); break;
 		case KEY_7: steps[2] = k; dir[2] = 0; stepm_addMove(steps, frq, dir); break;
@@ -74,14 +78,21 @@ void manualMode(void)
 		case KEY_9: steps[3] = k; dir[3] = 0; stepm_addMove(steps, frq, dir); break;
 		case KEY_5:
 			while (stepm_inProc() && kbd_getKey() != KEY_C) {}
-			if (stepm_getCurGlobalStepsNum(0) != 0 || stepm_getCurGlobalStepsNum(1) != 0) {
-				steps[0] = labs(stepm_getCurGlobalStepsNum(0)); dir[0] = stepm_getCurGlobalStepsNum(0) < 0;
-				steps[1] = labs(stepm_getCurGlobalStepsNum(1)); dir[1] = stepm_getCurGlobalStepsNum(1) < 0;
-				steps[2] = 0; dir[2] = 0;
+			if (stepm_getCurGlobalStepsNum(0) != 0 || stepm_getCurGlobalStepsNum(1) != 0)
+			{
+				steps[0] = labs(stepm_getCurGlobalStepsNum(0));
+				dir[0] = stepm_getCurGlobalStepsNum(0) < 0;
+				steps[1] = labs(stepm_getCurGlobalStepsNum(1));
+				dir[1] = stepm_getCurGlobalStepsNum(1) < 0;
+				steps[2] = 0;
+				dir[2] = 0;
 			}
-			else {
-				steps[0] = steps[1] = 0; dir[0] = dir[1] = 0;
-				steps[2] = labs(stepm_getCurGlobalStepsNum(2)); dir[2] = stepm_getCurGlobalStepsNum(2) < 0;
+			else
+			{
+				steps[0] = steps[1] = 0;
+				dir[0] = dir[1] = 0;
+				steps[2] = labs(stepm_getCurGlobalStepsNum(2));
+				dir[2] = stepm_getCurGlobalStepsNum(2) < 0;
 			}
 			stepm_addMove(steps, frq, dir);
 			break;
@@ -105,7 +116,8 @@ void manualMode(void)
 			break;
 		}
 
-		if (limits != limits_chk()) {
+		if (limits != limits_chk())
+		{
 			limits = limits_chk();
 			GUI_Rectangle(304, 232, 309, 239, limitX_chk() ? Red : Green, TRUE);
 			GUI_Rectangle(310, 232, 315, 239, limitY_chk() ? Red : Green, TRUE);

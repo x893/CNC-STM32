@@ -173,8 +173,8 @@ void SCSI_Read10_Cmd(u8 lun, u32 LBA, u32 BlockNbr)
 
 	if (Bot_State == BOT_IDLE)
 	{
-		if (!(SCSI_Address_Management(CBW.bLUN, SCSI_READ10, LBA, BlockNbr)))/*address out of range*/
-			return;
+		if (!(SCSI_Address_Management(CBW.bLUN, SCSI_READ10, LBA, BlockNbr)))
+			return;	/*address out of range*/
 
 		if ((CBW.bmFlags & 0x80) != 0)
 		{

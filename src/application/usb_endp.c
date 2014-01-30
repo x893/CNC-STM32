@@ -23,8 +23,5 @@ void EP1_IN_Callback(void)
 *******************************************************************************/
 void EP2_OUT_Callback(void)
 {
-  Mass_Storage_Out();
+	Mass_Storage_Out();
 }
-
-/******************* (C) COPYRIGHT 2008 STMicroelectronics *****END OF FILE****/
-

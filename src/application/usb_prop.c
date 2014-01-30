@@ -10,65 +10,64 @@
 u32 Max_Lun = 0;
 
 DEVICE Device_Table =
-  {
-    EP_NUM,
-    1
-  };
+{
+	EP_NUM,
+	1
+};
 
 DEVICE_PROP Device_Property =
-  {
-    MASS_init,
-    MASS_Reset,
-    MASS_Status_In,
-    MASS_Status_Out,
-    MASS_Data_Setup,
-    MASS_NoData_Setup,
-    MASS_Get_Interface_Setting,
-    MASS_GetDeviceDescriptor,
-    MASS_GetConfigDescriptor,
-    MASS_GetStringDescriptor,
-    0,
-    0x40 /*MAX PACKET SIZE*/
-  };
+{
+	MASS_init,
+	MASS_Reset,
+	MASS_Status_In,
+	MASS_Status_Out,
+	MASS_Data_Setup,
+	MASS_NoData_Setup,
+	MASS_Get_Interface_Setting,
+	MASS_GetDeviceDescriptor,
+	MASS_GetConfigDescriptor,
+	MASS_GetStringDescriptor,
+	0,
+	0x40 /*MAX PACKET SIZE*/
+};
 
 USER_STANDARD_REQUESTS User_Standard_Requests =
-  {
-    Mass_Storage_GetConfiguration,
-    Mass_Storage_SetConfiguration,
-    Mass_Storage_GetInterface,
-    Mass_Storage_SetInterface,
-    Mass_Storage_GetStatus,
-    Mass_Storage_ClearFeature,
-    Mass_Storage_SetEndPointFeature,
-    Mass_Storage_SetDeviceFeature,
-    Mass_Storage_SetDeviceAddress
-  };
+{
+	Mass_Storage_GetConfiguration,
+	Mass_Storage_SetConfiguration,
+	Mass_Storage_GetInterface,
+	Mass_Storage_SetInterface,
+	Mass_Storage_GetStatus,
+	Mass_Storage_ClearFeature,
+	Mass_Storage_SetEndPointFeature,
+	Mass_Storage_SetDeviceFeature,
+	Mass_Storage_SetDeviceAddress
+};
 
 ONE_DESCRIPTOR Device_Descriptor =
-  {
-    (u8*)MASS_DeviceDescriptor,
-    MASS_SIZ_DEVICE_DESC
-  };
+{
+	(u8*)MASS_DeviceDescriptor,
+	MASS_SIZ_DEVICE_DESC
+};
 
 ONE_DESCRIPTOR Config_Descriptor =
-  {
-    (u8*)MASS_ConfigDescriptor,
-    MASS_SIZ_CONFIG_DESC
-  };
+{
+	(u8*)MASS_ConfigDescriptor,
+	MASS_SIZ_CONFIG_DESC
+};
 
 ONE_DESCRIPTOR String_Descriptor[5] =
-  {
-    {(u8*)MASS_StringLangID, MASS_SIZ_STRING_LANGID},
-    {(u8*)MASS_StringVendor, MASS_SIZ_STRING_VENDOR},
-    {(u8*)MASS_StringProduct, MASS_SIZ_STRING_PRODUCT},
-    {(u8*)MASS_StringSerial, MASS_SIZ_STRING_SERIAL},
-    {(u8*)MASS_StringInterface, MASS_SIZ_STRING_INTERFACE},
-  };
+{
+	{ (u8*)MASS_StringLangID, MASS_SIZ_STRING_LANGID },
+	{ (u8*)MASS_StringVendor, MASS_SIZ_STRING_VENDOR },
+	{ (u8*)MASS_StringProduct, MASS_SIZ_STRING_PRODUCT },
+	{ (u8*)MASS_StringSerial, MASS_SIZ_STRING_SERIAL },
+	{ (u8*)MASS_StringInterface, MASS_SIZ_STRING_INTERFACE },
+};
 
 /* Extern variables ----------------------------------------------------------*/
 extern unsigned char Bot_State;
 extern Bulk_Only_CBW CBW;
-
 
 /*******************************************************************************
 * Function Name  : Get_SerialNum.
@@ -79,34 +78,31 @@ extern Bulk_Only_CBW CBW;
 *******************************************************************************/
 void Get_SerialNum(void)
 {
-  u32 Device_Serial0, Device_Serial1, Device_Serial2;
+	u32 Device_Serial0, Device_Serial1, Device_Serial2;
 
-  Device_Serial0 = *(vu32*)(0x1FFFF7E8);
-  Device_Serial1 = *(vu32*)(0x1FFFF7EC);
-  Device_Serial2 = *(vu32*)(0x1FFFF7F0);
+	Device_Serial0 = *(vu32*)(0x1FFFF7E8);
+	Device_Serial1 = *(vu32*)(0x1FFFF7EC);
+	Device_Serial2 = *(vu32*)(0x1FFFF7F0);
 
-  if (Device_Serial0 != 0)
-  {
-    MASS_StringSerial[2] = (u8)(Device_Serial0 & 0x000000FF);
-    MASS_StringSerial[4] = (u8)((Device_Serial0 & 0x0000FF00) >> 8);
-    MASS_StringSerial[6] = (u8)((Device_Serial0 & 0x00FF0000) >> 16);
-    MASS_StringSerial[8] = (u8)((Device_Serial0 & 0xFF000000) >> 24);
+	if (Device_Serial0 != 0)
+	{
+		MASS_StringSerial[2] = (u8)(Device_Serial0 & 0x000000FF);
+		MASS_StringSerial[4] = (u8)((Device_Serial0 & 0x0000FF00) >> 8);
+		MASS_StringSerial[6] = (u8)((Device_Serial0 & 0x00FF0000) >> 16);
+		MASS_StringSerial[8] = (u8)((Device_Serial0 & 0xFF000000) >> 24);
 
-    MASS_StringSerial[10] = (u8)(Device_Serial1 & 0x000000FF);
-    MASS_StringSerial[12] = (u8)((Device_Serial1 & 0x0000FF00) >> 8);
-    MASS_StringSerial[14] = (u8)((Device_Serial1 & 0x00FF0000) >> 16);
-    MASS_StringSerial[16] = (u8)((Device_Serial1 & 0xFF000000) >> 24);
+		MASS_StringSerial[10] = (u8)(Device_Serial1 & 0x000000FF);
+		MASS_StringSerial[12] = (u8)((Device_Serial1 & 0x0000FF00) >> 8);
+		MASS_StringSerial[14] = (u8)((Device_Serial1 & 0x00FF0000) >> 16);
+		MASS_StringSerial[16] = (u8)((Device_Serial1 & 0xFF000000) >> 24);
 
-    MASS_StringSerial[18] = (u8)(Device_Serial2 & 0x000000FF);
-    MASS_StringSerial[20] = (u8)((Device_Serial2 & 0x0000FF00) >> 8);
-    MASS_StringSerial[22] = (u8)((Device_Serial2 & 0x00FF0000) >> 16);
-    MASS_StringSerial[24] = (u8)((Device_Serial2 & 0xFF000000) >> 24);
-  }
+		MASS_StringSerial[18] = (u8)(Device_Serial2 & 0x000000FF);
+		MASS_StringSerial[20] = (u8)((Device_Serial2 & 0x0000FF00) >> 8);
+		MASS_StringSerial[22] = (u8)((Device_Serial2 & 0x00FF0000) >> 16);
+		MASS_StringSerial[24] = (u8)((Device_Serial2 & 0xFF000000) >> 24);
+	}
 }
 
-/* Private function prototypes -----------------------------------------------*/
-/* Extern function prototypes ------------------------------------------------*/
-/* Private functions ---------------------------------------------------------*/
 /*******************************************************************************
 * Function Name  : MASS_init
 * Description    : Mass Storage init routine.
@@ -116,23 +112,22 @@ void Get_SerialNum(void)
 *******************************************************************************/
 void MASS_init()
 {
-  /* Update the serial number string descriptor with the data from the unique
-  ID*/
-  Get_SerialNum();
+	/* Update the serial number string descriptor with the data from the unique ID */
+	Get_SerialNum();
 
-  pInformation->Current_Configuration = 0;
+	pInformation->Current_Configuration = 0;
 
-  /* Connect the device */
-  PowerOn();
+	/* Connect the device */
+	PowerOn();
 
-  /* USB interrupts initialization */
-  /* clear pending interrupts */
-  _SetISTR(0);
-  wInterrupt_Mask = IMR_MSK;
-  /* set interrupts mask */
-  _SetCNTR(wInterrupt_Mask);
+	/* USB interrupts initialization */
+	/* clear pending interrupts */
+	_SetISTR(0);
+	wInterrupt_Mask = IMR_MSK;
+	/* set interrupts mask */
+	_SetCNTR(wInterrupt_Mask);
 
-  bDeviceState = UNCONNECTED;
+	bDeviceState = UNCONNECTED;
 }
 
 /*******************************************************************************
@@ -144,48 +139,48 @@ void MASS_init()
 *******************************************************************************/
 void MASS_Reset()
 {
-  /* Set the device as not configured */
-  Device_Info.Current_Configuration = 0;
+	/* Set the device as not configured */
+	Device_Info.Current_Configuration = 0;
 
-  /* Current Feature initialization */
-  pInformation->Current_Feature = MASS_ConfigDescriptor[7];
+	/* Current Feature initialization */
+	pInformation->Current_Feature = MASS_ConfigDescriptor[7];
 
-  SetBTABLE(BTABLE_ADDRESS);
+	SetBTABLE(BTABLE_ADDRESS);
 
-  /* Initialize Endpoint 0 */
-  SetEPType(ENDP0, EP_CONTROL);
-  SetEPTxStatus(ENDP0, EP_TX_NAK);
-  SetEPRxAddr(ENDP0, ENDP0_RXADDR);
-  SetEPRxCount(ENDP0, Device_Property.MaxPacketSize);
-  SetEPTxAddr(ENDP0, ENDP0_TXADDR);
-  Clear_Status_Out(ENDP0);
-  SetEPRxValid(ENDP0);
+	/* Initialize Endpoint 0 */
+	SetEPType(ENDP0, EP_CONTROL);
+	SetEPTxStatus(ENDP0, EP_TX_NAK);
+	SetEPRxAddr(ENDP0, ENDP0_RXADDR);
+	SetEPRxCount(ENDP0, Device_Property.MaxPacketSize);
+	SetEPTxAddr(ENDP0, ENDP0_TXADDR);
+	Clear_Status_Out(ENDP0);
+	SetEPRxValid(ENDP0);
 
-  /* Initialize Endpoint 1 */
-  SetEPType(ENDP1, EP_BULK);
-  SetEPTxAddr(ENDP1, ENDP1_TXADDR);
-  SetEPTxStatus(ENDP1, EP_TX_NAK);
-  SetEPRxStatus(ENDP1, EP_RX_DIS);
+	/* Initialize Endpoint 1 */
+	SetEPType(ENDP1, EP_BULK);
+	SetEPTxAddr(ENDP1, ENDP1_TXADDR);
+	SetEPTxStatus(ENDP1, EP_TX_NAK);
+	SetEPRxStatus(ENDP1, EP_RX_DIS);
 
-  /* Initialize Endpoint 2 */
-  SetEPType(ENDP2, EP_BULK);
-  SetEPRxAddr(ENDP2, ENDP2_RXADDR);
-  SetEPRxCount(ENDP2, Device_Property.MaxPacketSize);
-  SetEPRxStatus(ENDP2, EP_RX_VALID);
-  SetEPTxStatus(ENDP2, EP_TX_DIS);
+	/* Initialize Endpoint 2 */
+	SetEPType(ENDP2, EP_BULK);
+	SetEPRxAddr(ENDP2, ENDP2_RXADDR);
+	SetEPRxCount(ENDP2, Device_Property.MaxPacketSize);
+	SetEPRxStatus(ENDP2, EP_RX_VALID);
+	SetEPTxStatus(ENDP2, EP_TX_DIS);
 
 
-  SetEPRxCount(ENDP0, Device_Property.MaxPacketSize);
-  SetEPRxValid(ENDP0);
+	SetEPRxCount(ENDP0, Device_Property.MaxPacketSize);
+	SetEPRxValid(ENDP0);
 
-  /* Set the device to response on default address */
-  SetDeviceAddress(0);
+	/* Set the device to response on default address */
+	SetDeviceAddress(0);
 
-  bDeviceState = ATTACHED;
+	bDeviceState = ATTACHED;
 
-  CBW.dSignature = BOT_CBW_SIGNATURE;
-  Bot_State = BOT_IDLE;
-//  USB_NotConfigured_LED();
+	CBW.dSignature = BOT_CBW_SIGNATURE;
+	Bot_State = BOT_IDLE;
+	//  USB_NotConfigured_LED();
 }
 
 /*******************************************************************************
@@ -197,15 +192,14 @@ void MASS_Reset()
 *******************************************************************************/
 void Mass_Storage_SetConfiguration(void)
 {
-  if (pInformation->Current_Configuration != 0)
-  {
-    /* Device configured */
-    bDeviceState = CONFIGURED;
+	if (pInformation->Current_Configuration != 0)
+	{	/* Device configured */
+		bDeviceState = CONFIGURED;
 
-    ClearDTOG_TX(ENDP1);
-    ClearDTOG_RX(ENDP2);
-    Bot_State = BOT_IDLE; /* set the Bot state machine to the IDLE state */
-  }
+		ClearDTOG_TX(ENDP1);
+		ClearDTOG_RX(ENDP2);
+		Bot_State = BOT_IDLE; /* set the Bot state machine to the IDLE state */
+	}
 }
 
 /*******************************************************************************
@@ -217,10 +211,10 @@ void Mass_Storage_SetConfiguration(void)
 *******************************************************************************/
 void Mass_Storage_ClearFeature(void)
 {
-  /* when the host send a CBW with invalid signature or invalid length the two
-     Endpoints (IN & OUT) shall stall until receiving a Mass Storage Reset     */
-  if (CBW.dSignature != BOT_CBW_SIGNATURE)
-    Bot_Abort(BOTH_DIR);
+	/* when the host send a CBW with invalid signature or invalid length the two
+	   Endpoints (IN & OUT) shall stall until receiving a Mass Storage Reset     */
+	if (CBW.dSignature != BOT_CBW_SIGNATURE)
+		Bot_Abort(BOTH_DIR);
 }
 
 /*******************************************************************************
@@ -230,9 +224,9 @@ void Mass_Storage_ClearFeature(void)
 * Output         : None.
 * Return         : None.
 *******************************************************************************/
-void Mass_Storage_SetDeviceAddress (void)
+void Mass_Storage_SetDeviceAddress(void)
 {
-  bDeviceState = ADDRESSED;
+	bDeviceState = ADDRESSED;
 }
 /*******************************************************************************
 * Function Name  : MASS_Status_In
@@ -243,7 +237,7 @@ void Mass_Storage_SetDeviceAddress (void)
 *******************************************************************************/
 void MASS_Status_In(void)
 {
-  return;
+	return;
 }
 
 /*******************************************************************************
@@ -255,7 +249,7 @@ void MASS_Status_In(void)
 *******************************************************************************/
 void MASS_Status_Out(void)
 {
-  return;
+	return;
 }
 
 /*******************************************************************************
@@ -267,30 +261,33 @@ void MASS_Status_Out(void)
 *******************************************************************************/
 RESULT MASS_Data_Setup(u8 RequestNo)
 {
-  u8    *(*CopyRoutine)(u16);
+	u8    *(*CopyRoutine)(u16);
 
-  CopyRoutine = NULL;
-  if ((Type_Recipient == (CLASS_REQUEST | INTERFACE_RECIPIENT))
-      && (RequestNo == GET_MAX_LUN) && (pInformation->USBwValue == 0)
-      && (pInformation->USBwIndex == 0) && (pInformation->USBwLength == 0x01))
-  {
-    CopyRoutine = Get_Max_Lun;
-  }
-  else
-  {
-    return USB_UNSUPPORT;
-  }
+	CopyRoutine = NULL;
+	if ((Type_Recipient == (CLASS_REQUEST | INTERFACE_RECIPIENT))
+		&& (RequestNo == GET_MAX_LUN)
+		&& (pInformation->USBwValue == 0)
+		&& (pInformation->USBwIndex == 0)
+		&& (pInformation->USBwLength == 0x01)
+		)
+	{
+		CopyRoutine = Get_Max_Lun;
+	}
+	else
+	{
+		return USB_UNSUPPORT;
+	}
 
-  if (CopyRoutine == NULL)
-  {
-    return USB_UNSUPPORT;
-  }
+	if (CopyRoutine == NULL)
+	{
+		return USB_UNSUPPORT;
+	}
 
-  pInformation->Ctrl_Info.CopyData = CopyRoutine;
-  pInformation->Ctrl_Info.Usb_wOffset = 0;
-  (*CopyRoutine)(0);
+	pInformation->Ctrl_Info.CopyData = CopyRoutine;
+	pInformation->Ctrl_Info.Usb_wOffset = 0;
+	(*CopyRoutine)(0);
 
-  return USB_SUCCESS;
+	return USB_SUCCESS;
 
 }
 
@@ -303,23 +300,23 @@ RESULT MASS_Data_Setup(u8 RequestNo)
 *******************************************************************************/
 RESULT MASS_NoData_Setup(u8 RequestNo)
 {
-  if ((Type_Recipient == (CLASS_REQUEST | INTERFACE_RECIPIENT))
-      && (RequestNo == MASS_STORAGE_RESET) && (pInformation->USBwValue == 0)
-      && (pInformation->USBwIndex == 0) && (pInformation->USBwLength == 0x00))
-  {
-    /* Initialize Endpoint 1 */
-    ClearDTOG_TX(ENDP1);
+	if ((Type_Recipient == (CLASS_REQUEST | INTERFACE_RECIPIENT))
+		&& (RequestNo == MASS_STORAGE_RESET) && (pInformation->USBwValue == 0)
+		&& (pInformation->USBwIndex == 0) && (pInformation->USBwLength == 0x00))
+	{
+		/* Initialize Endpoint 1 */
+		ClearDTOG_TX(ENDP1);
 
-    /* Initialize Endpoint 2 */
-    ClearDTOG_RX(ENDP2);
+		/* Initialize Endpoint 2 */
+		ClearDTOG_RX(ENDP2);
 
-    /*intialise the CBW signature to enable the clear feature*/
-    CBW.dSignature = BOT_CBW_SIGNATURE;
-    Bot_State = BOT_IDLE;
+		/*intialise the CBW signature to enable the clear feature*/
+		CBW.dSignature = BOT_CBW_SIGNATURE;
+		Bot_State = BOT_IDLE;
 
-    return USB_SUCCESS;
-  }
-  return USB_UNSUPPORT;
+		return USB_SUCCESS;
+	}
+	return USB_UNSUPPORT;
 }
 
 /*******************************************************************************
@@ -332,15 +329,11 @@ RESULT MASS_NoData_Setup(u8 RequestNo)
 *******************************************************************************/
 RESULT MASS_Get_Interface_Setting(u8 Interface, u8 AlternateSetting)
 {
-  if (AlternateSetting > 0)
-  {
-    return USB_UNSUPPORT;/* in this application we don't have AlternateSetting*/
-  }
-  else if (Interface > 0)
-  {
-    return USB_UNSUPPORT;/*in this application we have only 1 interfaces*/
-  }
-  return USB_SUCCESS;
+	if (AlternateSetting > 0)
+		return USB_UNSUPPORT;	/* in this application we don't have AlternateSetting*/
+	else if (Interface > 0)
+		return USB_UNSUPPORT;	/*in this application we have only 1 interfaces*/
+	return USB_SUCCESS;
 }
 
 /*******************************************************************************
@@ -352,7 +345,7 @@ RESULT MASS_Get_Interface_Setting(u8 Interface, u8 AlternateSetting)
 *******************************************************************************/
 u8 *MASS_GetDeviceDescriptor(u16 Length)
 {
-  return Standard_GetDescriptorData(Length, &Device_Descriptor );
+	return Standard_GetDescriptorData(Length, &Device_Descriptor);
 }
 
 /*******************************************************************************
@@ -364,7 +357,7 @@ u8 *MASS_GetDeviceDescriptor(u16 Length)
 *******************************************************************************/
 u8 *MASS_GetConfigDescriptor(u16 Length)
 {
-  return Standard_GetDescriptorData(Length, &Config_Descriptor );
+	return Standard_GetDescriptorData(Length, &Config_Descriptor);
 }
 
 /*******************************************************************************
@@ -376,16 +369,11 @@ u8 *MASS_GetConfigDescriptor(u16 Length)
 *******************************************************************************/
 u8 *MASS_GetStringDescriptor(u16 Length)
 {
-  u8 wValue0 = pInformation->USBwValue0;
+	u8 wValue0 = pInformation->USBwValue0;
 
-  if (wValue0 > 5)
-  {
-    return NULL;
-  }
-  else
-  {
-    return Standard_GetDescriptorData(Length, &String_Descriptor[wValue0]);
-  }
+	if (wValue0 > 5)
+		return NULL;
+	return Standard_GetDescriptorData(Length, &String_Descriptor[wValue0]);
 }
 
 /*******************************************************************************
@@ -397,15 +385,10 @@ u8 *MASS_GetStringDescriptor(u16 Length)
 *******************************************************************************/
 u8 *Get_Max_Lun(u16 Length)
 {
-  if (Length == 0)
-  {
-    pInformation->Ctrl_Info.Usb_wLength = LUN_DATA_LENGTH;
-    return 0;
-  }
-  else
-  {
-    return((u8*)(&Max_Lun));
-  }
+	if (Length == 0)
+	{
+		pInformation->Ctrl_Info.Usb_wLength = LUN_DATA_LENGTH;
+		return 0;
+	}
+	return((u8*)(&Max_Lun));
 }
-
-/******************* (C) COPYRIGHT 2008 STMicroelectronics *****END OF FILE****/

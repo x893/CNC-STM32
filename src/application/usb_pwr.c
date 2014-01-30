@@ -18,16 +18,12 @@ struct
 * Input          : None.
 * Return         : Status
 *******************************************************************************/
-void USB_Cable_Config (FunctionalState NewState)
+void USB_Cable_Config(FunctionalState NewState)
 {
 	if (NewState != DISABLE)
-	{
-		GPIO_ResetBits(USB_DISCONNECT, USB_DISCONNECT_PIN);
-	}
+		USB_CONNECTED();
 	else
-	{
-		GPIO_SetBits(USB_DISCONNECT, USB_DISCONNECT_PIN);
-	}
+		USB_DISCONNECTED();
 }
 
 
@@ -40,26 +36,26 @@ void USB_Cable_Config (FunctionalState NewState)
 *******************************************************************************/
 RESULT PowerOn(void)
 {
-  u16 wRegVal;
+	u16 wRegVal;
 
-  /*** cable plugged-in ? ***/
-  /*while(!CablePluggedIn());*/
-  USB_Cable_Config(ENABLE);
+	/*** cable plugged-in ? ***/
+	/*while(!CablePluggedIn());*/
+	USB_Cable_Config(ENABLE);
 
-  /*** CNTR_PWDN = 0 ***/
-  wRegVal = CNTR_FRES;
-  _SetCNTR(wRegVal);
+	/*** CNTR_PWDN = 0 ***/
+	wRegVal = CNTR_FRES;
+	_SetCNTR(wRegVal);
 
-  /*** CNTR_FRES = 0 ***/
-  wInterrupt_Mask = 0;
-  _SetCNTR(wInterrupt_Mask);
-  /*** Clear pending interrupts ***/
-  _SetISTR(0);
-  /*** Set interrupt mask ***/
-  wInterrupt_Mask = CNTR_RESETM | CNTR_SUSPM | CNTR_WKUPM;
-  _SetCNTR(wInterrupt_Mask);
+	/*** CNTR_FRES = 0 ***/
+	wInterrupt_Mask = 0;
+	_SetCNTR(wInterrupt_Mask);
+	/*** Clear pending interrupts ***/
+	_SetISTR(0);
+	/*** Set interrupt mask ***/
+	wInterrupt_Mask = CNTR_RESETM | CNTR_SUSPM | CNTR_WKUPM;
+	_SetCNTR(wInterrupt_Mask);
 
-  return USB_SUCCESS;
+	return USB_SUCCESS;
 }
 
 /*******************************************************************************
@@ -71,18 +67,18 @@ RESULT PowerOn(void)
 *******************************************************************************/
 RESULT PowerOff()
 {
-  /* disable all ints and force USB reset */
-  _SetCNTR(CNTR_FRES);
-  /* clear interrupt status register */
-  _SetISTR(0);
-  /* Disable the Pull-Up*/
-  USB_Cable_Config(DISABLE);
-  /* switch-off device */
-  _SetCNTR(CNTR_FRES + CNTR_PDWN);
-  /* sw variables reset */
-  /* ... */
+	/* disable all ints and force USB reset */
+	_SetCNTR(CNTR_FRES);
+	/* clear interrupt status register */
+	_SetISTR(0);
+	/* Disable the Pull-Up*/
+	USB_Cable_Config(DISABLE);
+	/* switch-off device */
+	_SetCNTR(CNTR_FRES + CNTR_PDWN);
+	/* sw variables reset */
+	/* ... */
 
-  return USB_SUCCESS;
+	return USB_SUCCESS;
 }
 
 /*******************************************************************************
@@ -93,8 +89,8 @@ RESULT PowerOff()
 *******************************************************************************/
 void Enter_LowPowerMode(void)
 {
-  /* Set the device state to suspend */
-  bDeviceState = SUSPENDED;
+	/* Set the device state to suspend */
+	bDeviceState = SUSPENDED;
 }
 
 /*******************************************************************************
@@ -105,18 +101,13 @@ void Enter_LowPowerMode(void)
 *******************************************************************************/
 void Leave_LowPowerMode(void)
 {
-  DEVICE_INFO *pInfo = &Device_Info;
+	DEVICE_INFO *pInfo = &Device_Info;
 
-  /* Set the device state to the correct state */
-  if (pInfo->Current_Configuration != 0)
-  {
-    /* Device configured */
-    bDeviceState = CONFIGURED;
-  }
-  else
-  {
-    bDeviceState = ATTACHED;
-  }
+	/* Set the device state to the correct state */
+	if (pInfo->Current_Configuration != 0)
+		bDeviceState = CONFIGURED;
+	else
+		bDeviceState = ATTACHED;
 }
 
 
@@ -129,28 +120,28 @@ void Leave_LowPowerMode(void)
 *******************************************************************************/
 void Suspend(void)
 {
-  u16 wCNTR;
-  /* suspend preparation */
-  /* ... */
+	u16 wCNTR;
+	/* suspend preparation */
+	/* ... */
 
-  /* macrocell enters suspend mode */
-  wCNTR = _GetCNTR();
-  wCNTR |= CNTR_FSUSP;
-  _SetCNTR(wCNTR);
+	/* macrocell enters suspend mode */
+	wCNTR = _GetCNTR();
+	wCNTR |= CNTR_FSUSP;
+	_SetCNTR(wCNTR);
 
-  /* ------------------ ONLY WITH BUS-POWERED DEVICES ---------------------- */
-  /* power reduction */
-  /* ... on connected devices */
+	/* ------------------ ONLY WITH BUS-POWERED DEVICES ---------------------- */
+	/* power reduction */
+	/* ... on connected devices */
 
 
-  /* force low-power mode in the macrocell */
-  wCNTR = _GetCNTR();
-  wCNTR |= CNTR_LPMODE;
-  _SetCNTR(wCNTR);
+	/* force low-power mode in the macrocell */
+	wCNTR = _GetCNTR();
+	wCNTR |= CNTR_LPMODE;
+	_SetCNTR(wCNTR);
 
-  /* switch-off the clocks */
-  /* ... */
-  Enter_LowPowerMode();
+	/* switch-off the clocks */
+	/* ... */
+	Enter_LowPowerMode();
 
 }
 
@@ -163,25 +154,25 @@ void Suspend(void)
 *******************************************************************************/
 void Resume_Init(void)
 {
-  u16 wCNTR;
-  /* ------------------ ONLY WITH BUS-POWERED DEVICES ---------------------- */
-  /* restart the clocks */
-  /* ...  */
+	u16 wCNTR;
+	/* ------------------ ONLY WITH BUS-POWERED DEVICES ---------------------- */
+	/* restart the clocks */
+	/* ...  */
 
-  /* CNTR_LPMODE = 0 */
-  wCNTR = _GetCNTR();
-  wCNTR &= (~CNTR_LPMODE);
-  _SetCNTR(wCNTR);
+	/* CNTR_LPMODE = 0 */
+	wCNTR = _GetCNTR();
+	wCNTR &= (~CNTR_LPMODE);
+	_SetCNTR(wCNTR);
 
-  /* restore full power */
-  /* ... on connected devices */
-  Leave_LowPowerMode();
+	/* restore full power */
+	/* ... on connected devices */
+	Leave_LowPowerMode();
 
-  /* reset FSUSP bit */
-  _SetCNTR(IMR_MSK);
+	/* reset FSUSP bit */
+	_SetCNTR(IMR_MSK);
 
-  /* reverse suspend preparation */
-  /* ... */
+	/* reverse suspend preparation */
+	/* ... */
 
 }
 
@@ -199,53 +190,51 @@ void Resume_Init(void)
 *******************************************************************************/
 void Resume(RESUME_STATE eResumeSetVal)
 {
-  u16 wCNTR;
+	u16 wCNTR;
 
-  if (eResumeSetVal != RESUME_ESOF)
-    ResumeS.eState = eResumeSetVal;
+	if (eResumeSetVal != RESUME_ESOF)
+		ResumeS.eState = eResumeSetVal;
 
-  switch (ResumeS.eState)
-  {
-    case RESUME_EXTERNAL:
-      Resume_Init();
-      ResumeS.eState = RESUME_OFF;
-      break;
-    case RESUME_INTERNAL:
-      Resume_Init();
-      ResumeS.eState = RESUME_START;
-      break;
-    case RESUME_LATER:
-      ResumeS.bESOFcnt = 2;
-      ResumeS.eState = RESUME_WAIT;
-      break;
-    case RESUME_WAIT:
-      ResumeS.bESOFcnt--;
-      if (ResumeS.bESOFcnt == 0)
-        ResumeS.eState = RESUME_START;
-      break;
-    case RESUME_START:
-      wCNTR = _GetCNTR();
-      wCNTR |= CNTR_RESUME;
-      _SetCNTR(wCNTR);
-      ResumeS.eState = RESUME_ON;
-      ResumeS.bESOFcnt = 10;
-      break;
-    case RESUME_ON:
-      ResumeS.bESOFcnt--;
-      if (ResumeS.bESOFcnt == 0)
-      {
-        wCNTR = _GetCNTR();
-        wCNTR &= (~CNTR_RESUME);
-        _SetCNTR(wCNTR);
-        ResumeS.eState = RESUME_OFF;
-      }
-      break;
-    case RESUME_OFF:
-    case RESUME_ESOF:
-    default:
-      ResumeS.eState = RESUME_OFF;
-      break;
-  }
+	switch (ResumeS.eState)
+	{
+	case RESUME_EXTERNAL:
+		Resume_Init();
+		ResumeS.eState = RESUME_OFF;
+		break;
+	case RESUME_INTERNAL:
+		Resume_Init();
+		ResumeS.eState = RESUME_START;
+		break;
+	case RESUME_LATER:
+		ResumeS.bESOFcnt = 2;
+		ResumeS.eState = RESUME_WAIT;
+		break;
+	case RESUME_WAIT:
+		ResumeS.bESOFcnt--;
+		if (ResumeS.bESOFcnt == 0)
+			ResumeS.eState = RESUME_START;
+		break;
+	case RESUME_START:
+		wCNTR = _GetCNTR();
+		wCNTR |= CNTR_RESUME;
+		_SetCNTR(wCNTR);
+		ResumeS.eState = RESUME_ON;
+		ResumeS.bESOFcnt = 10;
+		break;
+	case RESUME_ON:
+		ResumeS.bESOFcnt--;
+		if (ResumeS.bESOFcnt == 0)
+		{
+			wCNTR = _GetCNTR();
+			wCNTR &= (~CNTR_RESUME);
+			_SetCNTR(wCNTR);
+			ResumeS.eState = RESUME_OFF;
+		}
+		break;
+	case RESUME_OFF:
+	case RESUME_ESOF:
+	default:
+		ResumeS.eState = RESUME_OFF;
+		break;
+	}
 }
-
-/******************* (C) COPYRIGHT 2008 STMicroelectronics *****END OF FILE****/

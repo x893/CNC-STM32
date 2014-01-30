@@ -113,23 +113,23 @@
 #define M3_TIM_IRQHandler	TIM5_IRQHandler
 #define M3_TIM_INIT()		\
 	do {														\
-		NVIC_InitStructure.NVIC_IRQChannel = TIM5;				\
-		NVIC_InitStructure.NVIC_IRQChannelSubPriority = 3;		\
-		NVIC_Init(&NVIC_InitStructure);							\
-		RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM5, ENABLE);	\
-		TIM_TimeBaseInit(TIM5, &TIM_TimeBase);					\
-		TIM5->EGR = TIM_PSCReloadMode_Update;					\
-		TIM_ARRPreloadConfig(TIM5, ENABLE);						\
-		TIM_ITConfig(TIM5, TIM_IT_Update, ENABLE);				\
-		TIM_Cmd(TIM5, ENABLE);									\
+	NVIC_InitStructure.NVIC_IRQChannel = TIM5;				\
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 3;		\
+	NVIC_Init(&NVIC_InitStructure);							\
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM5, ENABLE);	\
+	TIM_TimeBaseInit(TIM5, &TIM_TimeBase);					\
+	TIM5->EGR = TIM_PSCReloadMode_Update;					\
+	TIM_ARRPreloadConfig(TIM5, ENABLE);						\
+	TIM_ITConfig(TIM5, TIM_IT_Update, ENABLE);				\
+	TIM_Cmd(TIM5, ENABLE);									\
 	} while (0)
-#define M3_EN_PORT		GPIOB
-#define M3_EN_PIN		GPIO_Pin_11
-#define M3_DIR_PORT		GPIOD
-#define M3_DIR_PIN		GPIO_Pin_6
-#define M3_STEP_PORT	GPIOB
-#define M3_STEP_PIN		GPIO_Pin_10
-*/
+	#define M3_EN_PORT		GPIOB
+	#define M3_EN_PIN		GPIO_Pin_11
+	#define M3_DIR_PORT		GPIOD
+	#define M3_DIR_PIN		GPIO_Pin_6
+	#define M3_STEP_PORT	GPIOB
+	#define M3_STEP_PIN		GPIO_Pin_10
+	*/
 
 //----- keyboard ----------------------------------------
 ///   0: 1: 2: 3:
@@ -156,29 +156,29 @@
 #define ROW3_PIN			GPIO_Pin_3
 
 #ifdef HAS_LCD
-	#define LCD_BACKLIGHT_PORT		GPIOD
-	#define LCD_BACKLIGHT_PIN			GPIO_Pin_13
+#define LCD_BACKLIGHT_PORT	GPIOD
+#define LCD_BACKLIGHT_PIN	GPIO_Pin_13
 
-	#define LCD_BACKLIGHT_ON()	do { LCD_BACKLIGHT_PORT->BSRR = LCD_BACKLIGHT_PIN; } while(0)
-	#define LCD_BACKLIGHT_OFF()	do { LCD_BACKLIGHT_PORT->BRR  = LCD_BACKLIGHT_PIN; } while (0)
+#define LCD_BACKLIGHT_ON()	do { LCD_BACKLIGHT_PORT->BSRR = LCD_BACKLIGHT_PIN; } while(0)
+#define LCD_BACKLIGHT_OFF()	do { LCD_BACKLIGHT_PORT->BRR  = LCD_BACKLIGHT_PIN; } while (0)
 
-	#define Bank1_LCD_D			((uint32_t)0x60020000)	/* disp Data ADDR */
-	#define Bank1_LCD_C			((uint32_t)0x60000000)	/* disp Reg  ADDR */
+#define Bank1_LCD_D			((uint32_t)0x60020000)	/* disp Data ADDR */
+#define Bank1_LCD_C			((uint32_t)0x60000000)	/* disp Reg  ADDR */
 
-	#define LCD_RST_PORT		GPIOE
-	#define LCD_RST_PIN			GPIO_Pin_1
-	#define LCD_RESET_LOW()		do { LCD_RST_PORT->BRR  = LCD_RST_PIN; } while (0)
-	#define LCD_RESET_HIGH()	do { LCD_RST_PORT->BSRR = LCD_RST_PIN; } while (0)
+#define LCD_RST_PORT		GPIOE
+#define LCD_RST_PIN			GPIO_Pin_1
+#define LCD_RESET_LOW()		do { LCD_RST_PORT->BRR  = LCD_RST_PIN; } while (0)
+#define LCD_RESET_HIGH()	do { LCD_RST_PORT->BSRR = LCD_RST_PIN; } while (0)
 
-	// PD14-D0, PD15-D1, PD0-D2,   PD1-D3,   PE7-D4,   PE8-D5,  PE9-D6, PE10-D7,
-	// PE11-D8, PE12-D9, PE13-D10, PE14-D11, PE15-D12, PD8-D13, PD9-D14, PD10-D15
-	#define LCD_DATA_D_PORT		GPIOD
-	#define LCD_DATA_D_PINS		(GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 | GPIO_Pin_14 | GPIO_Pin_15)
-	#define LCD_DATA_E_PORT		GPIOE
-	#define LCD_DATA_E_PINS		(GPIO_Pin_7 | GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 | GPIO_Pin_11 | GPIO_Pin_12 | GPIO_Pin_13 | GPIO_Pin_14 | GPIO_Pin_15)
-	//	PD11-RS, PD4-nOE, PD5-nWE, PD7-LCD-CS
-	#define LCD_CTRL_PORT		GPIOD
-	#define LCD_CTRL_PINS		GPIO_Pin_11 | GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_7
+// PD14-D0, PD15-D1, PD0-D2,   PD1-D3,   PE7-D4,   PE8-D5,  PE9-D6, PE10-D7,
+// PE11-D8, PE12-D9, PE13-D10, PE14-D11, PE15-D12, PD8-D13, PD9-D14, PD10-D15
+#define LCD_DATA_D_PORT		GPIOD
+#define LCD_DATA_D_PINS		(GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 | GPIO_Pin_14 | GPIO_Pin_15)
+#define LCD_DATA_E_PORT		GPIOE
+#define LCD_DATA_E_PINS		(GPIO_Pin_7 | GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 | GPIO_Pin_11 | GPIO_Pin_12 | GPIO_Pin_13 | GPIO_Pin_14 | GPIO_Pin_15)
+//	PD11-RS (A16), PD4-nOE, PD5-nWE, PD7-LCD-CS
+#define LCD_CTRL_PORT		GPIOD
+#define LCD_CTRL_PINS		GPIO_Pin_11 | GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_7
 #endif
 
 #define LED_PORT			GPIOB
@@ -197,6 +197,8 @@
 
 #define USB_DISCONNECT		GPIOC
 #define USB_DISCONNECT_PIN	GPIO_Pin_13
+#define USB_CONNECTED()		do { USB_DISCONNECT->BRR  = USB_DISCONNECT_PIN; } while (0)
+#define USB_DISCONNECTED()	do { USB_DISCONNECT->BSRR = USB_DISCONNECT_PIN; } while (0)
 
 #ifdef HAS_FLASH
 	#define SST25_PINS			(GPIO_Pin_5 | GPIO_Pin_6 | GPIO_Pin_7)
