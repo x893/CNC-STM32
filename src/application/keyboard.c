@@ -1,5 +1,6 @@
 #include "global.h"
 
+volatile uint8_t _keyBuffer[6], _keyPressedCounter = 0;
 
 void kbd_init(void)
 {
@@ -20,11 +21,10 @@ void kbd_init(void)
 	GPIO_InitStructure.GPIO_Pin = ROW3_PIN; GPIO_Init(ROW3_PORT, &GPIO_InitStructure);
 }
 
-volatile uint8_t _keyBuffer[6], _keyPressedCounter = 0;
-
-static void kbd_putKey(uint8_t key)
+void kbd_putKey(uint8_t key)
 {
-	if (_keyPressedCounter >= sizeof(_keyBuffer)) return;
+	if (_keyPressedCounter >= sizeof(_keyBuffer))
+		return;
 	_keyBuffer[_keyPressedCounter++] = key;
 }
 

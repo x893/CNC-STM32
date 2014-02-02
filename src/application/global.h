@@ -7,6 +7,14 @@
 #define HAS_ENCODER
 // #define HAS_FLASH
 // #define HAS_EXTRUDER
+// #define HAS_RS232
+// #define DEBUG_MODE
+
+#ifdef DEBUG_MODE
+	#ifndef HAS_RS232
+		#define HAS_RS232
+	#endif
+#endif
 
 /*----- keyboard ----------------------------------------
 *  col: PE2, PE3, PE4, PE5

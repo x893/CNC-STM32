@@ -26,9 +26,13 @@
 #define RCV_WRONG_CRC -3
 #define RCV_ERR_LOST_DATA -4
 
-void rs232_init(void);
-void rf_putc(char c);
-void rf_puts(const char *str);
-void rf_printf(const char* str, ...);
+#ifdef HAS_RS232
+	void rs232_init(void);
+	void rf_putc(char c);
+	void rf_puts(const char *str);
+	void rf_printf(const char* str, ...);
+#else
+	#define rs232_init()
+#endif
 
 #endif /* RS232_INTERFACE_H_ */

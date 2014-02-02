@@ -322,17 +322,17 @@ int main()
 
 	initSmParam(FALSE);
 	scr_puts("\n         ---- OK -----");
-	while (kbd_getKey() == KEY_D);
+	while (kbd_getKey() != KEY_D);
 
 	while (1)
-	{	// main screen
+	{
 		if (rereadDir)
 		{
 			readFileList();
 			redrawScr = TRUE;
 			rereadDir = FALSE;
 		}
-		// ---------------------
+
 		if (redrawScr)
 		{
 			redrawScr = FALSE;

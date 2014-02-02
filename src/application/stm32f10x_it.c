@@ -89,11 +89,13 @@ void SPI2_IRQHandler(void)
 #endif
 }
 
+#ifdef HAS_RS232
 void rs232_proc(void);
 void USART1_IRQHandler(void)
 {
 	rs232_proc();
 }
+#endif
 
 void NMIException(void) {}
 void HardFaultException(void)	{ while (1) {} }

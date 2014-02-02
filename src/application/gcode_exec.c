@@ -229,6 +229,7 @@ void cnc_gfile(char *fileName, int mode)
 
 	if ((curGCodeMode & GFILE_MODE_MASK_EXEC) == 0)
 	{
+#ifdef HAS_LCD
 		short scrX = crdXtoScr(TABLE_CENTER_X);
 		short scrY = crdYtoScr(TABLE_CENTER_Y);
 		int t1 = commonTimeIdeal / 1000;
@@ -243,6 +244,7 @@ void cnc_gfile(char *fileName, int mode)
 			lineNum
 			);
 		scr_printf("\n X%f/%f Y%f/%f Z%f/%f", minX, maxX, minY, maxY, minZ, maxZ);
+#endif
 	}
 	else
 	{
@@ -312,14 +314,17 @@ uint8_t cnc_waitSMotorReady(void)
 				step_dump();
 			if (time != RTC_GetCounter())
 			{
+#ifdef HAS_LCD
 				uint32_t t;
-				//scr_gotoxy(2,12);
-				//scr_fontColor(_smParam.maxSpindleTemperature >  extrudT_getTemperatureReal()? Green:Red,Black);
-				//scr_printf("spindle t:%dC  ", extrudT_getTemperatureReal());
+				// scr_gotoxy(2,12);
+				// scr_fontColor(_smParam.maxSpindleTemperature >  extrudT_getTemperatureReal()? Green:Red,Black);
+				// scr_printf("spindle t:%dC  ", extrudT_getTemperatureReal());
 				time = RTC_GetCounter();
 				t = time - startWorkTime;
-				scr_gotoxy(30, 12); scr_fontColor(Cyan, Black);
+				scr_gotoxy(30, 12);
+				scr_fontColor(Cyan, Black);
 				scr_printf("%02d:%02d:%02d", t / 3600, (t / 60) % 60, t % 60);
+#endif
 			}
 		}
 		switch (kbd_getKey())
@@ -331,12 +336,16 @@ uint8_t cnc_waitSMotorReady(void)
 			isPause = TRUE;
 			break;
 		case KEY_0:
+#ifdef HAS_ENCODER
 			isEncoderCorrection = FALSE;
+#endif
 			scr_gotoxy(1, 6);
 			scr_clrEndl();
 			break;
 		case KEY_1:
+#ifdef HAS_ENCODER
 			isEncoderCorrection = TRUE;
+#endif
 			break;
 		case KEY_7:
 			isStepDump = TRUE;
@@ -615,7 +624,7 @@ uint8_t smothLine(
 		DBG("\n[%d]-> orig.line dx:%d dy:%d dz:%d", linesBuffer.mvectCnt, dx, dy, dz);
 		if (linesBuffer.mvectCnt == 405)
 		{
-			Sleep(100);
+			delayMs(100);
 		}
 	}
 #endif

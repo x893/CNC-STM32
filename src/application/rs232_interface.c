@@ -1,10 +1,10 @@
-#include <stm32f10x_usart.h>
-
 #include <string.h>
 #include <stdarg.h>
 
 #include "global.h"
 #include "Crc32.h"
+
+#ifdef HAS_RS232
 
 uint8_t bufferBytes[1024];
 volatile uint32_t indexGet, indexPut, countBytes;
@@ -196,3 +196,5 @@ void rf_printf(const char* str, ...)
 	sout[ptr] = 0;
 	rf_puts(sout);
 }
+#endif
+

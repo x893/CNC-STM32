@@ -6,14 +6,11 @@
 
 #ifdef HAS_LCD
 
-#define LCD_WIDTH		320
-#define LCD_HEIGHT		240
-#define FONT_STEP_X		8
-#define FONT_STEP_Y		16
-
 uint16_t fontColor = 0xFFFF, fontBkColor = 0;
 uint16_t fix_fontColor = 0xFFFF, fix_fontBkColor = 0;
-int8_t cur_col = 0, cur_row = 0, cur_width = LCD_WIDTH / FONT_STEP_X, cur_height = 240 / FONT_STEP_Y;
+int8_t cur_col = 0, cur_row = 0,
+	cur_width = LCD_WIDTH / FONT_STEP_X,
+	cur_height = LCD_HEIGHT / FONT_STEP_Y;
 uint8_t flagScroll = TRUE;
 uint16_t cur_x_ofs = 0, cur_y_ofs = 0;
 
@@ -76,7 +73,7 @@ void scr_putc(char c)
 		cur_row++;
 	}
 
-	if (cur_row >= cur_height & flagScroll)
+	if (cur_row >= cur_height && flagScroll)
 		cur_row = 0;
 
 	switch (c)
@@ -248,33 +245,55 @@ void scr_dump(const uint8_t *buff, int sz)
 }
 
 //-------------------------------------------------
-void win_showWindow(uint16_t x0, uint16_t y0, uint8_t colSz, uint8_t rowSz,
-	uint16_t cBorder, uint16_t cFill, uint16_t cText) {
-	uint16_t x1 = x0 + (uint16_t)colSz*FONT_STEP_X + 10;
-	uint16_t y1 = y0 + (uint16_t)rowSz*FONT_STEP_Y + 10;
+void win_showWindow(
+	uint16_t x0, uint16_t y0,
+	uint8_t colSz, uint8_t rowSz,
+	uint16_t cBorder,
+	uint16_t cFill,
+	uint16_t cText
+	)
+{
+	uint16_t x1 = x0 + (uint16_t)colSz * FONT_STEP_X + 10;
+	uint16_t y1 = y0 + (uint16_t)rowSz * FONT_STEP_Y + 10;
 	GUI_Rectangle(x0, y0, x1, y1, cBorder, FALSE);
 	GUI_Rectangle(x0 + 1, y0 + 1, x1 - 1, y1 - 1, cBorder, FALSE);
 	GUI_Rectangle(x0 + 2, y0 + 2, x1 - 2, y1 - 2, cBorder, FALSE);
 	GUI_Rectangle(x0 + 3, y0 + 3, x1 - 3, y1 - 3, cFill, TRUE);
-	scr_setTextWindow(x0 + 5, y0 + 5, (x1 - x0 - 10) / FONT_STEP_X, (y1 - y0 - 10) / FONT_STEP_Y);
+	scr_setTextWindow(
+		x0 + 5, y0 + 5,
+		(x1 - x0 - 10) / FONT_STEP_X,
+		(y1 - y0 - 10) / FONT_STEP_Y
+	);
 	scr_fontColor(cText, cFill);
 }
 
-void win_showErrorWin(void) {
-	win_showWindow(FONT_STEP_X * 4 - 5, FONT_STEP_Y * 4 - 5, 32, 7, Yellow, Red, Black);
+void win_showErrorWin(void)
+{
+	win_showWindow(
+		FONT_STEP_X * 4 - 5,
+		FONT_STEP_Y * 4 - 5,
+		32, 7,
+		Yellow, Red, Black
+	);
 	scr_gotoxy(0, 0);
 	scr_setScrollOn(TRUE);
 }
 
-void win_showMsgWin(void) {
-	win_showWindow(FONT_STEP_X * 4 - 5, FONT_STEP_Y * 4 - 5, 32, 8, Magenta, Blue2, Cyan);
+void win_showMsgWin(void)
+{
+	win_showWindow(
+		FONT_STEP_X * 4 - 5,
+		FONT_STEP_Y * 4 - 5,
+		32, 8,
+		Magenta, Blue2, Cyan
+	);
 	scr_gotoxy(0, 0);
 	scr_setScrollOn(TRUE);
 }
 
 void win_showProgressBar(uint16_t x, uint16_t y, uint16_t dx, uint16_t dy, uint8_t p)
 {
-	uint16_t n = (dx)*p / 100;
+	uint16_t n = (dx) * p / 100;
 	GUI_Rectangle(x, y, x + dx, y + dy, Red, FALSE);
 	GUI_Rectangle(x + 1, y + 1, x + dx - 1, y + dy - 1, Red, FALSE);
 	GUI_Rectangle(x + 2 + n - 1, y + 2, x + dx - 2, y + dy - 2, Black, TRUE);
@@ -288,13 +307,17 @@ void win_showMenu(uint16_t x, uint16_t y, uint8_t col, uint8_t row)
 	scr_setScrollOn(FALSE);
 }
 
-void win_showMenuScroll(uint16_t x, uint16_t y, uint8_t col, uint8_t row, uint8_t startPos, uint8_t selPos, uint8_t lines)
+void win_showMenuScroll(
+	uint16_t x, uint16_t y,
+	uint8_t col, uint8_t row,
+	uint8_t startPos, uint8_t selPos, uint8_t lines
+	)
 {
 	uint16_t x1 = x + (uint16_t)col * FONT_STEP_X + 10;
 	uint16_t y1 = y + (uint16_t)row * FONT_STEP_Y + 10;
 	uint16_t h = (y1 - y) - 4;
-	uint16_t n = row > lines ? h : h*row / lines;
-	uint16_t ofs = row > lines ? 0 : h*startPos / lines;
+	uint16_t n = row > lines ? h : h * row / lines;
+	uint16_t ofs = row > lines ? 0 : h * startPos / lines;
 	win_showWindow(x, y, col, row, White, Blue, Yellow);
 	GUI_Rectangle(x1, y, x1 + 7, y1, White, TRUE);
 	GUI_Rectangle(x1 - 1, y + ofs + 2, x1 + 4, y + ofs + n, Blue2, TRUE);
