@@ -30,7 +30,7 @@ void manualMode(void)
 	scr_puts("\n 0 - zero  5 - goto zero C - exit");
 	delayMs(700);
 	while (kbd_getKey() >= 0) {};
-	while (TRUE)
+	while (true)
 	{
 		scr_fontColor(White, Black);
 		for (i = 0; i < 3; i++)
@@ -42,7 +42,7 @@ void manualMode(void)
 				scr_gotoxy(1, TEXT_Y_MAX - 3 + i);
 				scr_printf("steps %c:%d      ", axisName[i], stepm_getCurGlobalStepsNum(i));
 			}
-#ifdef HAS_ENCODER
+#if (USE_ENCODER == 1)
 			if (i == 2)
 			{
 				int32_t v = encoderZvalue();
@@ -63,7 +63,7 @@ void manualMode(void)
 		case KEY_0:
 			while (stepm_inProc() && kbd_getKey() != KEY_C) {}
 			stepm_ZeroGlobalCrd();
-#ifdef HAS_ENCODER
+#if (USE_ENCODER == 1)
 			encoderZreset();
 			encoderCorrectionCntUp = encoderCorrectionCntDown = encoderCorrectionDelta = encoderCorrectionMaxDelta = 0;
 #endif
@@ -119,9 +119,9 @@ void manualMode(void)
 		if (limits != limits_chk())
 		{
 			limits = limits_chk();
-			GUI_Rectangle(304, 232, 309, 239, limitX_chk() ? Red : Green, TRUE);
-			GUI_Rectangle(310, 232, 315, 239, limitY_chk() ? Red : Green, TRUE);
-			GUI_Rectangle(314, 232, 319, 239, limitZ_chk() ? Red : Green, TRUE);
+			GUI_Rectangle(304, 232, 309, 239, limitX_chk() ? Red : Green, true);
+			GUI_Rectangle(310, 232, 315, 239, limitY_chk() ? Red : Green, true);
+			GUI_Rectangle(314, 232, 319, 239, limitZ_chk() ? Red : Green, true);
 		}
 	}
 }

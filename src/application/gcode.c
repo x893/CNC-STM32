@@ -121,10 +121,10 @@ static int read_double(char *line, int *char_counter, double *double_ptr)
 	if (end == start)
 	{
 		gc.status_code = GCSTATUS_BAD_NUMBER_FORMAT;
-		return FALSE;
+		return false;
 	}
 	*char_counter = (int)(end - line);
-	return TRUE;
+	return true;
 }
 
 static int next_statement(char *letter, double *double_ptr, char *line, int *char_counter)
@@ -132,12 +132,12 @@ static int next_statement(char *letter, double *double_ptr, char *line, int *cha
 	while (line[*char_counter] == ' ') (*char_counter)++;
 
 	if (line[*char_counter] == 0 || line[*char_counter] == ';' ||
-		line[*char_counter] == '\n' || line[*char_counter] == '\r') return FALSE;
+		line[*char_counter] == '\n' || line[*char_counter] == '\r') return false;
 	*letter = line[*char_counter];
 	if ((*letter < 'A') || (*letter > 'Z'))
 	{
 		gc.status_code = GCSTATUS_EXPECTED_COMMAND_LETTER;
-		return FALSE;
+		return false;
 	}
 	(*char_counter)++;
 	return read_double(line, char_counter, double_ptr);
@@ -148,7 +148,7 @@ void gc_init(void)
 	memset(&gc, 0, sizeof(gc));
 	gc.feed_rate = SM_DEFAULT_FEED_RATE;
 	gc.seek_rate = SM_DEFAULT_SEEK_RATE;
-	gc.absolute_mode = TRUE;
+	gc.absolute_mode = true;
 	// gc.startPosX = commonValues.startX; gc.startPosY = commonValues.startY;
 	// gc.startPosZ = commonValues.startZ;
 	gc.extruder_k = 1; //commonValues.extruder_k;
@@ -197,7 +197,7 @@ static void mc_arc(double *position, double *target, double *offset, double feed
 	   defined from the circle center to the initial position. Each line segment is formed by successive
 	   vector rotations. This requires only two cos() and sin() computations to form the rotation
 	   matrix for the duration of the entire arc. Error may accumulate from numerical round-off, since
-	   all double numbers are single precision on the Arduino. (True double precision will not have
+	   all double numbers are single precision on the Arduino. (true double precision will not have
 	   round off issues for CNC applications.) Single precision error can accumulate to be greater than
 	   tool precision in some cases. Therefore, arc path correction is implemented.
 
@@ -294,7 +294,7 @@ uint8_t gc_execute_line(char *line)
 	double value, oldPosition[3], dx, dy, dz, moveLength, offset[3], radius = 0;
 	int pause_value = 0;
 	gc.status_code = GCSTATUS_OK;
-	uint8_t radius_mode = FALSE;
+	uint8_t radius_mode = false;
 
 	if (line[0] == ';'
 		|| line[0] == '('
@@ -316,12 +316,12 @@ uint8_t gc_execute_line(char *line)
 			case 2: gc.next_action = NEXT_ACTION_CW_ARC; break;
 			case 3: gc.next_action = NEXT_ACTION_CCW_ARC; break;
 			case 4: gc.next_action = NEXT_ACTION_DWELL_G4; break;
-			case 20: gc.inches_mode = TRUE; break;
-			case 21: gc.inches_mode = FALSE; break;
+			case 20: gc.inches_mode = true; break;
+			case 21: gc.inches_mode = false; break;
 			case 30:
 			case 28: gc.next_action = NEXT_ACTION_GO_HOME_G28; break;
-			case 90: gc.absolute_mode = TRUE; break;
-			case 91: gc.absolute_mode = FALSE; break;
+			case 90: gc.absolute_mode = true; break;
+			case 91: gc.absolute_mode = false; break;
 			case 92: gc.next_action = NEXT_ACTION_RESET_XYZ_G92; break;
 			case 64:
 			case 40:
@@ -348,7 +348,7 @@ uint8_t gc_execute_line(char *line)
 			case 3: gc.spindle_on = 1; break;
 				//	case 4: gc.spindle_direction = -1; break;
 			case 5: gc.spindle_on = 0; break;
-#ifdef HAS_EXTRUDER
+#if (USE_EXTRUDER == 1)
 			case 101: //  M101 Turn extruder 1 on Forward 
 				gc.next_action = NEXT_ACTION_EXTRUDER_ON;
 				break;
@@ -425,8 +425,13 @@ uint8_t gc_execute_line(char *line)
 			break;
 		case 'I':
 		case 'J':
-		case 'K': offset[letter - 'I'] = unit_millimeters_value; break;
-		case 'R': radius = unit_millimeters_value; radius_mode = TRUE; break;
+		case 'K':
+			offset[letter - 'I'] = unit_millimeters_value;
+			break;
+		case 'R':
+			radius = unit_millimeters_value;
+			radius_mode = true;
+			break;
 		case 'G':
 		case 'N':
 		case 'M':
@@ -585,18 +590,20 @@ uint8_t gc_execute_line(char *line)
 		}
 		mc_arc(oldPosition, gc.position, offset, gc.feed_rate, radius, gc.next_action == NEXT_ACTION_CW_ARC);
 		break;
-#ifdef HAS_EXTRUDER
+#if (USE_EXTRUDER == 1)
 	case NEXT_ACTION_EXTRUDER_STOP:
-		cnc_extruder_stop(); gc.extruder_on = FALSE;
+		cnc_extruder_stop();
+		gc.extruder_on = false;
 		break;
 	case NEXT_ACTION_EXTRUDER_ON:
-		cnc_extruder_on(); gc.extruder_on = TRUE;
+		cnc_extruder_on();
+		gc.extruder_on = true;
 		break;
 	case NEXT_ACTION_EXTRUDER_FAST_T:
-		cnc_extruder_t(gc.s_value, FALSE);
+		cnc_extruder_t(gc.s_value, false);
 		break;
 	case NEXT_ACTION_EXTRUDER_WAIT_T:
-		cnc_extruder_t(gc.s_value, TRUE);
+		cnc_extruder_t(gc.s_value, true);
 		break;
 #endif
 	}

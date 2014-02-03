@@ -3,6 +3,7 @@
 #include "global.h"
 
 #define STEPS_BUF_SZ	8
+
 typedef struct
 {
 	uint32_t steps[4];
@@ -12,7 +13,10 @@ typedef struct
 
 volatile LINE_DATA steps_buf[STEPS_BUF_SZ];
 int32_t steps_buf_sz, steps_buf_p1, steps_buf_p2;
-LINE_DATA cur_steps_buf; // for debug only
+
+#if (USE_STEP_DEBUG == 1)
+	LINE_DATA cur_steps_buf; // for debug only
+#endif
 
 volatile struct
 {
@@ -57,8 +61,8 @@ void stepm_init(void)
 	for (i = 0; i < STEPS_MOTORS; i++)
 	{
 		step_motors[i].steps = 0;
-		step_motors[i].clk = TRUE;
-		step_motors[i].isInProc = FALSE;
+		step_motors[i].clk = true;
+		step_motors[i].isInProc = false;
 		step_motors[i].globalSteps = 0;
 		stepm_powerOff(i);
 		switch (i)
@@ -153,7 +157,7 @@ void stepm_proc(uint8_t id)
 		else
 		{
 			if (step_motors[id].steps == 0)
-				step_motors[id].isInProc = FALSE;
+				step_motors[id].isInProc = false;
 		}
 		step_motors[id].clk = !step_motors[id].clk;
 	}
@@ -170,8 +174,9 @@ void stepm_proc(uint8_t id)
 
 			__disable_irq();
 			LINE_DATA *p = (LINE_DATA *)(&steps_buf[steps_buf_p1]);
+#if (USE_STEP_DEBUG == 1)
 			memcpy(&cur_steps_buf, p, sizeof(cur_steps_buf)); // for debug
-
+#endif
 			for (i = 0; i < 4; i++)
 			{
 				step_motors[i].steps = p->steps[i];
@@ -179,7 +184,7 @@ void stepm_proc(uint8_t id)
 			}
 			if (step_motors[0].steps)
 			{
-				step_motors[0].isInProc = TRUE;
+				step_motors[0].isInProc = true;
 #ifdef M0_EN_PORT
 				GPIO_WriteBit(M0_DIR_PORT, M0_DIR_PIN, p->dir[0] ? Bit_SET : Bit_RESET);
 				M0_EN_PORT->BSRR = M0_EN_PIN;
@@ -189,7 +194,7 @@ void stepm_proc(uint8_t id)
 			}
 			if (step_motors[1].steps)
 			{
-				step_motors[1].isInProc = TRUE;
+				step_motors[1].isInProc = true;
 #ifdef M1_EN_PORT
 				GPIO_WriteBit(M1_DIR_PORT, M1_DIR_PIN, p->dir[1] ? Bit_SET : Bit_RESET);
 				M1_EN_PORT->BSRR = M1_EN_PIN;
@@ -199,7 +204,7 @@ void stepm_proc(uint8_t id)
 			}
 			if (step_motors[2].steps)
 			{
-#ifdef HAS_ENCODER
+#if (USE_ENCODER == 1)
 				if (isEncoderCorrection && step_motors[2].steps > ENCODER_CORRECTION_MIN_STEPS)
 				{
 					int32_t enVal = encoderZvalue();
@@ -227,7 +232,7 @@ void stepm_proc(uint8_t id)
 					}
 				}
 #endif
-				step_motors[2].isInProc = TRUE;
+				step_motors[2].isInProc = true;
 #ifdef M2_EN_PORT
 				GPIO_WriteBit(M2_DIR_PORT, M2_DIR_PIN, p->dir[2] ? Bit_RESET : Bit_SET);
 				M2_EN_PORT->BSRR = M2_EN_PIN;
@@ -237,7 +242,7 @@ void stepm_proc(uint8_t id)
 			}
 			if (step_motors[3].steps)
 			{
-				step_motors[3].isInProc = TRUE;
+				step_motors[3].isInProc = true;
 #ifdef M3_EN_PORT
 				GPIO_WriteBit(M3_DIR_PORT, M3_DIR_PIN, p->dir[3] ? Bit_RESET : Bit_SET);
 				M3_EN_PORT->BSRR = M3_EN_PIN;
@@ -261,7 +266,7 @@ void stepm_EmergeStop(void)
 	for (i = 0; i < 4; i++)
 	{
 		stepm_powerOff(i);
-		step_motors[i].isInProc = FALSE;
+		step_motors[i].isInProc = false;
 		step_motors[i].steps = 0;
 	}
 	steps_buf_sz = steps_buf_p1 = steps_buf_p2 = 0;
@@ -321,11 +326,11 @@ int32_t stepm_inProc(void)
 {
 	int i;
 	if (steps_buf_sz > 0)
-		return TRUE;
+		return true;
 	for (i = 0; i < 4; i++)
 		if (step_motors[i].isInProc)
-			return TRUE;
-	return FALSE;
+			return true;
+	return false;
 }
 
 uint32_t stepm_LinesBufferIsFull(void)
@@ -347,6 +352,7 @@ void stepm_ZeroGlobalCrd(void)
 	}
 }
 
+#if (USE_STEP_DEBUG == 1)
 void step_dump()
 {
 	LINE_DATA *p = (LINE_DATA *)(&cur_steps_buf);
@@ -356,3 +362,4 @@ void step_dump()
 		scr_printf("%d,%d,%d,%d [%d]   ", p->steps[i], p->dir[i], p->pscValue[i], p->arrValue[i], p->f[i]); // TODO
 	}
 }
+#endif

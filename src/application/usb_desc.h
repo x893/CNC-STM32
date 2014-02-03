@@ -13,16 +13,11 @@
 * INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
 *******************************************************************************/
 
-/* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __USB_DESC_H
 #define __USB_DESC_H
 
-/* Includes ------------------------------------------------------------------*/
 #include "stm32f10x.h"
-/* Exported types ------------------------------------------------------------*/
-/* Exported constants --------------------------------------------------------*/
-/* Exported macro ------------------------------------------------------------*/
-/* Exported define -----------------------------------------------------------*/
+
 #define MASS_SIZ_DEVICE_DESC              18
 #define MASS_SIZ_CONFIG_DESC              32
 
@@ -32,7 +27,6 @@
 #define MASS_SIZ_STRING_SERIAL            26
 #define MASS_SIZ_STRING_INTERFACE         16
 
-/* Exported functions ------------------------------------------------------- */
 extern const u8 MASS_DeviceDescriptor[MASS_SIZ_DEVICE_DESC];
 extern const u8 MASS_ConfigDescriptor[MASS_SIZ_CONFIG_DESC];
 
@@ -43,7 +37,3 @@ extern u8 MASS_StringSerial[MASS_SIZ_STRING_SERIAL];
 extern const u8 MASS_StringInterface[MASS_SIZ_STRING_INTERFACE];
 
 #endif /* __USB_DESC_H */
-
-/******************* (C) COPYRIGHT 2008 STMicroelectronics *****END OF FILE****/
-
-

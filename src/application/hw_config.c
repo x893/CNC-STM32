@@ -1,18 +1,14 @@
 #include "global.h"
-#include "core_cm3.h"
 #include "mass_mal.h"
 
 void USB_Init(void);
-
-ErrorStatus HSEStartUpStatus;
-RCC_ClocksTypeDef RCC_Clocks;
 
 #ifdef  __cplusplus
 extern "C" {
 #endif
 uint32_t GetCpuClock()
 {
-	return RCC_Clocks.SYSCLK_Frequency;
+	return SystemCoreClock;
 }
 #ifdef  __cplusplus
 }
@@ -20,6 +16,7 @@ uint32_t GetCpuClock()
 
 void SystemStartup(void)
 {
+	ErrorStatus HSEStartUpStatus;
 	GPIO_InitTypeDef GPIO_InitStructure;
 	NVIC_InitTypeDef NVIC_InitStructure;
 
@@ -49,8 +46,8 @@ void SystemStartup(void)
 		/* Wait till PLL is used as system clock source */
 		while (RCC_GetSYSCLKSource() != 0x08);
 	}
-	RCC_GetClocksFreq(&RCC_Clocks);
-	SysTick_Config(SystemFrequency / 1000);
+	SystemCoreClockUpdate();
+	SysTick_Config(SystemCoreClock / 1000);
 
 	RCC_APB2PeriphClockCmd(0
 		| RCC_APB2Periph_AFIO
@@ -60,29 +57,38 @@ void SystemStartup(void)
 		| RCC_APB2Periph_GPIOD
 		| RCC_APB2Periph_GPIOE
 		, ENABLE);
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
 	GPIO_InitStructure.GPIO_Pin = LED_PIN;
 	GPIO_Init(LED_PORT, &GPIO_InitStructure);	// LED on board
 
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
-	GPIO_InitStructure.GPIO_Pin = KEY_PIN;
-	GPIO_Init(KEY_PORT, &GPIO_InitStructure);	// KEY on board
-
-#ifdef HAS_FLASH
+#if (USE_FLASH == 1)
 	SST25_flashInit();
 #endif
+
 	rs232_init();
 	kbd_init();
 	stepm_init();
-#ifdef HAS_EXTRUDER
+
+#if (USE_EXTRUDER == 1)
 	extrudT_init();
 #endif
-#ifdef HAS_ENCODER
+#if (USE_ENCODER == 1)
 	encoder_int();
 #endif
 
-	limits_init();
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
+
+	GPIO_InitStructure.GPIO_Pin = LIMIT_X_PIN;
+	GPIO_Init(LIMIT_X_PORT, &GPIO_InitStructure);
+
+	GPIO_InitStructure.GPIO_Pin = LIMIT_Y_PIN;
+	GPIO_Init(LIMIT_Y_PORT, &GPIO_InitStructure);
+
+	GPIO_InitStructure.GPIO_Pin = LIMIT_Z_PIN;
+	GPIO_Init(LIMIT_Z_PORT, &GPIO_InitStructure);
+
 	rtc_init();
 
 	Lcd_Configuration();
@@ -92,7 +98,10 @@ void SystemStartup(void)
 
 	win_showMsgWin();
 	delayMs(500);
-	scr_puts("   ---- CNC MM -----");
+	if (HSEStartUpStatus == SUCCESS)
+		scr_puts("   ---- CNC MM -----");
+	else
+		showCriticalStatus("HSE FAIL", 0);
 
 	MAL_Init(0);
 
@@ -101,7 +110,7 @@ void SystemStartup(void)
 	GPIO_InitStructure.GPIO_Pin = USB_DISCONNECT_PIN;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_OD;
-	GPIO_Init(USB_DISCONNECT, &GPIO_InitStructure);
+	GPIO_Init(USB_DISCONNECT_PORT, &GPIO_InitStructure);
 
 	RCC_USBCLKConfig(RCC_USBCLKSource_PLLCLK_1Div5);
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USB, ENABLE);

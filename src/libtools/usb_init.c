@@ -21,7 +21,7 @@
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /*  The number of current endpoint, it will be used to specify an endpoint */
- u8	EPindex;
+u8	EPindex;
 /*  The number of current device, it is an index to the Device_Table */
 /* u8	Device_no; */
 /*  Points to the DEVICE_INFO structure of current device */
@@ -34,7 +34,7 @@ DEVICE_PROP *pProperty;
 /*  Whenever the Rx or Tx state is changed, its value is saved */
 /*  in this variable first and will be set to the EPRB or EPRA */
 /*  at the end of interrupt process */
-u16	SaveState ;
+u16	SaveState;
 u16  wInterrupt_Mask;
 DEVICE_INFO	Device_Info;
 USER_STANDARD_REQUESTS  *pUser_Standard_Requests;
@@ -52,12 +52,12 @@ USER_STANDARD_REQUESTS  *pUser_Standard_Requests;
 *******************************************************************************/
 void USB_Init(void)
 {
-  pInformation = &Device_Info;
-  pInformation->ControlState = 2;
-  pProperty = &Device_Property;
-  pUser_Standard_Requests = &User_Standard_Requests;
-  /* Initialize devices one by one */
-  pProperty->Init();
+	pInformation = &Device_Info;
+	pInformation->ControlState = 2;
+	pProperty = &Device_Property;
+	pUser_Standard_Requests = &User_Standard_Requests;
+	/* Initialize devices one by one */
+	pProperty->Init();
 }
 
 /******************* (C) COPYRIGHT 2008 STMicroelectronics *****END OF FILE****/

@@ -3,29 +3,31 @@
 #include <string.h>
 
 #ifdef _WINDOWS
-#include "stdafx.h"
+	#include "stdafx.h"
 #else
-#include "global.h"
+	#include "global.h"
 #endif
 
 #include "gcode.h"
 
 #define ENABLE_SHOW_MAX_TIME_STEPS 640
 #define MAX_STR_SIZE 150
-//#define NO_ACCELERATION_CORRECTION
+// #define NO_ACCELERATION_CORRECTION
 
 SM_PARAM _smParam;
-uint8_t isPause = FALSE;
+bool isPause = false;
 
 double k_scr;
 short prev_scrX, prev_scrY;
 
 int curGCodeMode;
 uint32_t commonTimeIdeal, commonTimeReal, startWorkTime;
-uint8_t isGcodeStop;
-#ifdef HAS_EXTRUDER
-uint8_t isExtruderOn;
+bool isGcodeStop;
+
+#if (USE_EXTRUDER == 1)
+	uint8_t isExtruderOn;
 #endif
+
 double minX, maxX, minY, maxY, minZ, maxZ;
 
 #define CRD_X 0
@@ -81,20 +83,20 @@ void initGcodeProc(void)
 	memset(&linesBuffer, 0, sizeof(linesBuffer));
 #ifndef NO_ACCELERATION_CORRECTION
 	linesBuffer.mvectPtrCur = 0;
-	linesBuffer.mvector[0].isNullCmd = TRUE;
+	linesBuffer.mvector[0].isNullCmd = true;
 	linesBuffer.mvectCnt = 1;
 #endif
 	prev_scrX = crdXtoScr(TABLE_CENTER_X); prev_scrY = crdYtoScr(TABLE_CENTER_Y);
 	linesBuffer.stepsFromStartX = linesBuffer.stepsFromStartY = linesBuffer.stepsFromStartZ = linesBuffer.stepsFromStartE = 0;
 	linesBuffer.stepsX = linesBuffer.stepsY = linesBuffer.stepsZ = 0;
-#ifdef HAS_EXTRUDER
-	isExtruderOn = FALSE;
+#if (USE_EXTRUDER == 1)
+	isExtruderOn = false;
 #endif
 	minX = maxX = minY = maxY = minZ = maxZ = 0;
 	gc_init();
 	stepm_init();
 	commonTimeIdeal = commonTimeReal = 0;
-	isGcodeStop = FALSE;
+	isGcodeStop = false;
 	startWorkTime = RTC_GetCounter();
 }
 
@@ -119,7 +121,7 @@ void cnc_gfile(char *fileName, int mode)
 
 	if ((curGCodeMode & GFILE_MODE_MASK_SHOW) != 0)
 	{
-		GUI_Rectangle(crdXtoScr(0), crdYtoScr(MAX_TABLE_SIZE_Y), crdXtoScr(MAX_TABLE_SIZE_X), crdYtoScr(0), Red, FALSE);
+		GUI_Rectangle(crdXtoScr(0), crdYtoScr(MAX_TABLE_SIZE_Y), crdXtoScr(MAX_TABLE_SIZE_X), crdYtoScr(0), Red, false);
 		GUI_Line(prev_scrX, 30, prev_scrX, 240 - 30, Green);
 		GUI_Line(50, prev_scrY, 320 - 50, prev_scrY, Green);
 	}
@@ -130,7 +132,7 @@ void cnc_gfile(char *fileName, int mode)
 		scr_puts("C-Cancel  A-Pause 0/1-encoder");
 	}
 	lineNum = 1;
-	hasMoreLines = TRUE;
+	hasMoreLines = true;
 	do
 	{
 		// char str[MAX_STR_SIZE];
@@ -138,7 +140,7 @@ void cnc_gfile(char *fileName, int mode)
 		//char fileBuf[MAX_STR_SIZE];
 		char *p = fileBuf, *str;
 
-		while (TRUE)
+		while (true)
 		{
 			*p = 0;
 			str = p + 1;
@@ -146,7 +148,7 @@ void cnc_gfile(char *fileName, int mode)
 				break;
 			if (f_gets(str, MAX_STR_SIZE, &fid) == NULL)
 			{
-				hasMoreLines = FALSE;
+				hasMoreLines = false;
 				break;
 			}
 			str_trim(str);
@@ -229,7 +231,7 @@ void cnc_gfile(char *fileName, int mode)
 
 	if ((curGCodeMode & GFILE_MODE_MASK_EXEC) == 0)
 	{
-#ifdef HAS_LCD
+#if (USE_LCD == 1)
 		short scrX = crdXtoScr(TABLE_CENTER_X);
 		short scrY = crdYtoScr(TABLE_CENTER_Y);
 		int t1 = commonTimeIdeal / 1000;
@@ -283,7 +285,7 @@ const double axisK[4] = {
 uint8_t cnc_waitSMotorReady(void)
 {
 	static uint32_t time = 0;
-	static uint8_t isStepDump = FALSE;
+	static uint8_t isStepDump = false;
 	int i;
 
 	do
@@ -296,7 +298,7 @@ uint8_t cnc_waitSMotorReady(void)
 				int32_t globalSteps = stepm_getCurGlobalStepsNum(i);
 				double n = (double)globalSteps / axisK[i];
 				scr_gotoxy(1 + i * 10, 3); scr_printf("%c:%f ", axisName[i], n);
-#ifdef HAS_ENCODER
+#if (USE_ENCODER == 1)
 				if (i == 2)
 				{
 					int32_t enVal = encoderZvalue();
@@ -314,7 +316,7 @@ uint8_t cnc_waitSMotorReady(void)
 				step_dump();
 			if (time != RTC_GetCounter())
 			{
-#ifdef HAS_LCD
+#if (USE_LCD == 1)
 				uint32_t t;
 				// scr_gotoxy(2,12);
 				// scr_fontColor(_smParam.maxSpindleTemperature >  extrudT_getTemperatureReal()? Green:Red,Black);
@@ -331,27 +333,27 @@ uint8_t cnc_waitSMotorReady(void)
 		{
 		case KEY_C:
 			stepm_EmergeStop();
-			return FALSE;
+			return false;
 		case KEY_A:
-			isPause = TRUE;
+			isPause = true;
 			break;
 		case KEY_0:
-#ifdef HAS_ENCODER
-			isEncoderCorrection = FALSE;
+#if (USE_ENCODER == 1)
+			isEncoderCorrection = false;
 #endif
 			scr_gotoxy(1, 6);
 			scr_clrEndl();
 			break;
 		case KEY_1:
-#ifdef HAS_ENCODER
-			isEncoderCorrection = TRUE;
+#if (USE_ENCODER == 1)
+			isEncoderCorrection = true;
 #endif
 			break;
 		case KEY_7:
-			isStepDump = TRUE;
+			isStepDump = true;
 			break;
 		case KEY_8:
-			isStepDump = FALSE;
+			isStepDump = false;
 			break;
 		}
 	} while (stepm_LinesBufferIsFull());
@@ -359,9 +361,9 @@ uint8_t cnc_waitSMotorReady(void)
 	{
 		stepm_EmergeStop();
 		scr_fontColor(Red, Black);	scr_gotoxy(7, 11); scr_puts("LIMITS ERROR!"); scr_clrEndl();
-		return FALSE;
+		return false;
 	}
-	return TRUE;
+	return true;
 }
 
 uint8_t sendLine(uint32_t fxyze[], uint32_t abs_dxyze[], uint8_t dir_xyze[])
@@ -422,7 +424,7 @@ uint8_t sendLine(uint32_t fxyze[], uint32_t abs_dxyze[], uint8_t dir_xyze[])
 			prev_scrX = scrX;
 			prev_scrY = scrY;
 		}
-		return TRUE;
+		return true;
 	}
 #ifdef DEBUG_MODE
 	DBG("\n\tsendLine dx:%c%d(%d)\tdy:%c%d(%d)\tdz:%c%d(%d) tz:%d ty:%d tz:%d",
@@ -467,7 +469,7 @@ uint8_t sendLine(uint32_t fxyze[], uint32_t abs_dxyze[], uint8_t dir_xyze[])
 	}
 #endif
 
-	if (!cnc_waitSMotorReady()) return FALSE;
+	if (!cnc_waitSMotorReady()) return false;
 	if (isPause)
 	{
 		scr_fontColor(Black, White);
@@ -480,8 +482,8 @@ uint8_t sendLine(uint32_t fxyze[], uint32_t abs_dxyze[], uint8_t dir_xyze[])
 		{
 			switch (kbd_getKey())
 			{
-			case KEY_C: return FALSE;
-			case KEY_B: isPause = FALSE;
+			case KEY_C: return false;
+			case KEY_B: isPause = false;
 			}
 		}
 		scr_fontColor(White, Black);
@@ -489,16 +491,15 @@ uint8_t sendLine(uint32_t fxyze[], uint32_t abs_dxyze[], uint8_t dir_xyze[])
 		scr_clrEndl();
 	}
 	stepm_addMove(abs_dxyze, fxyze, dir_xyze);
-	return TRUE;
+	return true;
 }
 
 #ifndef NO_ACCELERATION_CORRECTION
-__STATIC_INLINE int8_t findInAccelerationCrd(MVECTOR *p, MVECTOR *p_in, int32_t *smothdF, int32_t *frqStart)
+static __INLINE int8_t findInAccelerationCrd(MVECTOR *p, MVECTOR *p_in, int32_t *smothdF, int32_t *frqStart)
 {
 	int8_t crd = -1;
 	int32_t  i, j, df[3], step_df[3], frq_in[3], dt[3], max_time = 0;
 
-	// разница в скоростях 
 	for (i = 0; i < 3; i++)
 	{
 		frq_in[i] = p->changeDir ? 0 : p_in->frq[i];
@@ -510,11 +511,11 @@ __STATIC_INLINE int8_t findInAccelerationCrd(MVECTOR *p, MVECTOR *p_in, int32_t 
 		{
 			dt[i] = 0;
 			continue;
-		} // движения по координате - нет. значит торможение ускорение отсутвует.
+		} // РґРІРёР¶РµРЅРёСЏ РїРѕ РєРѕРѕСЂРґРёРЅР°С‚Рµ - РЅРµС‚. Р·РЅР°С‡РёС‚ С‚РѕСЂРјРѕР¶РµРЅРёРµ СѓСЃРєРѕСЂРµРЅРёРµ РѕС‚СЃСѓС‚РІСѓРµС‚.
 		step_df[i] = _smParam.smoothAF[i];
-		dt[i] = df[i] / step_df[i]; // время необходимое на изменение скорости
+		dt[i] = df[i] / step_df[i]; // РІСЂРµРјСЏ РЅРµРѕР±С…РѕРґРёРјРѕРµ РЅР° РёР·РјРµРЅРµРЅРёРµ СЃРєРѕСЂРѕСЃС‚Рё
 		for (j = 0; j < 3; j++)
-		{ // коррекция ускорения с учетом остальных осей.
+		{ // РєРѕСЂСЂРµРєС†РёСЏ СѓСЃРєРѕСЂРµРЅРёСЏ СЃ СѓС‡РµС‚РѕРј РѕСЃС‚Р°Р»СЊРЅС‹С… РѕСЃРµР№.
 			int32_t f;
 			if (i == j || p->steps[j] == 0) continue;
 			f = (int32_t)((int64_t)step_df[i] * (int64_t)p->steps[j] / p->steps[i]);
@@ -531,9 +532,9 @@ __STATIC_INLINE int8_t findInAccelerationCrd(MVECTOR *p, MVECTOR *p_in, int32_t 
 		{
 			crd = (int8_t)i;
 			max_time = dt[i];
-		} // ищем ось с максимальным временем ускорения      
+		} // РёС‰РµРј РѕСЃСЊ СЃ РјР°РєСЃРёРјР°Р»СЊРЅС‹Рј РІСЂРµРјРµРЅРµРј СѓСЃРєРѕСЂРµРЅРёСЏ      
 	}
-	// если разница в скоростях меньше той, при которой можно стартовать с 0 и не было коррекций
+	// РµСЃР»Рё СЂР°Р·РЅРёС†Р° РІ СЃРєРѕСЂРѕСЃС‚СЏС… РјРµРЅСЊС€Рµ С‚РѕР№, РїСЂРё РєРѕС‚РѕСЂРѕР№ РјРѕР¶РЅРѕ СЃС‚Р°СЂС‚РѕРІР°С‚СЊ СЃ 0 Рё РЅРµ Р±С‹Р»Рѕ РєРѕСЂСЂРµРєС†РёР№
 	if (crd >= 0 && df[crd] < _smParam.smoothStartF_from0[crd] && step_df[crd] == _smParam.smoothAF[crd])
 		return -1;
 	*smothdF = frq_in[crd] < (int32_t)p->frq[crd] ? step_df[crd] : -step_df[crd];
@@ -541,12 +542,12 @@ __STATIC_INLINE int8_t findInAccelerationCrd(MVECTOR *p, MVECTOR *p_in, int32_t 
 	return crd;
 }
 
-__STATIC_INLINE int8_t findOutAccelerationCrd(MVECTOR *p, MVECTOR *p_out, int32_t *smothdF, int32_t *frqStop)
+static __INLINE int8_t findOutAccelerationCrd(MVECTOR *p, MVECTOR *p_out, int32_t *smothdF, int32_t *frqStop)
 {
 	int8_t crd = -1;
 	int32_t i, j, df[3], frq_out[3], step_df[3], max_time = 0, dt[3];
 
-	// разница в скоростях
+	// СЂР°Р·РЅРёС†Р° РІ СЃРєРѕСЂРѕСЃС‚СЏС…
 	for (i = 0; i < 3; i++)
 	{
 		frq_out[i] = p_out->changeDir ? 0 : p_out->frq[i];
@@ -554,12 +555,12 @@ __STATIC_INLINE int8_t findOutAccelerationCrd(MVECTOR *p, MVECTOR *p_out, int32_
 	}
 	for (i = 0; i < 3; i++)
 	{
-		// движения по координате - нет. значит торможение ускорение отсутвует
-		// и так же запрешено ускорение выше скорости, указанной для отрезка
+		// РґРІРёР¶РµРЅРёСЏ РїРѕ РєРѕРѕСЂРґРёРЅР°С‚Рµ - РЅРµС‚. Р·РЅР°С‡РёС‚ С‚РѕСЂРјРѕР¶РµРЅРёРµ СѓСЃРєРѕСЂРµРЅРёРµ РѕС‚СЃСѓС‚РІСѓРµС‚
+		// Рё С‚Р°Рє Р¶Рµ Р·Р°РїСЂРµС€РµРЅРѕ СѓСЃРєРѕСЂРµРЅРёРµ РІС‹С€Рµ СЃРєРѕСЂРѕСЃС‚Рё, СѓРєР°Р·Р°РЅРЅРѕР№ РґР»СЏ РѕС‚СЂРµР·РєР°
 		if (p->frq[i] == 0 || frq_out[i] >(int32_t)p->frq[i]) { dt[i] = 0; continue; }
 		step_df[i] = _smParam.smoothAF[i];
-		dt[i] = df[i] / step_df[i]; // время (msec) необходимое на изменение скорости
-		for (j = 0; j < 3; j++) { // коррекция ускорения с учетом остальных осей.
+		dt[i] = df[i] / step_df[i]; // РІСЂРµРјСЏ (msec) РЅРµРѕР±С…РѕРґРёРјРѕРµ РЅР° РёР·РјРµРЅРµРЅРёРµ СЃРєРѕСЂРѕСЃС‚Рё
+		for (j = 0; j < 3; j++) { // РєРѕСЂСЂРµРєС†РёСЏ СѓСЃРєРѕСЂРµРЅРёСЏ СЃ СѓС‡РµС‚РѕРј РѕСЃС‚Р°Р»СЊРЅС‹С… РѕСЃРµР№.
 			int32_t f;
 			if (i == j || p->steps[j] == 0) continue;
 			f = (int32_t)((int64_t)step_df[i] * (int64_t)p->steps[j] / p->steps[i]);
@@ -570,16 +571,16 @@ __STATIC_INLINE int8_t findOutAccelerationCrd(MVECTOR *p, MVECTOR *p_out, int32_
 		}
 	}
 	for (i = 0; i < 3; i++) {
-		if (max_time < dt[i]) { crd = (int8_t)i; max_time = dt[i]; } // ищем ось с максимальным временем ускорения      
+		if (max_time < dt[i]) { crd = (int8_t)i; max_time = dt[i]; } // РёС‰РµРј РѕСЃСЊ СЃ РјР°РєСЃРёРјР°Р»СЊРЅС‹Рј РІСЂРµРјРµРЅРµРј СѓСЃРєРѕСЂРµРЅРёСЏ      
 	}
-	if (crd >= 0 && df[crd] < _smParam.smoothStopF_to0[crd] && step_df[crd] == _smParam.smoothAF[crd]) return -1; // если разница в скоростях меньше той, при которой можно старотовать с 0
+	if (crd >= 0 && df[crd] < _smParam.smoothStopF_to0[crd] && step_df[crd] == _smParam.smoothAF[crd]) return -1; // РµСЃР»Рё СЂР°Р·РЅРёС†Р° РІ СЃРєРѕСЂРѕСЃС‚СЏС… РјРµРЅСЊС€Рµ С‚РѕР№, РїСЂРё РєРѕС‚РѕСЂРѕР№ РјРѕР¶РЅРѕ СЃС‚Р°СЂРѕС‚РѕРІР°С‚СЊ СЃ 0
 	*smothdF = frq_out[crd] < (int32_t)p->frq[crd] ? step_df[crd] : -step_df[crd];
 	*frqStop = frq_out[crd];
 	return crd;
 }
 
-// интегрировние числовое, что бы проверить если ли возможность затормозить на коротких отрезках
-__STATIC_INLINE int32_t chk_Speed(int32_t i, uint32_t fxyze[], uint32_t abs_dxyze[])
+// РёРЅС‚РµРіСЂРёСЂРѕРІРЅРёРµ С‡РёСЃР»РѕРІРѕРµ, С‡С‚Рѕ Р±С‹ РїСЂРѕРІРµСЂРёС‚СЊ РµСЃР»Рё Р»Рё РІРѕР·РјРѕР¶РЅРѕСЃС‚СЊ Р·Р°С‚РѕСЂРјРѕР·РёС‚СЊ РЅР° РєРѕСЂРѕС‚РєРёС… РѕС‚СЂРµР·РєР°С…
+static __INLINE int32_t chk_Speed(int32_t i, uint32_t fxyze[], uint32_t abs_dxyze[])
 {
 	if (fxyze[i] > (uint32_t)_smParam.smoothStopF_to0[i])
 	{
@@ -596,7 +597,7 @@ __STATIC_INLINE int32_t chk_Speed(int32_t i, uint32_t fxyze[], uint32_t abs_dxyz
 }
 #endif
 
-uint8_t smothLine(
+bool smothLine(
 	int32_t dx, int32_t dy, int32_t dz, int32_t de,
 	int32_t time_msec,
 	double moveLength, uint32_t feed_rate
@@ -619,7 +620,7 @@ uint8_t smothLine(
 	dir_xyze[CRD_Y] = dy > 0;
 	dir_xyze[CRD_Z] = dz > 0;
 	dir_xyze[CRD_E] = de > 0;
-#ifdef DEBUG_MODE
+#if (USE_DEBUG_MODE == 1)
 	{
 		DBG("\n[%d]-> orig.line dx:%d dy:%d dz:%d", linesBuffer.mvectCnt, dx, dy, dz);
 		if (linesBuffer.mvectCnt == 405)
@@ -641,7 +642,8 @@ uint8_t smothLine(
 		if ((n = chk_Speed(CRD_Z, fxyze, abs_dxyze)) > 0)
 		{
 			DBG(" bZ");
-			time_msec = n; continue;
+			time_msec = n;
+			continue;
 		}
 
 		fxyze[CRD_Y] = abs_dxyze[CRD_Y] * 1000L * K_FRQ / time_msec;
@@ -667,7 +669,8 @@ uint8_t smothLine(
 		if ((n = chk_Speed(CRD_X, fxyze, abs_dxyze)) > 0)
 		{
 			DBG(" bX");
-			time_msec = n; continue;
+			time_msec = n;
+			continue;
 		}
 
 		fxyze[CRD_E] = (uint64_t)abs_dxyze[CRD_E] * (1000L * K_FRQ) / time_msec;
@@ -695,7 +698,7 @@ uint8_t smothLine(
 			p_next->frq[i] = 0;
 			p_next->steps[i] = 0;
 		}
-		p_next->isNullCmd = TRUE;
+		p_next->isNullCmd = true;
 	}
 	else
 	{
@@ -720,14 +723,14 @@ uint8_t smothLine(
 						p_cur->frq[i] = fxyze[i];
 				}
 				p_cur->length += moveLength;
-				p_cur->isNullCmd = FALSE;
+				p_cur->isNullCmd = false;
 				linesBuffer.mvectPtrCur--;
 				if (linesBuffer.mvectPtrCur < 0)
 					linesBuffer.mvectPtrCur = MVECTOR_SZ - 1;
-				DBG("\nSUM vectors"); return TRUE;
+				DBG("\nSUM vectors"); return true;
 			}
 		}
-		p_next->isNullCmd = FALSE;
+		p_next->isNullCmd = false;
 		p_next->length = moveLength;
 		p_next->feed_rate = feed_rate;
 		for (i = 0; i < 4; i++)
@@ -742,14 +745,14 @@ uint8_t smothLine(
 		p_next->cos_a = 0;
 		if (!p_cur->isNullCmd)
 		{
-			p_next->changeDir = FALSE;
+			p_next->changeDir = false;
 			for (i = 0; !p_next->changeDir && i < 3; i++)
 			{
 				if (p_next->dir[i] != p_cur->dir[i]
 					|| (p_next->steps[i] == 0 && p_cur->steps[i] != 0)
 					|| (p_next->steps[i] != 0 && p_cur->steps[i] == 0)
 					)
-					p_next->changeDir = TRUE;
+					p_next->changeDir = true;
 			}
 			p_next->cos_a = 0;
 			if (!p_next->changeDir)
@@ -766,17 +769,17 @@ uint8_t smothLine(
 						p_next->cos_a -= v;
 				}
 				if (p_next->cos_a < SM_SMOOTH_COS_A)
-					p_next->changeDir = TRUE;
+					p_next->changeDir = true;
 			}
 		}
 		else
-			p_next->changeDir = TRUE;
+			p_next->changeDir = true;
 	}
 	linesBuffer.mvectCnt++;
 	if (linesBuffer.mvectCnt < 3 || p_cur->isNullCmd)
-		return TRUE;
+		return true;
 	//------------------
-#ifdef DEBUG_MODE
+#if (USE_DEBUG_MODE == 1)
 	DBG("\nl.prev dx:%c%d(%d)\tdy:%c%d(%d)\tdz:%c%d(%d)", p_prev->dir[0] ? '+' : '-', p_prev->steps[0], p_prev->frq[0],
 		p_prev->dir[1] ? '+' : '-', p_prev->steps[1], p_prev->frq[1],
 		p_prev->dir[2] ? '+' : '-', p_prev->steps[2], p_prev->frq[2]);
@@ -788,7 +791,8 @@ uint8_t smothLine(
 		p_next->dir[2] ? '+' : '-', p_next->steps[2], p_next->frq[2], p_next->cos_a / 1000000.0);
 #endif
 	// Search coordinate where necessary braking or acceleration
-	int8_t crd_in, crd_out, has_max_frq = TRUE;
+	int8_t crd_in, crd_out;
+	bool has_max_frq = true;
 	int32_t df_in = 0, df_out = 0, frq_in = 0, frq_out = 0, frq;
 
 	crd_in = findInAccelerationCrd(p_cur, p_prev, &df_in, &frq_in);
@@ -833,7 +837,7 @@ uint8_t smothLine(
 		int32_t dd_f1 = crd_in >= 0 ? (int32_t)((int64_t)df_in*p_cur->steps[crd_out] / p_cur->steps[crd_in]) : 0;
 
 		sBreakage_out = 0;	// sBreakage_out - number of steps from the end
-		for (i = 0; TRUE; i++)
+		for (i = 0; true; i++)
 		{	// We go from the end of the braking distance
 			fBreakage_out = (f2 += df_out);
 			if (crd_in >= 0)
@@ -858,7 +862,7 @@ uint8_t smothLine(
 			// If the acceleration and deceleration areas converged before reaching a maximum speed vector
 			if ((s_in + sBreakage_out) >= length_steps)
 			{
-				has_max_frq = FALSE;
+				has_max_frq = false;
 				if (labs(f1 - f2) > df_out && dd_f1 > 0)
 					if (f1  < f2)
 					{
@@ -883,7 +887,7 @@ uint8_t smothLine(
 		}
 	}
 	DBG("\n crd_out=%d sBreakage_out=%d fBreakage_out=%d", crd_out, sBreakage_out, fBreakage_out);
-	uint8_t isProcess = TRUE;
+	uint8_t isProcess = true;
 	uint32_t remainSteps[4];
 
 	for (i = 0; i < 4; i++)
@@ -892,7 +896,7 @@ uint8_t smothLine(
 	// =========== Input braking / acceleration
 	if (crd_in >= 0)
 	{
-		uint8_t isProcess = TRUE;
+		uint8_t isProcess = true;
 		frq = frq_in + df_in;
 		while (isProcess && ((df_in < 0 && frq >(int32_t)p_cur->frq[crd_in]) || (df_in > 0 && frq < (int32_t)p_cur->frq[crd_in])))
 		{
@@ -906,19 +910,19 @@ uint8_t smothLine(
 				n = remainSteps[crd_out] - sBreakage_out;
 				for (i = 0; i < 4; i++)
 					abs_dxyze[i] = (uint64_t)n*p_cur->steps[i] / p_cur->steps[crd_out];
-				isProcess = FALSE;
+				isProcess = false;
 			}
 			for (i = 0; i < 4; i++)
 				if (abs_dxyze[i] != 0 && remainSteps[i] <= abs_dxyze[i])
 				{
 					for (i = 0; i < 4; i++)
 						abs_dxyze[i] = remainSteps[i];
-					isProcess = FALSE;
+					isProcess = false;
 					break;
 				}
 
 			if (!sendLine(fxyze, abs_dxyze, p_cur->dir))
-				return FALSE;
+				return false;
 			for (i = 0; i < 4; i++)
 				remainSteps[i] -= abs_dxyze[i];
 			frq += df_in;
@@ -932,7 +936,7 @@ uint8_t smothLine(
 			// Set the input speed to the next line
 			for (i = 0; i < 4; i++)
 				p_cur->frq[i] = fxyze[i];
-			return TRUE;
+			return true;
 		}
 		return sendLine(p_cur->frq, remainSteps, p_cur->dir); // Remain line
 	}
@@ -948,9 +952,9 @@ uint8_t smothLine(
 				fxyze[i] = p_cur->frq[i];
 		}
 		if (!sendLine(fxyze, abs_dxyze, p_cur->dir))
-			return FALSE;
+			return false;
 		if (sBreakage_out == 0)
-			return TRUE;
+			return true;
 		//f_out = p_cur->frq[crd_out];
 	}
 	// ============= Braking
@@ -965,7 +969,7 @@ uint8_t smothLine(
 				fxyze[i] = (uint32_t)((uint64_t)frq * (uint64_t)p_cur->steps[i] / p_cur->steps[crd_out]);
 				abs_dxyze[i] = remainSteps[i];
 			}
-			isProcess = FALSE;
+			isProcess = false;
 		}
 		else
 		{
@@ -984,12 +988,12 @@ uint8_t smothLine(
 				{
 					abs_dxyze[i] = remainSteps[i];
 				}
-				isProcess = FALSE;
+				isProcess = false;
 				break;
 			}
 		}
 		if (!sendLine(fxyze, abs_dxyze, p_cur->dir))
-			return FALSE;
+			return false;
 		for (i = 0; i < 4; i++)
 			remainSteps[i] -= abs_dxyze[i];
 	}
@@ -997,7 +1001,7 @@ uint8_t smothLine(
 	for (i = 0; i < 4; i++)
 		p_cur->frq[i] = fxyze[i];
 #endif
-	return TRUE;
+	return true;
 }
 
 uint8_t cnc_line(
@@ -1031,7 +1035,7 @@ uint8_t cnc_line(
 	DBG("\n AX:%d AY:%d AZ:%d", newX, newY, newZ);
 
 	if (kbd_getKey() == KEY_C)
-		return FALSE;
+		return false;
 	if (x < minX) minX = x;
 	if (x > maxX) maxX = x;
 	if (y < minY) minY = y;
@@ -1043,18 +1047,18 @@ uint8_t cnc_line(
 	// if((curGCodeMode & GFILE_MODE_MASK_EXEC) != 0) {
 	return smothLine(dx, dy, dz, de, time_msec, moveLength, (uint32_t)feed_rate);
 	// }
-	// return TRUE;
+	// return true;
 }
 
 void cnc_end(void)
 {
-	isGcodeStop = TRUE;
+	isGcodeStop = true;
 }
 
-#ifdef HAS_EXTRUDER
+#if (USE_EXTRUDER == 1)
 void cnc_extruder_stop(void)
 {
-	isExtruderOn = FALSE;
+	isExtruderOn = false;
 	cnc_waitSMotorReady();
 	uint8_t dir[4] = { 0, 0, 0, 1 };
 	uint32_t steps[4] = { 0, 0, 0, SM_E_STEPS_PER_MM / 2 };
@@ -1069,7 +1073,7 @@ void cnc_extruder_stop(void)
 
 void cnc_extruder_on(void)
 {
-	isExtruderOn = TRUE;
+	isExtruderOn = true;
 }
 
 void cnc_extruder_t(int temperature, int isWait)

@@ -13,30 +13,27 @@
 * INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
 *******************************************************************************/
 
-/* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __usb_prop_H
 #define __usb_prop_H
-/* Includes ------------------------------------------------------------------*/
-/* Exported types ------------------------------------------------------------*/
+
 #include "stm32f10x.h"
-/* Exported constants --------------------------------------------------------*/
-#define Mass_Storage_GetConfiguration          NOP_Process
-/* #define Mass_Storage_SetConfiguration          NOP_Process*/
-#define Mass_Storage_GetInterface              NOP_Process
-#define Mass_Storage_SetInterface              NOP_Process
-#define Mass_Storage_GetStatus                 NOP_Process
-/* #define Mass_Storage_ClearFeature              NOP_Process*/
-#define Mass_Storage_SetEndPointFeature        NOP_Process
-#define Mass_Storage_SetDeviceFeature          NOP_Process
-/*#define Mass_Storage_SetDeviceAddress          NOP_Process*/
+#include "usb_core.h"
+
+#define Mass_Storage_GetConfiguration		NOP_Process
+/* #define Mass_Storage_SetConfiguration	NOP_Process*/
+#define Mass_Storage_GetInterface			NOP_Process
+#define Mass_Storage_SetInterface			NOP_Process
+#define Mass_Storage_GetStatus				NOP_Process
+/* #define Mass_Storage_ClearFeature		NOP_Process*/
+#define Mass_Storage_SetEndPointFeature		NOP_Process
+#define Mass_Storage_SetDeviceFeature		NOP_Process
+/*#define Mass_Storage_SetDeviceAddress		NOP_Process*/
 
 /* MASS Storage Requests*/
 #define GET_MAX_LUN                0xFE
 #define MASS_STORAGE_RESET         0xFF
 #define LUN_DATA_LENGTH            1
 
-/* Exported macro ------------------------------------------------------------*/
-/* Exported functions ------------------------------------------------------- */
 void MASS_init(void);
 void MASS_Reset(void);
 void Mass_Storage_SetConfiguration(void);
@@ -53,6 +50,3 @@ u8 *MASS_GetStringDescriptor(u16);
 u8 *Get_Max_Lun(u16 Length);
 
 #endif /* __usb_prop_H */
-
-/******************* (C) COPYRIGHT 2008 STMicroelectronics *****END OF FILE****/
-

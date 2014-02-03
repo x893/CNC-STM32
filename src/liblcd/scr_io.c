@@ -4,17 +4,17 @@
 #include "ili9320.h"
 #include "scr_io.h"
 
-#ifdef HAS_LCD
+#if (USE_LCD == 1)
 
 uint16_t fontColor = 0xFFFF, fontBkColor = 0;
 uint16_t fix_fontColor = 0xFFFF, fix_fontBkColor = 0;
 int8_t cur_col = 0, cur_row = 0,
 	cur_width = LCD_WIDTH / FONT_STEP_X,
 	cur_height = LCD_HEIGHT / FONT_STEP_Y;
-uint8_t flagScroll = TRUE;
+bool flagScroll = true;
 uint16_t cur_x_ofs = 0, cur_y_ofs = 0;
 
-void scr_setfullTextWindow()
+void scr_setfullTextWindow(void)
 {
 	cur_x_ofs = 0;
 	cur_y_ofs = 0;
@@ -255,10 +255,10 @@ void win_showWindow(
 {
 	uint16_t x1 = x0 + (uint16_t)colSz * FONT_STEP_X + 10;
 	uint16_t y1 = y0 + (uint16_t)rowSz * FONT_STEP_Y + 10;
-	GUI_Rectangle(x0, y0, x1, y1, cBorder, FALSE);
-	GUI_Rectangle(x0 + 1, y0 + 1, x1 - 1, y1 - 1, cBorder, FALSE);
-	GUI_Rectangle(x0 + 2, y0 + 2, x1 - 2, y1 - 2, cBorder, FALSE);
-	GUI_Rectangle(x0 + 3, y0 + 3, x1 - 3, y1 - 3, cFill, TRUE);
+	GUI_Rectangle(x0, y0, x1, y1, cBorder, false);
+	GUI_Rectangle(x0 + 1, y0 + 1, x1 - 1, y1 - 1, cBorder, false);
+	GUI_Rectangle(x0 + 2, y0 + 2, x1 - 2, y1 - 2, cBorder, false);
+	GUI_Rectangle(x0 + 3, y0 + 3, x1 - 3, y1 - 3, cFill, true);
 	scr_setTextWindow(
 		x0 + 5, y0 + 5,
 		(x1 - x0 - 10) / FONT_STEP_X,
@@ -276,7 +276,7 @@ void win_showErrorWin(void)
 		Yellow, Red, Black
 	);
 	scr_gotoxy(0, 0);
-	scr_setScrollOn(TRUE);
+	scr_setScrollOn(true);
 }
 
 void win_showMsgWin(void)
@@ -288,23 +288,23 @@ void win_showMsgWin(void)
 		Magenta, Blue2, Cyan
 	);
 	scr_gotoxy(0, 0);
-	scr_setScrollOn(TRUE);
+	scr_setScrollOn(true);
 }
 
 void win_showProgressBar(uint16_t x, uint16_t y, uint16_t dx, uint16_t dy, uint8_t p)
 {
 	uint16_t n = (dx) * p / 100;
-	GUI_Rectangle(x, y, x + dx, y + dy, Red, FALSE);
-	GUI_Rectangle(x + 1, y + 1, x + dx - 1, y + dy - 1, Red, FALSE);
-	GUI_Rectangle(x + 2 + n - 1, y + 2, x + dx - 2, y + dy - 2, Black, TRUE);
-	GUI_Rectangle(x + 2, y + 2, x + n + 1, y + dy - 2, Yellow, TRUE);
+	GUI_Rectangle(x, y, x + dx, y + dy, Red, false);
+	GUI_Rectangle(x + 1, y + 1, x + dx - 1, y + dy - 1, Red, false);
+	GUI_Rectangle(x + 2 + n - 1, y + 2, x + dx - 2, y + dy - 2, Black, true);
+	GUI_Rectangle(x + 2, y + 2, x + n + 1, y + dy - 2, Yellow, true);
 }
 
 void win_showMenu(uint16_t x, uint16_t y, uint8_t col, uint8_t row)
 {
 	win_showWindow(x, y, col, row, Green, Cyan, Black);
 	scr_gotoxy(0, 0);
-	scr_setScrollOn(FALSE);
+	scr_setScrollOn(false);
 }
 
 void win_showMenuScroll(
@@ -319,12 +319,12 @@ void win_showMenuScroll(
 	uint16_t n = row > lines ? h : h * row / lines;
 	uint16_t ofs = row > lines ? 0 : h * startPos / lines;
 	win_showWindow(x, y, col, row, White, Blue, Yellow);
-	GUI_Rectangle(x1, y, x1 + 7, y1, White, TRUE);
-	GUI_Rectangle(x1 - 1, y + ofs + 2, x1 + 4, y + ofs + n, Blue2, TRUE);
+	GUI_Rectangle(x1, y, x1 + 7, y1, White, true);
+	GUI_Rectangle(x1 - 1, y + ofs + 2, x1 + 4, y + ofs + n, Blue2, true);
 
 	scr_setTextWindow(x + 5, y + 5, col, row);
 	scr_gotoxy(0, -(int8_t)startPos);
-	scr_setScrollOn(FALSE);
+	scr_setScrollOn(false);
 }
 
 #endif

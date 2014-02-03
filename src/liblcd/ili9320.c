@@ -1,6 +1,6 @@
 #include "ili9320.h"
 
-#ifdef HAS_LCD
+#if (USE_LCD == 1)
 
 #include "ili9320_font.h"
 

@@ -4,19 +4,19 @@
 #include "fattime.h"
 #include "rtc.h"
 
-DWORD get_fattime (void)
+DWORD get_fattime(void)
 {
 	DWORD res;
 	RTC_t rtc;
 
-	rtc_gettime( &rtc );
+	rtc_gettime(&rtc);
 
-	res =  (((DWORD)rtc.year - 1980) << 25)
-			| ((DWORD)rtc.month << 21)
-			| ((DWORD)rtc.mday << 16)
-			| (WORD)(rtc.hour << 11)
-			| (WORD)(rtc.min << 5)
-			| (WORD)(rtc.sec >> 1);
+	res = (((DWORD)rtc.year - 1980) << 25)
+		| ((DWORD)rtc.month << 21)
+		| ((DWORD)rtc.mday << 16)
+		| (WORD)(rtc.hour << 11)
+		| (WORD)(rtc.min << 5)
+		| (WORD)(rtc.sec >> 1);
 
 	return res;
 }

@@ -4,7 +4,7 @@
 #include "usb_pwr.h"
 
 vu32 bDeviceState = UNCONNECTED; /* USB device status */
-volatile bool fSuspendEnabled = TRUE;  /* true when suspend is possible */
+volatile bool fSuspendEnabled = true;  /* true when suspend is possible */
 
 struct
 {

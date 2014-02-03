@@ -17,6 +17,7 @@
 #ifndef __USB_CORE_H
 #define __USB_CORE_H
 
+#include <stdbool.h>
 #include "stm32f10x.h"
 
 /* Includes ------------------------------------------------------------------*/

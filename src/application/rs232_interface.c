@@ -4,7 +4,7 @@
 #include "global.h"
 #include "Crc32.h"
 
-#ifdef HAS_RS232
+#if (USE_RS232 == 1)
 
 uint8_t bufferBytes[1024];
 volatile uint32_t indexGet, indexPut, countBytes;

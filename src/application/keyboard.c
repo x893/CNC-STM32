@@ -56,7 +56,6 @@ void kbd_proc(void)
 		if (ROW2_PORT->IDR & ROW2_PIN) kbd_putKey(0x30 | row);
 		if (ROW3_PORT->IDR & ROW3_PIN) kbd_putKey(0x40 | row);
 	}
-	//	if(GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_15) == Bit_RESET) kbd_putKey(0x07F); // key on main board
 }
 
 int kbd_getKey(void)

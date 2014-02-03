@@ -1,4 +1,3 @@
-#include "stm32f10x_it.h"
 #include "global.h"
 #include "diskio.h"
 #include "ili9320.h"
@@ -7,30 +6,31 @@
 
 void SysTickHandler(void)
 {
-	static uint16_t cnt = 0, kbdCnt = 0;
-#ifdef HAS_EXTRUDER
+	static uint16_t ledCount = 0;
+	static uint16_t kbdCount = 0;
+#if (USE_EXTRUDER == 1)
 	static uint16_t  extruderTemperatureCnt = 0;
 #endif
-	static uint8_t flip = 0;
 
-	cnt++;
-	if (cnt >= 500)
+	ledCount++;
+	if (ledCount == 500)
 	{
-		cnt = 0;
-		if (flip)
-			LED_ON();
-		else
-			LED_OFF();
-		flip = !flip;
+		LED_ON();
 	}
-	kbdCnt++;
-	if (kbdCnt >= 12)
+	else if (ledCount >= 1000)
 	{
-		kbdCnt = 0;
+		ledCount = 0;
+		LED_OFF();
+	}
+
+	kbdCount++;
+	if (kbdCount >= 12)
+	{
+		kbdCount = 0;
 		kbd_proc();
 	}
 
-#ifdef HAS_EXTRUDER
+#if (USE_EXTRUDER == 1)
 	extruderTemperatureCnt++;
 	if(extruderTemperatureCnt >= 20)
 	{
@@ -84,12 +84,12 @@ void M3_TIM_IRQHandler(void)
 
 void SPI2_IRQHandler(void)
 {
-#ifdef HAS_EXTRUDER
+#if (USE_EXTRUDER == 1)
 	extrudT_irq();
 #endif
 }
 
-#ifdef HAS_RS232
+#if (USE_RS232 == 1)
 void rs232_proc(void);
 void USART1_IRQHandler(void)
 {

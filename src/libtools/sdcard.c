@@ -67,7 +67,7 @@ int SD_step = 0;
 
 /* Following commands are SD Card Specific commands.
    SDIO_APP_CMD should be sent before sending these commands.
- */
+   */
 #define SDIO_SEND_IF_COND		((u32)0x00000008)
 
 #define SDIO_INIT_CLK_DIV		((u8)0xB2)
@@ -160,7 +160,7 @@ SD_Error SD_PowerON(void)
 {
 	SD_Error errorstatus = SD_OK;
 	u32 response = 0, count = 0;
-	bool validvoltage = FALSE;
+	bool validvoltage = false;
 	u32 SDType = SD_STD_CAPACITY;
 
 	/* Power ON Sequence -------------------------------------------------------*/

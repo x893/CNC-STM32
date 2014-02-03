@@ -13,6 +13,7 @@
 / * Redistributions of source code must retain the above copyright notice.
 /----------------------------------------------------------------------------*/
 
+#include <stdbool.h>
 #include "integer.h"
 
 /*---------------------------------------------------------------------------/
@@ -54,7 +55,7 @@
 /   3: f_lseek is removed in addition to level 2. */
 
 
-#define	_FS_TINY	0
+#define	_FS_TINY		0
 /* When _FS_TINY is set to 1, FatFs uses the sector buffer in the file system
 /  object instead of the sector buffer in the individual file object for file
 /  data transfer. This reduces memory consumption 512 bytes each file object. */
@@ -64,7 +65,7 @@
 /* To enable string functions, set _USE_STRFUNC to 1 or 2. */
 
 
-#define	_USE_MKFS	0
+#define	_USE_MKFS		0
 /* To enable f_mkfs function, set _USE_MKFS to 1 and set _FS_READONLY to 0 */
 
 
@@ -72,7 +73,7 @@
 /* To enable f_forward function, set _USE_FORWARD to 1 and set _FS_TINY to 1. */
 
 
-#define _CODE_PAGE	437
+#define _CODE_PAGE		437
 /* The _CODE_PAGE specifies the OEM code page to be used on the target system.
 /
 /   932  - Japanese Shift-JIS (DBCS, OEM, Windows)
@@ -118,7 +119,7 @@
 /  to the project. */
 
 
-#define _FS_RPATH	0
+#define _FS_RPATH		0
 /* When _FS_RPATH is set to 1, relative path feature is enabled and f_chdir,
 /  f_chdrive function are available.
 /  Note that output of the f_readdir fnction is affected by this option. */
@@ -132,11 +133,11 @@
 /  and ff_cre_syncobj function to the project. */
 
 
-#define _DRIVES		1
+#define _DRIVES			1
 /* Number of volumes (logical drives) to be used. */
 
 
-#define	_MAX_SS		512
+#define	_MAX_SS			512
 /* Maximum sector size to be handled. (512/1024/2048/4096) */
 /* Usually set 512 for memory card and hard disk but 1024 for floppy disk, 2048 for MO disk */
 /* When _MAX_SS > 512, GET_SECTOR_SIZE must be implememted to disk_ioctl() */

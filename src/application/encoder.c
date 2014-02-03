@@ -1,9 +1,9 @@
 #include "global.h"
 
-#ifdef HAS_ENCODER
+#if (USE_ENCODER == 1)
 
 int32_t encoderCorrectionCntUp, encoderCorrectionCntDown, encoderCorrectionDelta, encoderCorrectionMaxDelta;
-int8_t isEncoderCorrection = FALSE;
+bool isEncoderCorrection = false;
 
 void encoder_int()
 {

@@ -5,10 +5,6 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
-    </Filter>
     <Filter Include="Source Files\application">
       <UniqueIdentifier>{f157bf0a-d551-44cb-82dc-a4bb8bd902a2}</UniqueIdentifier>
     </Filter>
@@ -21,23 +17,8 @@
     <Filter Include="Source Files\libtools">
       <UniqueIdentifier>{8cb9efc5-df4b-42fa-af68-fd23210636ef}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\libhardware">
+    <Filter Include="Source Files\libhardware-STM32F10X">
       <UniqueIdentifier>{b99568e3-7fd2-4373-b6c7-ad595004dc92}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\application">
-      <UniqueIdentifier>{3d42a8e8-f400-4bbb-968c-555be583ba68}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\liblcd">
-      <UniqueIdentifier>{171919a5-3d4f-43dc-a611-61ac944addde}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\libcmsis">
-      <UniqueIdentifier>{482a69e7-8e13-4a15-b1a5-cf5d3ad7a6da}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\libhardware">
-      <UniqueIdentifier>{eaadca17-09dc-4e51-9db8-68f13a993863}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\libtools">
-      <UniqueIdentifier>{21e83beb-c46c-42aa-bbf4-453597d36bfa}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -91,60 +72,6 @@
     </ClCompile>
     <ClCompile Include="src\libtools\ccsbcs.c">
       <Filter>Source Files\libtools</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libhardware\misc.c">
-      <Filter>Source Files\libhardware</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libhardware\stm32f10x_adc.c">
-      <Filter>Source Files\libhardware</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libhardware\stm32f10x_bkp.c">
-      <Filter>Source Files\libhardware</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libhardware\stm32f10x_can.c">
-      <Filter>Source Files\libhardware</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libhardware\stm32f10x_crc.c">
-      <Filter>Source Files\libhardware</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libhardware\stm32f10x_dma.c">
-      <Filter>Source Files\libhardware</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libhardware\stm32f10x_exti.c">
-      <Filter>Source Files\libhardware</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libhardware\stm32f10x_flash.c">
-      <Filter>Source Files\libhardware</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libhardware\stm32f10x_fsmc.c">
-      <Filter>Source Files\libhardware</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libhardware\stm32f10x_gpio.c">
-      <Filter>Source Files\libhardware</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libhardware\stm32f10x_i2c.c">
-      <Filter>Source Files\libhardware</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libhardware\stm32f10x_pwr.c">
-      <Filter>Source Files\libhardware</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libhardware\stm32f10x_rcc.c">
-      <Filter>Source Files\libhardware</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libhardware\stm32f10x_rtc.c">
-      <Filter>Source Files\libhardware</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libhardware\stm32f10x_sdio.c">
-      <Filter>Source Files\libhardware</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libhardware\stm32f10x_spi.c">
-      <Filter>Source Files\libhardware</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libhardware\stm32f10x_tim.c">
-      <Filter>Source Files\libhardware</Filter>
-    </ClCompile>
-    <ClCompile Include="src\libhardware\stm32f10x_usart.c">
-      <Filter>Source Files\libhardware</Filter>
     </ClCompile>
     <ClCompile Include="src\libtools\usb_core.c">
       <Filter>Source Files\libtools</Filter>
@@ -212,204 +139,79 @@
     <ClCompile Include="src\application\encoder.c">
       <Filter>Source Files\application</Filter>
     </ClCompile>
+    <ClCompile Include="src\libhardware\STM32F10X\misc.c">
+      <Filter>Source Files\libhardware-STM32F10X</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libhardware\STM32F10X\stm32f10x_adc.c">
+      <Filter>Source Files\libhardware-STM32F10X</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libhardware\STM32F10X\stm32f10x_bkp.c">
+      <Filter>Source Files\libhardware-STM32F10X</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libhardware\STM32F10X\stm32f10x_can.c">
+      <Filter>Source Files\libhardware-STM32F10X</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libhardware\STM32F10X\stm32f10x_cec.c">
+      <Filter>Source Files\libhardware-STM32F10X</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libhardware\STM32F10X\stm32f10x_crc.c">
+      <Filter>Source Files\libhardware-STM32F10X</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libhardware\STM32F10X\stm32f10x_dac.c">
+      <Filter>Source Files\libhardware-STM32F10X</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libhardware\STM32F10X\stm32f10x_dbgmcu.c">
+      <Filter>Source Files\libhardware-STM32F10X</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libhardware\STM32F10X\stm32f10x_dma.c">
+      <Filter>Source Files\libhardware-STM32F10X</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libhardware\STM32F10X\stm32f10x_exti.c">
+      <Filter>Source Files\libhardware-STM32F10X</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libhardware\STM32F10X\stm32f10x_flash.c">
+      <Filter>Source Files\libhardware-STM32F10X</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libhardware\STM32F10X\stm32f10x_fsmc.c">
+      <Filter>Source Files\libhardware-STM32F10X</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libhardware\STM32F10X\stm32f10x_gpio.c">
+      <Filter>Source Files\libhardware-STM32F10X</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libhardware\STM32F10X\stm32f10x_i2c.c">
+      <Filter>Source Files\libhardware-STM32F10X</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libhardware\STM32F10X\stm32f10x_iwdg.c">
+      <Filter>Source Files\libhardware-STM32F10X</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libhardware\STM32F10X\stm32f10x_pwr.c">
+      <Filter>Source Files\libhardware-STM32F10X</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libhardware\STM32F10X\stm32f10x_rcc.c">
+      <Filter>Source Files\libhardware-STM32F10X</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libhardware\STM32F10X\stm32f10x_rtc.c">
+      <Filter>Source Files\libhardware-STM32F10X</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libhardware\STM32F10X\stm32f10x_sdio.c">
+      <Filter>Source Files\libhardware-STM32F10X</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libhardware\STM32F10X\stm32f10x_spi.c">
+      <Filter>Source Files\libhardware-STM32F10X</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libhardware\STM32F10X\stm32f10x_tim.c">
+      <Filter>Source Files\libhardware-STM32F10X</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libhardware\STM32F10X\stm32f10x_usart.c">
+      <Filter>Source Files\libhardware-STM32F10X</Filter>
+    </ClCompile>
+    <ClCompile Include="src\libhardware\STM32F10X\stm32f10x_wwdg.c">
+      <Filter>Source Files\libhardware-STM32F10X</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\libcmsis\startup\arm\startup_stm32f10x_hd.s">
       <Filter>Source Files\libcmsis</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="src\application\Crc32.h">
-      <Filter>Header Files\application</Filter>
-    </ClInclude>
-    <ClInclude Include="src\application\crt.h">
-      <Filter>Header Files\application</Filter>
-    </ClInclude>
-    <ClInclude Include="src\application\encoder.h">
-      <Filter>Header Files\application</Filter>
-    </ClInclude>
-    <ClInclude Include="src\application\gcode.h">
-      <Filter>Header Files\application</Filter>
-    </ClInclude>
-    <ClInclude Include="src\application\global.h">
-      <Filter>Header Files\application</Filter>
-    </ClInclude>
-    <ClInclude Include="src\application\hw_config.h">
-      <Filter>Header Files\application</Filter>
-    </ClInclude>
-    <ClInclude Include="src\application\keyboard.h">
-      <Filter>Header Files\application</Filter>
-    </ClInclude>
-    <ClInclude Include="src\application\limits.h">
-      <Filter>Header Files\application</Filter>
-    </ClInclude>
-    <ClInclude Include="src\application\mass_mal.h">
-      <Filter>Header Files\application</Filter>
-    </ClInclude>
-    <ClInclude Include="src\application\memory.h">
-      <Filter>Header Files\application</Filter>
-    </ClInclude>
-    <ClInclude Include="src\application\rs232_interface.h">
-      <Filter>Header Files\application</Filter>
-    </ClInclude>
-    <ClInclude Include="src\application\stepmotor.h">
-      <Filter>Header Files\application</Filter>
-    </ClInclude>
-    <ClInclude Include="src\application\stm32f10x_conf.h">
-      <Filter>Header Files\application</Filter>
-    </ClInclude>
-    <ClInclude Include="src\application\stm32f10x_it.h">
-      <Filter>Header Files\application</Filter>
-    </ClInclude>
-    <ClInclude Include="src\application\usb_bot.h">
-      <Filter>Header Files\application</Filter>
-    </ClInclude>
-    <ClInclude Include="src\application\usb_desc.h">
-      <Filter>Header Files\application</Filter>
-    </ClInclude>
-    <ClInclude Include="src\application\usb_istr.h">
-      <Filter>Header Files\application</Filter>
-    </ClInclude>
-    <ClInclude Include="src\application\usb_prop.h">
-      <Filter>Header Files\application</Filter>
-    </ClInclude>
-    <ClInclude Include="src\application\usb_pwr.h">
-      <Filter>Header Files\application</Filter>
-    </ClInclude>
-    <ClInclude Include="src\application\usb_scsi.h">
-      <Filter>Header Files\application</Filter>
-    </ClInclude>
-    <ClInclude Include="src\liblcd\ili9320.h">
-      <Filter>Header Files\liblcd</Filter>
-    </ClInclude>
-    <ClInclude Include="src\liblcd\ili9320_font.h">
-      <Filter>Header Files\liblcd</Filter>
-    </ClInclude>
-    <ClInclude Include="src\liblcd\scr_io.h">
-      <Filter>Header Files\liblcd</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libcmsis\core_cm3.h">
-      <Filter>Header Files\libcmsis</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libcmsis\stm32f10x.h">
-      <Filter>Header Files\libcmsis</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libcmsis\system_stm32f10x.h">
-      <Filter>Header Files\libcmsis</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libhardware\misc.h">
-      <Filter>Header Files\libhardware</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libhardware\stm32f10x_adc.h">
-      <Filter>Header Files\libhardware</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libhardware\stm32f10x_bkp.h">
-      <Filter>Header Files\libhardware</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libhardware\stm32f10x_can.h">
-      <Filter>Header Files\libhardware</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libhardware\stm32f10x_crc.h">
-      <Filter>Header Files\libhardware</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libhardware\stm32f10x_dac.h">
-      <Filter>Header Files\libhardware</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libhardware\stm32f10x_dbgmcu.h">
-      <Filter>Header Files\libhardware</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libhardware\stm32f10x_dma.h">
-      <Filter>Header Files\libhardware</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libhardware\stm32f10x_exti.h">
-      <Filter>Header Files\libhardware</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libhardware\stm32f10x_flash.h">
-      <Filter>Header Files\libhardware</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libhardware\stm32f10x_fsmc.h">
-      <Filter>Header Files\libhardware</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libhardware\stm32f10x_gpio.h">
-      <Filter>Header Files\libhardware</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libhardware\stm32f10x_i2c.h">
-      <Filter>Header Files\libhardware</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libhardware\stm32f10x_iwdg.h">
-      <Filter>Header Files\libhardware</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libhardware\stm32f10x_pwr.h">
-      <Filter>Header Files\libhardware</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libhardware\stm32f10x_rcc.h">
-      <Filter>Header Files\libhardware</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libhardware\stm32f10x_rtc.h">
-      <Filter>Header Files\libhardware</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libhardware\stm32f10x_sdio.h">
-      <Filter>Header Files\libhardware</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libhardware\stm32f10x_spi.h">
-      <Filter>Header Files\libhardware</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libhardware\stm32f10x_tim.h">
-      <Filter>Header Files\libhardware</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libhardware\stm32f10x_usart.h">
-      <Filter>Header Files\libhardware</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libhardware\stm32f10x_wwdg.h">
-      <Filter>Header Files\libhardware</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libtools\Config.h">
-      <Filter>Header Files\libtools</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libtools\diskio.h">
-      <Filter>Header Files\libtools</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libtools\fattime.h">
-      <Filter>Header Files\libtools</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libtools\ff.h">
-      <Filter>Header Files\libtools</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libtools\integer.h">
-      <Filter>Header Files\libtools</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libtools\rtc.h">
-      <Filter>Header Files\libtools</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libtools\sdcard.h">
-      <Filter>Header Files\libtools</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libtools\usb_conf.h">
-      <Filter>Header Files\libtools</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libtools\usb_core.h">
-      <Filter>Header Files\libtools</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libtools\usb_def.h">
-      <Filter>Header Files\libtools</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libtools\usb_init.h">
-      <Filter>Header Files\libtools</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libtools\usb_int.h">
-      <Filter>Header Files\libtools</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libtools\usb_lib.h">
-      <Filter>Header Files\libtools</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libtools\usb_mem.h">
-      <Filter>Header Files\libtools</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libtools\usb_regs.h">
-      <Filter>Header Files\libtools</Filter>
-    </ClInclude>
-    <ClInclude Include="src\libtools\usb_type.h">
-      <Filter>Header Files\libtools</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>

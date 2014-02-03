@@ -1,5 +1,7 @@
-﻿#ifndef gcode_h
+#ifndef gcode_h
 #define gcode_h
+
+#include <stdint.h>
 
 #define GCSTATUS_OK						0
 #define GCSTATUS_BAD_NUMBER_FORMAT		1
@@ -111,7 +113,7 @@ uint8_t cnc_line(
 	);
 void cnc_end(void);
 
-#ifdef HAS_EXTRUDER
+#if (USE_EXTRUDER == 1)
 	void cnc_extruder_stop(void);
 	void cnc_extruder_on(void);
 	void cnc_extruder_t(int temperature, int isWait);

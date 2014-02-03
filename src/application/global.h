@@ -1,47 +1,75 @@
-#ifndef GLOBAL_H_
-#define GLOBAL_H_
+#ifndef __GLOBAL_H__
+#define __GLOBAL_H__
 
-#include "stm32f10x.h"
-
-#define HAS_LCD
-#define HAS_ENCODER
-// #define HAS_FLASH
-// #define HAS_EXTRUDER
-// #define HAS_RS232
-// #define DEBUG_MODE
-
-#ifdef DEBUG_MODE
-	#ifndef HAS_RS232
-		#define HAS_RS232
-	#endif
+#if   defined( STM32F10X_HD )
+	#include "stm32f10x.h"
+#elif defined( STM32F2XX )
+	#include "stm32f2xx.h"
+#else
+	#error "MCU not define"
 #endif
 
-/*----- keyboard ----------------------------------------
-*  col: PE2, PE3, PE4, PE5
-*  row: PE6, PC1, PC2, PC3
-* ------- stepmotor -------------------------------------
-*    EN    DIR   STEP
-* 0: PA1   PA2   PA3
-* 1: PE0   PB9   PB1
-* 2: PB11  PB12  PD12
-* 3: PB11  PD6   PB10
-* ----- position switch ----------------------------------
-*  X,Y,Z: PA0, PB8, PD3
-* ----- sensors ---------------------------------------
-* PC6, PC7 - encoder	Z encoder mode TIM8 (5 V tolerant!)
-*/
-#ifdef HAS_ENCODER
+//*** <<< Use Configuration Wizard in Context Menu >>> ***
+//	<e> Use LCD ILI9320
+//	</e>
+#define USE_LCD			1
+//	<e> Use encoder
+//	</e>
+#define USE_ENCODER		1
+//	<e> Use flash chip SST25
+//	</e>
+#define USE_FLASH		0
+//	<e> Use extruder
+//	</e>
+#define USE_EXTRUDER	0
+
+//	<e> Use USART for debug messafes
+//	</e>
+#define USE_RS232		0
+//	<e> Use Debug mode
+//	</e>
+#define USE_DEBUG_MODE	0
+
+#define USE_STEP_DEBUG	1
+
+// <<< end of configuration section >>>
+
+#if (USE_DEBUG_MODE == 1)
+	#undef USE_RS232
+	#define USE_RS232	1
+#endif
+
+#if (USE_DEBUG_MODE == 1)
+	#define DBG(...) { rf_printf(__VA_ARGS__); }
+#else
+	#define DBG(...) { }
+#endif
+
+/*
+ * ----- sensors ---------------------------------------
+ * PC6, PC7 - encoder	Z encoder mode TIM8 (5 V tolerant!)
+ */
+#if (USE_ENCODER == 1)
 	#define ENCODER_PORT	GPIOC
 	#define ENCODER_PINS	(GPIO_Pin_6 | GPIO_Pin_7)
 #endif
 
-//----- limit switch ----------------------------------
+/*
+ * ----- position switch ----------------------------------
+ *  X,Y,Z: PA0, PB8, PD3
+ */
 #define LIMIT_X_PORT	GPIOA
 #define LIMIT_X_PIN		GPIO_Pin_0
 #define LIMIT_Y_PORT	GPIOD
 #define LIMIT_Y_PIN		GPIO_Pin_3
 #define LIMIT_Z_PORT	GPIOB
 #define LIMIT_Z_PIN		GPIO_Pin_8
+
+static __INLINE uint8_t limitX_chk(void) { return !(LIMIT_X_PORT->IDR & LIMIT_X_PIN); }
+static __INLINE uint8_t limitY_chk(void) { return !(LIMIT_Y_PORT->IDR & LIMIT_Y_PIN); }
+static __INLINE uint8_t limitZ_chk(void) { return !(LIMIT_Z_PORT->IDR & LIMIT_Z_PIN); }
+static __INLINE uint8_t limits_chk(void) { return limitX_chk() || limitY_chk() || limitZ_chk(); }
+
 
 #define STEPS_MOTORS	4
 
@@ -120,7 +148,7 @@
 #define M3_TIM				TIM5
 #define M3_TIM_IRQHandler	TIM5_IRQHandler
 #define M3_TIM_INIT()		\
-	do {														\
+	do {													\
 	NVIC_InitStructure.NVIC_IRQChannel = TIM5;				\
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 3;		\
 	NVIC_Init(&NVIC_InitStructure);							\
@@ -139,6 +167,16 @@
 	#define M3_STEP_PIN		GPIO_Pin_10
 	*/
 
+/*----- keyboard ----------------------------------------
+*  col: PE2, PE3, PE4, PE5
+*  row: PE6, PC1, PC2, PC3
+* ------- stepmotor -------------------------------------
+*    EN    DIR   STEP
+* 0: PA1   PA2   PA3
+* 1: PE0   PB9   PB1
+* 2: PB11  PB12  PD12
+* 3: PB11  PD6   PB10
+*/
 //----- keyboard ----------------------------------------
 ///   0: 1: 2: 3:
 //0:  1  2  3  A
@@ -163,30 +201,30 @@
 #define ROW3_PORT			GPIOC
 #define ROW3_PIN			GPIO_Pin_3
 
-#ifdef HAS_LCD
-#define LCD_BACKLIGHT_PORT	GPIOD
-#define LCD_BACKLIGHT_PIN	GPIO_Pin_13
+#if (USE_LCD == 1)
+	#define LCD_BACKLIGHT_PORT	GPIOD
+	#define LCD_BACKLIGHT_PIN	GPIO_Pin_13
 
-#define LCD_BACKLIGHT_ON()	do { LCD_BACKLIGHT_PORT->BSRR = LCD_BACKLIGHT_PIN; } while(0)
-#define LCD_BACKLIGHT_OFF()	do { LCD_BACKLIGHT_PORT->BRR  = LCD_BACKLIGHT_PIN; } while (0)
+	#define LCD_BACKLIGHT_ON()	do { LCD_BACKLIGHT_PORT->BSRR = LCD_BACKLIGHT_PIN; } while(0)
+	#define LCD_BACKLIGHT_OFF()	do { LCD_BACKLIGHT_PORT->BRR  = LCD_BACKLIGHT_PIN; } while (0)
 
-#define Bank1_LCD_D			((uint32_t)0x60020000)	/* disp Data ADDR */
-#define Bank1_LCD_C			((uint32_t)0x60000000)	/* disp Reg  ADDR */
+	#define Bank1_LCD_D			((uint32_t)0x60020000)	/* disp Data ADDR */
+	#define Bank1_LCD_C			((uint32_t)0x60000000)	/* disp Reg  ADDR */
 
-#define LCD_RST_PORT		GPIOE
-#define LCD_RST_PIN			GPIO_Pin_1
-#define LCD_RESET_LOW()		do { LCD_RST_PORT->BRR  = LCD_RST_PIN; } while (0)
-#define LCD_RESET_HIGH()	do { LCD_RST_PORT->BSRR = LCD_RST_PIN; } while (0)
+	#define LCD_RST_PORT		GPIOE
+	#define LCD_RST_PIN			GPIO_Pin_1
+	#define LCD_RESET_LOW()		do { LCD_RST_PORT->BRR  = LCD_RST_PIN; } while (0)
+	#define LCD_RESET_HIGH()	do { LCD_RST_PORT->BSRR = LCD_RST_PIN; } while (0)
 
-// PD14-D0, PD15-D1, PD0-D2,   PD1-D3,   PE7-D4,   PE8-D5,  PE9-D6, PE10-D7,
-// PE11-D8, PE12-D9, PE13-D10, PE14-D11, PE15-D12, PD8-D13, PD9-D14, PD10-D15
-#define LCD_DATA_D_PORT		GPIOD
-#define LCD_DATA_D_PINS		(GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 | GPIO_Pin_14 | GPIO_Pin_15)
-#define LCD_DATA_E_PORT		GPIOE
-#define LCD_DATA_E_PINS		(GPIO_Pin_7 | GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 | GPIO_Pin_11 | GPIO_Pin_12 | GPIO_Pin_13 | GPIO_Pin_14 | GPIO_Pin_15)
-//	PD11-RS (A16), PD4-nOE, PD5-nWE, PD7-LCD-CS
-#define LCD_CTRL_PORT		GPIOD
-#define LCD_CTRL_PINS		GPIO_Pin_11 | GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_7
+	// PD14-D0, PD15-D1, PD0-D2,   PD1-D3,   PE7-D4,   PE8-D5,  PE9-D6, PE10-D7,
+	// PE11-D8, PE12-D9, PE13-D10, PE14-D11, PE15-D12, PD8-D13, PD9-D14, PD10-D15
+	#define LCD_DATA_D_PORT		GPIOD
+	#define LCD_DATA_D_PINS		(GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 | GPIO_Pin_14 | GPIO_Pin_15)
+	#define LCD_DATA_E_PORT		GPIOE
+	#define LCD_DATA_E_PINS		(GPIO_Pin_7 | GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 | GPIO_Pin_11 | GPIO_Pin_12 | GPIO_Pin_13 | GPIO_Pin_14 | GPIO_Pin_15)
+	//	PD11-RS (A16), PD4-nOE, PD5-nWE, PD7-LCD-CS
+	#define LCD_CTRL_PORT		GPIOD
+	#define LCD_CTRL_PINS		GPIO_Pin_11 | GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_7
 #endif
 
 #define LED_PORT			GPIOB
@@ -194,21 +232,18 @@
 #define LED_ON()			do { LED_PORT->BSRR = LED_PIN; } while(0)
 #define LED_OFF()			do { LED_PORT->BRR = LED_PIN; } while (0)
 
-#define KEY_PORT			GPIOB
-#define KEY_PIN				GPIO_Pin_15
-
 #define SD_DATA_PORT		GPIOC
 /* PC.08, PC.09, PC.10, PC.11, PC.12 pin: D0, D1, D2, D3, CLK */
 #define SD_DATA_PINS		(GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 | GPIO_Pin_11 | GPIO_Pin_12)
 #define SD_CMD_PORT			GPIOD
 #define SD_CMD_PIN			GPIO_Pin_2
 
-#define USB_DISCONNECT		GPIOC
+#define USB_DISCONNECT_PORT		GPIOC
 #define USB_DISCONNECT_PIN	GPIO_Pin_13
-#define USB_CONNECTED()		do { USB_DISCONNECT->BRR  = USB_DISCONNECT_PIN; } while (0)
-#define USB_DISCONNECTED()	do { USB_DISCONNECT->BSRR = USB_DISCONNECT_PIN; } while (0)
+#define USB_CONNECTED()		do { USB_DISCONNECT_PORT->BRR  = USB_DISCONNECT_PIN; } while (0)
+#define USB_DISCONNECTED()	do { USB_DISCONNECT_PORT->BSRR = USB_DISCONNECT_PIN; } while (0)
 
-#ifdef HAS_FLASH
+#if (USE_FLASH == 1)
 	#define SST25_PINS			(GPIO_Pin_5 | GPIO_Pin_6 | GPIO_Pin_7)
 	#define SST25_PORT			GPIOA
 	#define SST25_CS_PIN		GPIO_Pin_4
@@ -231,20 +266,13 @@
 #include "rtc.h"
 #include "ff.h"
 #include "sdcard.h"
-#ifdef HAS_FLASH
-	#include "flash_spi.h"
-#endif
+#include "flash_spi.h"
 #include "rs232_interface.h"
 #include "keyboard.h"
 #include "gcode.h"
 #include "stepmotor.h"
-
-#ifdef HAS_EXTRUDER
-	#include "extruder_t.h"
-#endif
-
-#include "limits.h"
 // #include "scan.h"
+#include "extruder_t.h"
 #include "encoder.h"
 
 void delayMs(uint32_t msec);
@@ -252,6 +280,8 @@ char *str_trim(char *str);
 uint8_t questionYesNo(char *msg, char *param);
 
 void manualMode(void);
+void showCriticalStatus(char *msg, int st);
+uint16_t calcColor(uint8_t val);
 
 /*
 typedef struct {
@@ -265,14 +295,4 @@ typedef struct {
 extern FLASH_VALUES commonValues;
 */
 
-void showCriticalStatus(char *msg, int st);
-uint16_t calcColor(uint8_t val);
-
-//#define DEBUG_MODE
-#ifdef DEBUG_MODE
-	#define DBG(...) { rf_printf(__VA_ARGS__); }
-#else
-	#define DBG(...) { }
 #endif
-
-#endif /* GLOBAL_H_ */

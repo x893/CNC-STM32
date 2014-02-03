@@ -1,15 +1,42 @@
+;******************** (C) COPYRIGHT 2011 STMicroelectronics ********************
+;* File Name          : startup_stm32f10x_hd.s
+;* Author             : MCD Application Team
+;* Version            : V3.5.0
+;* Date               : 11-March-2011
+;* Description        : STM32F10x High Density Devices vector table for MDK-ARM 
+;*                      toolchain. 
+;*                      This module performs:
+;*                      - Set the initial SP
+;*                      - Set the initial PC == Reset_Handler
+;*                      - Set the vector table entries with the exceptions ISR address
+;*                      - Configure the clock system and also configure the external 
+;*                        SRAM mounted on STM3210E-EVAL board to be used as data 
+;*                        memory (optional, to be enabled by user)
+;*                      - Branches to __main in the C library (which eventually
+;*                        calls main()).
+;*                      After Reset the CortexM3 processor is in Thread mode,
+;*                      priority is Privileged, and the Stack is set to Main.
+;* <<< Use Configuration Wizard in Context Menu >>>   
+;*******************************************************************************
+; THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
+; WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE TIME.
+; AS A RESULT, STMICROELECTRONICS SHALL NOT BE HELD LIABLE FOR ANY DIRECT,
+; INDIRECT OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING FROM THE
+; CONTENT OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE CODING
+; INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
+;*******************************************************************************
+
 ; Amount of memory (in bytes) allocated for Stack
 ; Tailor this value to your application needs
 ; <h> Stack Configuration
 ;   <o> Stack Size (in Bytes) <0x0-0xFFFFFFFF:8>
 ; </h>
 
-Stack_Size      EQU     0x00000800
+Stack_Size      EQU     0x00000400
 
                 AREA    STACK, NOINIT, READWRITE, ALIGN=3
 Stack_Mem       SPACE   Stack_Size
 __initial_sp
-				EXPORT  __initial_sp
                                                   
 ; <h> Heap Configuration
 ;   <o>  Heap Size (in Bytes) <0x0-0xFFFFFFFF:8>
@@ -32,7 +59,7 @@ __heap_limit
                 EXPORT  __Vectors_End
                 EXPORT  __Vectors_Size
 
-__Vectors		DCD     __initial_sp               ; Top of Stack
+__Vectors       DCD     __initial_sp               ; Top of Stack
                 DCD     Reset_Handler              ; Reset Handler
                 DCD     NMI_Handler                ; NMI Handler
                 DCD     HardFault_Handler          ; Hard Fault Handler
@@ -122,11 +149,11 @@ Reset_Handler   PROC
                 IMPORT  __main
                 IMPORT  SystemInit
                 LDR     R0, =SystemInit
-                BLX     R0
+                BLX     R0               
                 LDR     R0, =__main
                 BX      R0
                 ENDP
-
+                
 ; Dummy Exception Handlers (infinite loops which can be modified)
 
 NMI_Handler     PROC
@@ -303,27 +330,29 @@ DMA2_Channel4_5_IRQHandler
 ;*******************************************************************************
 ; User Stack and Heap initialization
 ;*******************************************************************************
-			IF	:DEF:__MICROLIB
+                 IF      :DEF:__MICROLIB
                 
-;;				EXPORT	__initial_sp
-;;				EXPORT  __heap_base
-;;				EXPORT  __heap_limit
+                 EXPORT  __initial_sp
+                 EXPORT  __heap_base
+                 EXPORT  __heap_limit
                 
-			ELSE
+                 ELSE
                 
-				IMPORT  __use_two_region_memory
-				EXPORT  __user_initial_stackheap
+                 IMPORT  __use_two_region_memory
+                 EXPORT  __user_initial_stackheap
                  
 __user_initial_stackheap
 
-				LDR     R0, =  Heap_Mem
-				LDR     R1, =(Stack_Mem + Stack_Size)
-				LDR     R2, = (Heap_Mem +  Heap_Size)
-				LDR     R3, = Stack_Mem
-				BX      LR
+                 LDR     R0, =  Heap_Mem
+                 LDR     R1, =(Stack_Mem + Stack_Size)
+                 LDR     R2, = (Heap_Mem +  Heap_Size)
+                 LDR     R3, = Stack_Mem
+                 BX      LR
 
-				ALIGN
+                 ALIGN
 
-			ENDIF
+                 ENDIF
 
-			END
+                 END
+
+;******************* (C) COPYRIGHT 2011 STMicroelectronics *****END OF FILE*****

@@ -55,11 +55,11 @@
     <NMakeOutput>cnc.axf</NMakeOutput>
     <NMakeCleanCommandLine>build.bat clean</NMakeCleanCommandLine>
     <NMakeReBuildCommandLine>build.bat rebuild</NMakeReBuildCommandLine>
-    <NMakePreprocessorDefinitions>STM32F10X_HD;USE_STDPERIPH_DRIVER;__CC_ARM;__ARMCC_VERSION=400700</NMakePreprocessorDefinitions>
+    <NMakePreprocessorDefinitions>STM32F10X_HD;USE_STDPERIPH_DRIVER;__CC_ARM;__ARMCC_VERSION=400700;__nothrow=;__attribute__(x)=;__NO_EMBEDDED_ASM</NMakePreprocessorDefinitions>
     <OutDir>.\out</OutDir>
     <IntDir>.\out</IntDir>
     <ExecutablePath />
-    <IncludePath>.\src\application;.\src\libhardware;.\src\liblcd;.\src\libtools;.\src\libcmsis</IncludePath>
+    <IncludePath>.\src\application;.\src\libhardware\STM32F10X;.\src\liblcd;.\src\libtools;.\src\libcmsis</IncludePath>
     <ReferencePath />
     <LibraryPath />
     <LibraryWPath />
@@ -105,24 +105,29 @@
     <ClCompile Include="src\application\usb_scsi.c" />
     <ClCompile Include="src\libcmsis\core_cm3.c" />
     <ClCompile Include="src\libcmsis\system_stm32f10x.c" />
-    <ClCompile Include="src\libhardware\misc.c" />
-    <ClCompile Include="src\libhardware\stm32f10x_adc.c" />
-    <ClCompile Include="src\libhardware\stm32f10x_bkp.c" />
-    <ClCompile Include="src\libhardware\stm32f10x_can.c" />
-    <ClCompile Include="src\libhardware\stm32f10x_crc.c" />
-    <ClCompile Include="src\libhardware\stm32f10x_dma.c" />
-    <ClCompile Include="src\libhardware\stm32f10x_exti.c" />
-    <ClCompile Include="src\libhardware\stm32f10x_flash.c" />
-    <ClCompile Include="src\libhardware\stm32f10x_fsmc.c" />
-    <ClCompile Include="src\libhardware\stm32f10x_gpio.c" />
-    <ClCompile Include="src\libhardware\stm32f10x_i2c.c" />
-    <ClCompile Include="src\libhardware\stm32f10x_pwr.c" />
-    <ClCompile Include="src\libhardware\stm32f10x_rcc.c" />
-    <ClCompile Include="src\libhardware\stm32f10x_rtc.c" />
-    <ClCompile Include="src\libhardware\stm32f10x_sdio.c" />
-    <ClCompile Include="src\libhardware\stm32f10x_spi.c" />
-    <ClCompile Include="src\libhardware\stm32f10x_tim.c" />
-    <ClCompile Include="src\libhardware\stm32f10x_usart.c" />
+    <ClCompile Include="src\libhardware\STM32F10X\misc.c" />
+    <ClCompile Include="src\libhardware\STM32F10X\stm32f10x_adc.c" />
+    <ClCompile Include="src\libhardware\STM32F10X\stm32f10x_bkp.c" />
+    <ClCompile Include="src\libhardware\STM32F10X\stm32f10x_can.c" />
+    <ClCompile Include="src\libhardware\STM32F10X\stm32f10x_cec.c" />
+    <ClCompile Include="src\libhardware\STM32F10X\stm32f10x_crc.c" />
+    <ClCompile Include="src\libhardware\STM32F10X\stm32f10x_dac.c" />
+    <ClCompile Include="src\libhardware\STM32F10X\stm32f10x_dbgmcu.c" />
+    <ClCompile Include="src\libhardware\STM32F10X\stm32f10x_dma.c" />
+    <ClCompile Include="src\libhardware\STM32F10X\stm32f10x_exti.c" />
+    <ClCompile Include="src\libhardware\STM32F10X\stm32f10x_flash.c" />
+    <ClCompile Include="src\libhardware\STM32F10X\stm32f10x_fsmc.c" />
+    <ClCompile Include="src\libhardware\STM32F10X\stm32f10x_gpio.c" />
+    <ClCompile Include="src\libhardware\STM32F10X\stm32f10x_i2c.c" />
+    <ClCompile Include="src\libhardware\STM32F10X\stm32f10x_iwdg.c" />
+    <ClCompile Include="src\libhardware\STM32F10X\stm32f10x_pwr.c" />
+    <ClCompile Include="src\libhardware\STM32F10X\stm32f10x_rcc.c" />
+    <ClCompile Include="src\libhardware\STM32F10X\stm32f10x_rtc.c" />
+    <ClCompile Include="src\libhardware\STM32F10X\stm32f10x_sdio.c" />
+    <ClCompile Include="src\libhardware\STM32F10X\stm32f10x_spi.c" />
+    <ClCompile Include="src\libhardware\STM32F10X\stm32f10x_tim.c" />
+    <ClCompile Include="src\libhardware\STM32F10X\stm32f10x_usart.c" />
+    <ClCompile Include="src\libhardware\STM32F10X\stm32f10x_wwdg.c" />
     <ClCompile Include="src\liblcd\ili9320.c" />
     <ClCompile Include="src\liblcd\ili9320_api.c" />
     <ClCompile Include="src\liblcd\ili9320_touch.c" />
@@ -141,72 +146,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="src\libcmsis\startup\arm\startup_stm32f10x_hd.s" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="src\application\Crc32.h" />
-    <ClInclude Include="src\application\crt.h" />
-    <ClInclude Include="src\application\encoder.h" />
-    <ClInclude Include="src\application\gcode.h" />
-    <ClInclude Include="src\application\global.h" />
-    <ClInclude Include="src\application\hw_config.h" />
-    <ClInclude Include="src\application\keyboard.h" />
-    <ClInclude Include="src\application\limits.h" />
-    <ClInclude Include="src\application\mass_mal.h" />
-    <ClInclude Include="src\application\memory.h" />
-    <ClInclude Include="src\application\rs232_interface.h" />
-    <ClInclude Include="src\application\stepmotor.h" />
-    <ClInclude Include="src\application\stm32f10x_conf.h" />
-    <ClInclude Include="src\application\stm32f10x_it.h" />
-    <ClInclude Include="src\application\usb_bot.h" />
-    <ClInclude Include="src\application\usb_desc.h" />
-    <ClInclude Include="src\application\usb_istr.h" />
-    <ClInclude Include="src\application\usb_prop.h" />
-    <ClInclude Include="src\application\usb_pwr.h" />
-    <ClInclude Include="src\application\usb_scsi.h" />
-    <ClInclude Include="src\libcmsis\core_cm3.h" />
-    <ClInclude Include="src\libcmsis\stm32f10x.h" />
-    <ClInclude Include="src\libcmsis\system_stm32f10x.h" />
-    <ClInclude Include="src\libhardware\misc.h" />
-    <ClInclude Include="src\libhardware\stm32f10x_adc.h" />
-    <ClInclude Include="src\libhardware\stm32f10x_bkp.h" />
-    <ClInclude Include="src\libhardware\stm32f10x_can.h" />
-    <ClInclude Include="src\libhardware\stm32f10x_crc.h" />
-    <ClInclude Include="src\libhardware\stm32f10x_dac.h" />
-    <ClInclude Include="src\libhardware\stm32f10x_dbgmcu.h" />
-    <ClInclude Include="src\libhardware\stm32f10x_dma.h" />
-    <ClInclude Include="src\libhardware\stm32f10x_exti.h" />
-    <ClInclude Include="src\libhardware\stm32f10x_flash.h" />
-    <ClInclude Include="src\libhardware\stm32f10x_fsmc.h" />
-    <ClInclude Include="src\libhardware\stm32f10x_gpio.h" />
-    <ClInclude Include="src\libhardware\stm32f10x_i2c.h" />
-    <ClInclude Include="src\libhardware\stm32f10x_iwdg.h" />
-    <ClInclude Include="src\libhardware\stm32f10x_pwr.h" />
-    <ClInclude Include="src\libhardware\stm32f10x_rcc.h" />
-    <ClInclude Include="src\libhardware\stm32f10x_rtc.h" />
-    <ClInclude Include="src\libhardware\stm32f10x_sdio.h" />
-    <ClInclude Include="src\libhardware\stm32f10x_spi.h" />
-    <ClInclude Include="src\libhardware\stm32f10x_tim.h" />
-    <ClInclude Include="src\libhardware\stm32f10x_usart.h" />
-    <ClInclude Include="src\libhardware\stm32f10x_wwdg.h" />
-    <ClInclude Include="src\liblcd\ili9320.h" />
-    <ClInclude Include="src\liblcd\ili9320_font.h" />
-    <ClInclude Include="src\liblcd\scr_io.h" />
-    <ClInclude Include="src\libtools\Config.h" />
-    <ClInclude Include="src\libtools\diskio.h" />
-    <ClInclude Include="src\libtools\fattime.h" />
-    <ClInclude Include="src\libtools\ff.h" />
-    <ClInclude Include="src\libtools\integer.h" />
-    <ClInclude Include="src\libtools\rtc.h" />
-    <ClInclude Include="src\libtools\sdcard.h" />
-    <ClInclude Include="src\libtools\usb_conf.h" />
-    <ClInclude Include="src\libtools\usb_core.h" />
-    <ClInclude Include="src\libtools\usb_def.h" />
-    <ClInclude Include="src\libtools\usb_init.h" />
-    <ClInclude Include="src\libtools\usb_int.h" />
-    <ClInclude Include="src\libtools\usb_lib.h" />
-    <ClInclude Include="src\libtools\usb_mem.h" />
-    <ClInclude Include="src\libtools\usb_regs.h" />
-    <ClInclude Include="src\libtools\usb_type.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

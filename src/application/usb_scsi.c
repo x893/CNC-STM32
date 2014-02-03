@@ -341,7 +341,7 @@ bool SCSI_Address_Management(u8 lun, u8 Cmd, u32 LBA, u32 BlockNbr)
 		Bot_Abort(DIR_IN);
 		Set_Scsi_Sense_Data(lun, ILLEGAL_REQUEST, ADDRESS_OUT_OF_RANGE);
 		Set_CSW(CSW_CMD_FAILED, SEND_CSW_DISABLE);
-		return (FALSE);
+		return (false);
 	}
 
 
@@ -354,7 +354,7 @@ bool SCSI_Address_Management(u8 lun, u8 Cmd, u32 LBA, u32 BlockNbr)
 
 		Set_Scsi_Sense_Data(CBW.bLUN, ILLEGAL_REQUEST, INVALID_FIELED_IN_COMMAND);
 		Set_CSW(CSW_CMD_FAILED, SEND_CSW_DISABLE);
-		return (FALSE);
+		return (false);
 	}
-	return (TRUE);
+	return (true);
 }

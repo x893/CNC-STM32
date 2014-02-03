@@ -1,6 +1,5 @@
 #include <string.h>
 #include "global.h"
-#include "limits.h"
 #include "scr_io.h"
 
 #define CONF_FILE_NAME "sm.conf"
@@ -131,7 +130,7 @@ void showStatusString(void)
 		scr_fontColor(White, Black);
 		scr_printf("%02d.%02d.%02d %02d:%02d:%02d ", rtc.mday, rtc.month, rtc.year - 2000, rtc.hour, rtc.min, rtc.sec);
 
-#ifdef HAS_EXTRUDER
+#if (USE_EXTRUDER == 1)
 		scr_fontColor(_smParam.maxSpindleTemperature > extrudT_getTemperatureReal() ? Green : Red, Black);
 		scr_printf("t:%dC", extrudT_getTemperatureReal());
 #endif
@@ -143,9 +142,9 @@ void showStatusString(void)
 	if (limits != limits_chk())
 	{
 		limits = limits_chk();
-		GUI_Rectangle(304, 232, 309, 239, limitX_chk() ? Red : Green, TRUE);
-		GUI_Rectangle(310, 232, 315, 239, limitY_chk() ? Red : Green, TRUE);
-		GUI_Rectangle(314, 232, 319, 239, limitZ_chk() ? Red : Green, TRUE);
+		GUI_Rectangle(304, 232, 309, 239, limitX_chk() ? Red : Green, true);
+		GUI_Rectangle(310, 232, 315, 239, limitY_chk() ? Red : Green, true);
+		GUI_Rectangle(314, 232, 319, 239, limitZ_chk() ? Red : Green, true);
 	}
 }
 
@@ -236,13 +235,13 @@ uint8_t questionYesNo(char *msg, char *param)
 	scr_printf(msg, param);
 	scr_gotoxy(5, 6); scr_puts("'D' - OK,  'C' - Cancel");
 
-	while (TRUE)
+	while (true)
 		switch (kbd_getKey())
 		{
 			case KEY_D:
-				return TRUE;
+				return true;
 			case KEY_C:
-				return FALSE;
+				return false;
 		}
 }
 
@@ -252,7 +251,7 @@ void setTime(void)
 	int c = -1, pos = 0, v = 0;
 	
 	win_showMsgWin();
-	scr_setScrollOn(FALSE);
+	scr_setScrollOn(false);
 	rtc_gettime(&rtc);
 	scr_puts("D-ENTER C-CANCEL A-Up B-Down");
 	scr_puts("\n'*' -Left '#' -RIGHT");
@@ -311,7 +310,7 @@ void setTime(void)
 
 int main()
 {
-	uint8_t rereadDir = TRUE, redrawScr = TRUE, redrawDir = TRUE;
+	bool rereadDir = true, redrawScr = true, redrawDir = true;
 	char str[150];
 
 	SystemStartup();
@@ -320,7 +319,7 @@ int main()
 	if (fres != FR_OK)
 		showCriticalStatus(" Mount SD error [code:%d]\n SD card used for any CNC process\n Only RESET possible at now", fres);
 
-	initSmParam(FALSE);
+	initSmParam(false);
 	scr_puts("\n         ---- OK -----");
 	while (kbd_getKey() != KEY_D);
 
@@ -329,13 +328,13 @@ int main()
 		if (rereadDir)
 		{
 			readFileList();
-			redrawScr = TRUE;
-			rereadDir = FALSE;
+			redrawScr = true;
+			rereadDir = false;
 		}
 
 		if (redrawScr)
 		{
-			redrawScr = FALSE;
+			redrawScr = false;
 			ili9320_Clear(0);
 			win_showMenu(18, 144, 36, 4);
 			scr_puts(
@@ -344,11 +343,11 @@ int main()
 				"4 - set time\t 5 - file info\n"
 				//"6 - scan mode\t "
 				"7 - save conf.file (v1.1)");
-			redrawDir = TRUE;
+			redrawDir = true;
 		}
 		if (redrawDir)
 		{
-			redrawDir = FALSE;
+			redrawDir = false;
 			drawFileList();
 		}
 		// ---------------------
@@ -358,19 +357,19 @@ int main()
 		{
 		case KEY_A:
 			curFile--;
-			redrawDir = TRUE;
+			redrawDir = true;
 			break;
 		case KEY_B:
 			curFile++;
-			redrawDir = TRUE;
+			redrawDir = true;
 			break;
 		case KEY_STAR:
 			curFile += FILE_LIST_ROWS;
-			redrawDir = TRUE;
+			redrawDir = true;
 			break;
 		case KEY_DIES:
 			curFile -= FILE_LIST_ROWS;
-			redrawDir = TRUE;
+			redrawDir = true;
 			break;
 		case KEY_0:
 		{
@@ -391,12 +390,12 @@ int main()
 			scr_clrEndl();
 			while (kbd_getKey() != -1);
 			while (kbd_getKey() != KEY_C);
-			redrawScr = TRUE;
+			redrawScr = true;
 			break;
 		}
 		case KEY_1:
 			manualMode();
-			redrawScr = TRUE;
+			redrawScr = true;
 			break;
 		case KEY_2:
 			while (kbd_getKey() != -1);
@@ -404,21 +403,21 @@ int main()
 			scr_printf("\n              PRESS C-KEY");
 			while (kbd_getKey() != -1);
 			while (kbd_getKey() != KEY_C);
-			redrawScr = TRUE;
+			redrawScr = true;
 			break;
 			//------------------------------------------
 		case KEY_3:
 			if (questionYesNo("Delete file:\n'%s'?", &fileList[curFile][0]))
 			{
-				rereadDir = TRUE;
+				rereadDir = true;
 				f_unlink(&fileList[curFile][0]);
 			}
 			else
-				redrawScr = TRUE;
+				redrawScr = true;
 			break;
 		case KEY_4:
 			setTime();
-			redrawScr = TRUE;
+			redrawScr = true;
 			break;
 		case KEY_5:
 		{
@@ -428,7 +427,7 @@ int main()
 
 			memset(&finf, 0, sizeof(finf));
 			win_showMsgWin();
-			scr_setScrollOn(FALSE);
+			scr_setScrollOn(false);
 			scr_printf("file:'%s'", &fileList[curFile][0]);
 			f_stat(&fileList[curFile][0], &finf);
 			scr_gotoxy(0, 1); scr_printf("File size:%d\n", (uint32_t)finf.fsize);
@@ -439,7 +438,7 @@ int main()
 			}
 			else
 			{
-				scr_fontColorInvers(); scr_setScrollOn(FALSE);
+				scr_fontColorInvers(); scr_setScrollOn(false);
 				for (n = 2; n < 7 && f_gets(str, sizeof(str), &fid) != NULL; n++)
 				{
 					scr_gotoxy(0, n);
@@ -449,7 +448,7 @@ int main()
 			scr_fontColorNormal();
 			scr_gotoxy(8, 7);
 			scr_printf("PRESS C-KEY");
-			redrawScr = TRUE;
+			redrawScr = true;
 			do {
 				c = kbd_getKey();
 				if (c == KEY_B)
@@ -461,21 +460,42 @@ int main()
 				}
 			} while (c != KEY_C);
 			f_close(&fid);
-			rereadDir = TRUE;
+			rereadDir = true;
 		}
 		break;
 		case KEY_6:
 			//	initSensor();
 			//	scanMode();
-			redrawScr = TRUE;
+			redrawScr = true;
 			break;
 		case KEY_7:
 			win_showMsgWin();
 			initSmParam(true);
 			scr_printf("\n\n\n        PRESS C-KEY");
 			while (kbd_getKey() != KEY_C);
-			redrawScr = TRUE;
+			redrawScr = true;
 			break;
 		}
 	}
 }
+
+#ifdef  USE_FULL_ASSERT
+
+/**
+  * @brief  Reports the name of the source file and the source line number
+  *         where the assert_param error has occurred.
+  * @param  file: pointer to the source file name
+  * @param  line: assert_param error line source number
+  * @retval None
+  */
+void assert_failed(uint8_t* file, uint32_t line)
+{ 
+	/* User can add his own implementation to report the file name and line number,
+		ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+	/* Infinite loop */
+	while (1)
+	{
+	}
+}
+
+#endif
