@@ -1,30 +1,11 @@
-/******************** (C) COPYRIGHT 2008 STMicroelectronics ********************
-* File Name          : usb_init.h
-* Author             : MCD Application Team
-* Version            : V2.2.1
-* Date               : 09/22/2008
-* Description        : Initialization routines & global variables
-********************************************************************************
-* THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
-* WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE TIME.
-* AS A RESULT, STMICROELECTRONICS SHALL NOT BE HELD LIABLE FOR ANY DIRECT,
-* INDIRECT OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING FROM THE
-* CONTENT OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE CODING
-* INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
-*******************************************************************************/
-
-/* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __USB_INIT_H
 #define __USB_INIT_H
 
-/* Includes ------------------------------------------------------------------*/
-/* Exported types ------------------------------------------------------------*/
-/* Exported constants --------------------------------------------------------*/
-/* Exported macro ------------------------------------------------------------*/
-/* Exported functions ------------------------------------------------------- */
+#include "stm32fxxx.h"
+
 void USB_Init(void);
 
-/* External variables --------------------------------------------------------*/
+
 /*  The number of current endpoint, it will be used to specify an endpoint */
 extern u8	EPindex;
 /*  The number of current device, it is an index to the Device_Table */
@@ -45,5 +26,3 @@ extern u16	SaveState ;
 extern u16 wInterrupt_Mask;
 
 #endif /* __USB_INIT_H */
-
-/******************* (C) COPYRIGHT 2008 STMicroelectronics *****END OF FILE****/

@@ -1,40 +1,8 @@
-/**
-  ******************************************************************************
-  * @file    SDIO/sdcard.h
-  * @author  MCD Application Team
-  * @version V3.1.2
-  * @date    09/28/2009
-  * @brief   This file contains all the functions prototypes for the SD Card
-  *          driver firmware library.
-  ******************************************************************************
-  * @copy
-  *
-  * THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
-  * WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE
-  * TIME. AS A RESULT, STMICROELECTRONICS SHALL NOT BE HELD LIABLE FOR ANY
-  * DIRECT, INDIRECT OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING
-  * FROM THE CONTENT OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE
-  * CODING INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
-  *
-  * <h2><center>&copy; COPYRIGHT 2009 STMicroelectronics</center></h2>
-  */
-
-/** @addtogroup STM32F10x_StdPeriph_Examples
-  * @{
-  */
-
-/** @addtogroup SDIO_Example
-  * @{
-  */
-
-/* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __SDCARD_H
 #define __SDCARD_H
 
-/* Includes ------------------------------------------------------------------*/
-#include "stm32f10x.h"
+#include "stm32fxxx.h"
 
-/* Exported types ------------------------------------------------------------*/
 typedef enum
 {
 	/* SDIO specific error defines */
@@ -239,10 +207,9 @@ typedef struct
 	uint8_t CardType;
 } SD_CardInfo;
 
-/* Exported constants --------------------------------------------------------*/
-#define SD_DMA_MODE                     ((uint32_t)0x00000000)
-#define SD_INTERRUPT_MODE               ((uint32_t)0x00000001)
-#define SD_POLLING_MODE                 ((uint32_t)0x00000002)
+#define SD_DMA_MODE			((uint32_t)0x00000000)
+#define SD_INTERRUPT_MODE	((uint32_t)0x00000001)
+#define SD_POLLING_MODE		((uint32_t)0x00000002)
 
 /* Supported Memory Cards */
 #define SDIO_STD_CAPACITY_SD_CARD_V1_1     ((uint32_t)0x0)
@@ -254,8 +221,6 @@ typedef struct
 #define SDIO_SECURE_DIGITAL_IO_COMBO_CARD  ((uint32_t)0x6)
 #define SDIO_HIGH_CAPACITY_MMC_CARD        ((uint32_t)0x7)
 
-/* Exported macro ------------------------------------------------------------*/
-/* Exported functions ------------------------------------------------------- */
 SD_Error SD_Init(void);
 SD_Error SD_PowerON(void);
 SD_Error SD_PowerOFF(void);
@@ -276,13 +241,3 @@ SD_Error SD_SendSDStatus(uint32_t *psdstatus);
 SD_Error SD_ProcessIRQSrc(void);
 
 #endif /* __SDCARD_H */
-
-/**
-  * @}
-  */
-
-/**
-  * @}
-  */
-
-/******************* (C) COPYRIGHT 2009 STMicroelectronics *****END OF FILE****/

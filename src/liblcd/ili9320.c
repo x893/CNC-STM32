@@ -40,26 +40,19 @@ void Lcd_Configuration(void)
 	FSMC_NORSRAMTimingInitTypeDef  NORSRAMTiming;
 	FSMC_NORSRAMInitTypeDef NORSRAMInit;
 
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOD | RCC_APB2Periph_GPIOE, ENABLE);
+	GPIO_CLK(LCD_RST_CLK | LCD_BACKLIGHT_CLK, ENABLE);
 
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-	GPIO_InitStructure.GPIO_Pin = LCD_RST_PIN;
-	GPIO_Init(LCD_RST_PORT, &GPIO_InitStructure);
-	
-	GPIO_InitStructure.GPIO_Pin = LCD_BACKLIGHT_PIN;
-	GPIO_Init(LCD_BACKLIGHT_PORT, &GPIO_InitStructure);
+	PIN_SPEED_HIGH();
+	PIN_OUTPUT_PP();
+
+	PIN_SET_MODE(LCD_RST_PORT, LCD_RST_PIN);
+	PIN_SET_MODE(LCD_BACKLIGHT_PORT, LCD_BACKLIGHT_PIN);
 
 	//------------------------- FSMC pins
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
-	GPIO_InitStructure.GPIO_Pin = LCD_DATA_D_PINS;
-	GPIO_Init(LCD_DATA_D_PORT, &GPIO_InitStructure);
-
-	GPIO_InitStructure.GPIO_Pin = LCD_DATA_E_PINS;
-	GPIO_Init(LCD_DATA_E_PORT, &GPIO_InitStructure);
-
-	GPIO_InitStructure.GPIO_Pin = LCD_CTRL_PINS;
-	GPIO_Init(LCD_CTRL_PORT, &GPIO_InitStructure);
+	PIN_ALTFUNC_PP();
+	PIN_SET_MODE(LCD_DATA_D_PORT, LCD_DATA_D_PINS);
+	PIN_SET_MODE(LCD_DATA_E_PORT, LCD_DATA_E_PINS);
+	PIN_SET_MODE(LCD_CTRL_PORT, LCD_CTRL_PINS);
 
 	//------------------------- FSMC controller
 	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_FSMC, ENABLE);

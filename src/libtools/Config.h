@@ -1,7 +1,7 @@
 #ifndef __Config_h
 #define __Config_h    
 
-#include "stm32f10x.h"
+#include "STM32Fxxx.h"
 #include "integer.h"
 
 #include "sdcard.h"

@@ -1,13 +1,7 @@
 #ifndef __GLOBAL_H__
 #define __GLOBAL_H__
 
-#if   defined( STM32F10X_HD )
-	#include "stm32f10x.h"
-#elif defined( STM32F2XX )
-	#include "stm32f2xx.h"
-#else
-	#error "MCU not define"
-#endif
+#include "stm32fxxx.h"
 
 //*** <<< Use Configuration Wizard in Context Menu >>> ***
 //	<e> Use LCD ILI9320
@@ -202,19 +196,21 @@ static __INLINE uint8_t limits_chk(void) { return limitX_chk() || limitY_chk() |
 #define ROW3_PIN			GPIO_Pin_3
 
 #if (USE_LCD == 1)
+	#define LCD_BACKLIGHT_CLK	GPIOD_CLOCK
 	#define LCD_BACKLIGHT_PORT	GPIOD
 	#define LCD_BACKLIGHT_PIN	GPIO_Pin_13
 
-	#define LCD_BACKLIGHT_ON()	do { LCD_BACKLIGHT_PORT->BSRR = LCD_BACKLIGHT_PIN; } while(0)
-	#define LCD_BACKLIGHT_OFF()	do { LCD_BACKLIGHT_PORT->BRR  = LCD_BACKLIGHT_PIN; } while (0)
+	#define LCD_BACKLIGHT_ON()	GPIO_SetBits(LCD_BACKLIGHT_PORT, LCD_BACKLIGHT_PIN)
+	#define LCD_BACKLIGHT_OFF()	GPIO_ResetBits(LCD_BACKLIGHT_PORT, LCD_BACKLIGHT_PIN)
 
 	#define Bank1_LCD_D			((uint32_t)0x60020000)	/* disp Data ADDR */
 	#define Bank1_LCD_C			((uint32_t)0x60000000)	/* disp Reg  ADDR */
 
+	#define LCD_RST_CLK			GPIOE_CLOCK
 	#define LCD_RST_PORT		GPIOE
 	#define LCD_RST_PIN			GPIO_Pin_1
-	#define LCD_RESET_LOW()		do { LCD_RST_PORT->BRR  = LCD_RST_PIN; } while (0)
-	#define LCD_RESET_HIGH()	do { LCD_RST_PORT->BSRR = LCD_RST_PIN; } while (0)
+	#define LCD_RESET_LOW()		GPIO_ResetBits(LCD_RST_PORT, LCD_RST_PIN)
+	#define LCD_RESET_HIGH()	GPIO_SetBits(LCD_RST_PORT, LCD_RST_PIN)
 
 	// PD14-D0, PD15-D1, PD0-D2,   PD1-D3,   PE7-D4,   PE8-D5,  PE9-D6, PE10-D7,
 	// PE11-D8, PE12-D9, PE13-D10, PE14-D11, PE15-D12, PD8-D13, PD9-D14, PD10-D15
@@ -227,21 +223,21 @@ static __INLINE uint8_t limits_chk(void) { return limitX_chk() || limitY_chk() |
 	#define LCD_CTRL_PINS		GPIO_Pin_11 | GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_7
 #endif
 
-#define LED_PORT			GPIOB
-#define LED_PIN				GPIO_Pin_5
-#define LED_ON()			do { LED_PORT->BSRR = LED_PIN; } while(0)
-#define LED_OFF()			do { LED_PORT->BRR = LED_PIN; } while (0)
+#define LED_PORT				GPIOB
+#define LED_PIN					GPIO_Pin_5
+#define LED_ON()				GPIO_SetBits(LED_PORT, LED_PIN)
+#define LED_OFF()				GPIO_ResetBits(LED_PORT, LED_PIN)
 
-#define SD_DATA_PORT		GPIOC
+#define SD_DATA_PORT			GPIOC
 /* PC.08, PC.09, PC.10, PC.11, PC.12 pin: D0, D1, D2, D3, CLK */
-#define SD_DATA_PINS		(GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 | GPIO_Pin_11 | GPIO_Pin_12)
-#define SD_CMD_PORT			GPIOD
-#define SD_CMD_PIN			GPIO_Pin_2
+#define SD_DATA_PINS			(GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 | GPIO_Pin_11 | GPIO_Pin_12)
+#define SD_CMD_PORT				GPIOD
+#define SD_CMD_PIN				GPIO_Pin_2
 
 #define USB_DISCONNECT_PORT		GPIOC
-#define USB_DISCONNECT_PIN	GPIO_Pin_13
-#define USB_CONNECTED()		do { USB_DISCONNECT_PORT->BRR  = USB_DISCONNECT_PIN; } while (0)
-#define USB_DISCONNECTED()	do { USB_DISCONNECT_PORT->BSRR = USB_DISCONNECT_PIN; } while (0)
+#define USB_DISCONNECT_PIN		GPIO_Pin_13
+#define USB_CONNECTED()			GPIO_ResetBits(USB_DISCONNECT_PORT, USB_DISCONNECT_PIN)
+#define USB_DISCONNECTED()		GPIO_ResetBits(USB_DISCONNECT_PORT, USB_DISCONNECT_PIN)
 
 #if (USE_FLASH == 1)
 	#define SST25_PINS			(GPIO_Pin_5 | GPIO_Pin_6 | GPIO_Pin_7)
@@ -253,13 +249,13 @@ static __INLINE uint8_t limits_chk(void) { return limitX_chk() || limitY_chk() |
 	#define SST25_PORT_CLK()	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE)
 #endif
 
-#define RS232_USART			USART1
-#define	RS232_USART_CLK()	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE)
-#define RS232_USART_IRQ		USART1_IRQn
-#define RS232_USART_TX_PORT	GPIOA
-#define RS232_USART_TX_PIN	GPIO_Pin_9
-#define RS232_USART_RX_PORT	GPIOA
-#define RS232_USART_RX_PIN	GPIO_Pin_10
+#define RS232_USART				USART1
+#define	RS232_USART_CLK()		RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE)
+#define RS232_USART_IRQ			USART1_IRQn
+#define RS232_USART_TX_PORT		GPIOA
+#define RS232_USART_TX_PIN		GPIO_Pin_9
+#define RS232_USART_RX_PORT		GPIOA
+#define RS232_USART_RX_PIN		GPIO_Pin_10
 
 #include "hw_config.h"
 #include "scr_io.h"

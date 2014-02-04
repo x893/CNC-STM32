@@ -18,7 +18,7 @@
 #define __USB_CORE_H
 
 #include <stdbool.h>
-#include "stm32f10x.h"
+#include "stm32fxxx.h"
 
 /* Includes ------------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/

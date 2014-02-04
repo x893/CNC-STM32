@@ -1,4 +1,3 @@
-#include "stm32f10x.h"
 #include "global.h"
 #include "sdcard.h"
 

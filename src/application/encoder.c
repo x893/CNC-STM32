@@ -11,10 +11,9 @@ void encoder_int()
 	TIM_TimeBaseInitTypeDef timer_base;
 	TIM_ICInitTypeDef TIM_ICInitStruct;
 
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_10MHz;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
-	GPIO_InitStructure.GPIO_Pin = ENCODER_PINS;
-	GPIO_Init(ENCODER_PORT, &GPIO_InitStructure);
+	// PIN_SPEED_MID();
+	PIN_INPUT();
+	PIN_SET_MODE(ENCODER_PORT, ENCODER_PINS);
 
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM8, ENABLE);
 	TIM_DeInit(TIM8);

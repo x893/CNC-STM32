@@ -1,7 +1,7 @@
 #ifndef __USB_BOT_H
 #define __USB_BOT_H
 
-#include "stm32f10x.h"
+#include "STM32Fxxx.h"
 
 typedef struct _Bulk_Only_CBW
 {

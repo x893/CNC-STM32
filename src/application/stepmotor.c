@@ -31,16 +31,16 @@ void stepm_powerOff(uint8_t id)
 	switch (id)
 	{
 #ifdef M0_EN_PORT
-	case 0: M0_EN_PORT->BRR = M0_EN_PIN; break;
+	case 0: GPIO_ResetBits(M0_EN_PORT, M0_EN_PIN); break;
 #endif
 #ifdef M1_EN_PORT
-	case 1: M1_EN_PORT->BRR = M1_EN_PIN; break;
+	case 1: GPIO_ResetBits(M1_EN_PORT, M1_EN_PIN); break;
 #endif
 #ifdef M2_EN_PORT
-	case 2: M2_EN_PORT->BRR = M2_EN_PIN; break;
+	case 2: GPIO_ResetBits(M2_EN_PORT, M2_EN_PIN); break;
 #endif
 #ifdef M3_EN_PORT
-	case 3: M3_EN_PORT->BRR = M3_EN_PIN; break;
+	case 3: GPIO_ResetBits(M3_EN_PORT, M3_EN_PIN); break;
 #endif
 	default: break;
 	}
@@ -55,8 +55,8 @@ void stepm_init(void)
 
 	steps_buf_sz = steps_buf_p1 = steps_buf_p2 = 0;
 
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+	PIN_SPEED_LOW();
+	PIN_OUTPUT_PP();
 
 	for (i = 0; i < STEPS_MOTORS; i++)
 	{
@@ -68,25 +68,25 @@ void stepm_init(void)
 		switch (i)
 		{
 		case 0:
-			GPIO_InitStructure.GPIO_Pin = M0_EN_PIN;   GPIO_Init(M0_EN_PORT, &GPIO_InitStructure);
-			GPIO_InitStructure.GPIO_Pin = M0_DIR_PIN;  GPIO_Init(M0_DIR_PORT, &GPIO_InitStructure);
-			GPIO_InitStructure.GPIO_Pin = M0_STEP_PIN; GPIO_Init(M0_STEP_PORT, &GPIO_InitStructure);
+			PIN_SET_MODE(M0_EN_PORT,   M0_EN_PIN);
+			PIN_SET_MODE(M0_DIR_PORT,  M0_DIR_PIN);
+			PIN_SET_MODE(M0_STEP_PORT, M0_STEP_PIN);
 			break;
 		case 1:
-			GPIO_InitStructure.GPIO_Pin = M1_EN_PIN;   GPIO_Init(M1_EN_PORT, &GPIO_InitStructure);
-			GPIO_InitStructure.GPIO_Pin = M1_DIR_PIN;  GPIO_Init(M1_DIR_PORT, &GPIO_InitStructure);
-			GPIO_InitStructure.GPIO_Pin = M1_STEP_PIN; GPIO_Init(M1_STEP_PORT, &GPIO_InitStructure);
+			PIN_SET_MODE(M1_EN_PORT,   M1_EN_PIN);
+			PIN_SET_MODE(M1_DIR_PORT,  M1_DIR_PIN);
+			PIN_SET_MODE(M1_STEP_PORT, M1_STEP_PIN);
 			break;
 		case 2:
-			GPIO_InitStructure.GPIO_Pin = M2_EN_PIN;   GPIO_Init(M2_EN_PORT, &GPIO_InitStructure);
-			GPIO_InitStructure.GPIO_Pin = M2_DIR_PIN;  GPIO_Init(M2_DIR_PORT, &GPIO_InitStructure);
-			GPIO_InitStructure.GPIO_Pin = M2_STEP_PIN; GPIO_Init(M2_STEP_PORT, &GPIO_InitStructure);
+			PIN_SET_MODE(M2_EN_PORT,   M2_EN_PIN);
+			PIN_SET_MODE(M2_DIR_PORT,  M2_DIR_PIN);
+			PIN_SET_MODE(M2_STEP_PORT, M2_STEP_PIN);
 			break;
 #ifdef M3_EN_PORT
 		case 3:
-			GPIO_InitStructure.GPIO_Pin = M3_EN_PIN;   GPIO_Init(M3_EN_PORT, &GPIO_InitStructure);
-			GPIO_InitStructure.GPIO_Pin = M3_DIR_PIN;  GPIO_Init(M3_DIR_PORT, &GPIO_InitStructure);
-			GPIO_InitStructure.GPIO_Pin = M3_STEP_PIN; GPIO_Init(M3_STEP_PORT, &GPIO_InitStructure);
+			PIN_SET_MODE(M3_EN_PORT,   M3_EN_PIN);
+			PIN_SET_MODE(M3_DIR_PORT,  M3_DIR_PIN);
+			PIN_SET_MODE(M3_STEP_PORT, M3_STEP_PIN);
 			break;
 #endif
 		}
@@ -120,26 +120,26 @@ void stepm_proc(uint8_t id)
 		{
 #ifdef M0_EN_PORT
 		case 0:
-			if (step_motors[id].clk) M0_STEP_PORT->BSRR = M0_STEP_PIN;
-			else M0_STEP_PORT->BRR = M0_STEP_PIN;
+			if (step_motors[id].clk) GPIO_SetBits(M0_STEP_PORT, M0_STEP_PIN);
+			else GPIO_ResetBits(M0_STEP_PORT, M0_STEP_PIN);
 			break;
 #endif
 #ifdef M1_EN_PORT
 		case 1:
-			if (step_motors[id].clk) M1_STEP_PORT->BSRR = M1_STEP_PIN;
-			else M1_STEP_PORT->BRR = M1_STEP_PIN;
+			if (step_motors[id].clk) GPIO_SetBits(M1_STEP_PORT, M1_STEP_PIN);
+			else GPIO_ResetBits(M1_STEP_PORT, M1_STEP_PIN);
 			break;
 #endif
 #ifdef M2_EN_PORT
 		case 2:
-			if (step_motors[id].clk) M2_STEP_PORT->BSRR = M2_STEP_PIN;
-			else M2_STEP_PORT->BRR = M2_STEP_PIN;
+			if (step_motors[id].clk) GPIO_SetBits(M2_STEP_PORT, M2_STEP_PIN);
+			else GPIO_ResetBits(M2_STEP_PORT, M2_STEP_PIN);
 			break;
 #endif
 #ifdef M3_EN_PORT
 		case 3:
-			if (step_motors[id].clk) M3_STEP_PORT->BSRR = M3_STEP_PIN;
-			else M3_STEP_PORT->BRR = M3_STEP_PIN;
+			if (step_motors[id].clk) GPIO_SetBits(M3_STEP_PORT, M3_STEP_PIN);
+			else GPIO_ResetBits(M3_STEP_PORT, M3_STEP_PIN);
 			break;
 #endif
 		default:
@@ -187,7 +187,7 @@ void stepm_proc(uint8_t id)
 				step_motors[0].isInProc = true;
 #ifdef M0_EN_PORT
 				GPIO_WriteBit(M0_DIR_PORT, M0_DIR_PIN, p->dir[0] ? Bit_SET : Bit_RESET);
-				M0_EN_PORT->BSRR = M0_EN_PIN;
+				GPIO_SetBits(M0_EN_PORT, M0_EN_PIN);
 				TIM2->PSC = p->pscValue[0];
 				TIM_SetAutoreload(TIM2, p->arrValue[0]);
 #endif
@@ -197,7 +197,7 @@ void stepm_proc(uint8_t id)
 				step_motors[1].isInProc = true;
 #ifdef M1_EN_PORT
 				GPIO_WriteBit(M1_DIR_PORT, M1_DIR_PIN, p->dir[1] ? Bit_SET : Bit_RESET);
-				M1_EN_PORT->BSRR = M1_EN_PIN;
+				GPIO_SetBits(M1_EN_PORT, M1_EN_PIN);
 				TIM3->PSC = p->pscValue[1];
 				TIM_SetAutoreload(TIM3, p->arrValue[1]);
 #endif
@@ -235,7 +235,7 @@ void stepm_proc(uint8_t id)
 				step_motors[2].isInProc = true;
 #ifdef M2_EN_PORT
 				GPIO_WriteBit(M2_DIR_PORT, M2_DIR_PIN, p->dir[2] ? Bit_RESET : Bit_SET);
-				M2_EN_PORT->BSRR = M2_EN_PIN;
+				GPIO_SetBits(M2_EN_PORT, M2_EN_PIN);
 				M2_TIM->PSC = p->pscValue[2];
 				TIM_SetAutoreload(M2_TIM, p->arrValue[2]);
 #endif
@@ -245,7 +245,7 @@ void stepm_proc(uint8_t id)
 				step_motors[3].isInProc = true;
 #ifdef M3_EN_PORT
 				GPIO_WriteBit(M3_DIR_PORT, M3_DIR_PIN, p->dir[3] ? Bit_RESET : Bit_SET);
-				M3_EN_PORT->BSRR = M3_EN_PIN;
+				GPIO_SetBits(M3_EN_PORT, M3_EN_PIN);
 				M3_TIM->PSC = p->pscValue[3];
 				TIM_SetAutoreload(M3_TIM, p->arrValue[3]);
 #endif

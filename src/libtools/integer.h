@@ -3,10 +3,7 @@
 /*-------------------------------------------*/
 
 #ifndef _INTEGER
-
-#if 0
-#include <windows.h>
-#else
+#define _INTEGER
 
 /* These types must be 16-bit, 32-bit or larger integer */
 typedef int				INT;
@@ -32,8 +29,4 @@ typedef unsigned long	DWORD;
 //typedef enum { FALSE = 0, TRUE } BOOL;
 typedef unsigned char BOOL;
 
-
-#endif
-
-#define _INTEGER
 #endif

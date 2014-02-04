@@ -4,7 +4,7 @@
 /*  partly based on code from STMircoelectronics, Peter Dannegger, "LaLaDumm" */
 /*--------------------------------------------------------------------------  */
 
-#include "stm32f10x.h"
+#include "stm32fxxx.h"
 #include "rtc.h"
 
 #define FIRSTYEAR   2000		// start year

@@ -17,7 +17,7 @@
 #ifndef __USB_REGS_H
 #define __USB_REGS_H
 
-#include "stm32f10x.h"
+#include "stm32fxxx.h"
 
 /* Includes ------------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
