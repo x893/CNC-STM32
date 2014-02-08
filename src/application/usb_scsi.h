@@ -1,8 +1,8 @@
 #ifndef __USB_SCSI_H
 #define __USB_SCSI_H
 
-#include "STM32Fxxx.h"
 #include <stdbool.h>
+#include "global.h"
 
 /* SCSI Commands */
 #define SCSI_FORMAT_UNIT			0x04

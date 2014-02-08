@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #include "global.h"
 
 #define STEPS_BUF_SZ	8
@@ -18,12 +19,14 @@ int32_t steps_buf_sz, steps_buf_p1, steps_buf_p2;
 	LINE_DATA cur_steps_buf; // for debug only
 #endif
 
+#if (STEPS_MOTORS > 0)
 volatile struct
 {
 	int32_t globalSteps;
 	uint32_t steps;
 	uint8_t clk, dir, isInProc;
 } step_motors[STEPS_MOTORS];
+#endif
 
 void stepm_powerOff(uint8_t id)
 {
@@ -48,12 +51,13 @@ void stepm_powerOff(uint8_t id)
 
 void stepm_init(void)
 {
+	steps_buf_sz = steps_buf_p1 = steps_buf_p2 = 0;
+
+#if (STEPS_MOTORS > 0)
 	GPIO_InitTypeDef GPIO_InitStructure;
 	NVIC_InitTypeDef NVIC_InitStructure;
 	TIM_TimeBaseInitTypeDef  TIM_TimeBase;
 	int i;
-
-	steps_buf_sz = steps_buf_p1 = steps_buf_p2 = 0;
 
 	PIN_SPEED_LOW();
 	PIN_OUTPUT_PP();
@@ -67,28 +71,34 @@ void stepm_init(void)
 		stepm_powerOff(i);
 		switch (i)
 		{
+	#ifdef M0_EN_PORT
 		case 0:
 			PIN_SET_MODE(M0_EN_PORT,   M0_EN_PIN);
 			PIN_SET_MODE(M0_DIR_PORT,  M0_DIR_PIN);
 			PIN_SET_MODE(M0_STEP_PORT, M0_STEP_PIN);
 			break;
+	#endif
+	#ifdef M1_EN_PORT
 		case 1:
 			PIN_SET_MODE(M1_EN_PORT,   M1_EN_PIN);
 			PIN_SET_MODE(M1_DIR_PORT,  M1_DIR_PIN);
 			PIN_SET_MODE(M1_STEP_PORT, M1_STEP_PIN);
 			break;
+	#endif
+	#ifdef M2_EN_PORT
 		case 2:
 			PIN_SET_MODE(M2_EN_PORT,   M2_EN_PIN);
 			PIN_SET_MODE(M2_DIR_PORT,  M2_DIR_PIN);
 			PIN_SET_MODE(M2_STEP_PORT, M2_STEP_PIN);
 			break;
-#ifdef M3_EN_PORT
+	#endif
+	#ifdef M3_EN_PORT
 		case 3:
 			PIN_SET_MODE(M3_EN_PORT,   M3_EN_PIN);
 			PIN_SET_MODE(M3_DIR_PORT,  M3_DIR_PIN);
 			PIN_SET_MODE(M3_STEP_PORT, M3_STEP_PIN);
 			break;
-#endif
+	#endif
 		}
 	}
 
@@ -101,10 +111,23 @@ void stepm_init(void)
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_0);
 
+	#ifdef M0_EN_PORT
 	M0_TIM_INIT();
+	#endif
+
+	#ifdef M1_EN_PORT
 	M1_TIM_INIT();
+	#endif
+
+	#ifdef M2_EN_PORT
 	M2_TIM_INIT();
+	#endif
+
+	#ifdef M3_EN_PORT
 	M3_TIM_INIT();
+	#endif
+
+#endif
 }
 
 void stepm_proc(uint8_t id)
@@ -114,6 +137,7 @@ void stepm_proc(uint8_t id)
 		stepm_EmergeStop();
 		return;
 	}
+#if (STEPS_MOTORS > 0)
 	if (step_motors[id].isInProc)
 	{
 		switch (id)
@@ -164,10 +188,18 @@ void stepm_proc(uint8_t id)
 	else
 	{
 		if (steps_buf_sz > 0
+#if (STEPS_MOTORS >= 1)
 			&& !step_motors[0].isInProc
+#endif
+#if (STEPS_MOTORS >= 2)
 			&& !step_motors[1].isInProc
+#endif
+#if (STEPS_MOTORS >= 3)
 			&& !step_motors[2].isInProc
+#endif
+#if (STEPS_MOTORS >= 4)
 			&& !step_motors[3].isInProc
+#endif
 			)
 		{
 			int i;
@@ -177,31 +209,33 @@ void stepm_proc(uint8_t id)
 #if (USE_STEP_DEBUG == 1)
 			memcpy(&cur_steps_buf, p, sizeof(cur_steps_buf)); // for debug
 #endif
-			for (i = 0; i < 4; i++)
+			for (i = 0; i < STEPS_MOTORS; i++)
 			{
 				step_motors[i].steps = p->steps[i];
 				step_motors[i].dir = p->dir[i];
 			}
+
+#ifdef M0_EN_PORT
 			if (step_motors[0].steps)
 			{
 				step_motors[0].isInProc = true;
-#ifdef M0_EN_PORT
 				GPIO_WriteBit(M0_DIR_PORT, M0_DIR_PIN, p->dir[0] ? Bit_SET : Bit_RESET);
 				GPIO_SetBits(M0_EN_PORT, M0_EN_PIN);
 				TIM2->PSC = p->pscValue[0];
 				TIM_SetAutoreload(TIM2, p->arrValue[0]);
-#endif
 			}
+#endif
+#ifdef M1_EN_PORT
 			if (step_motors[1].steps)
 			{
 				step_motors[1].isInProc = true;
-#ifdef M1_EN_PORT
 				GPIO_WriteBit(M1_DIR_PORT, M1_DIR_PIN, p->dir[1] ? Bit_SET : Bit_RESET);
 				GPIO_SetBits(M1_EN_PORT, M1_EN_PIN);
 				TIM3->PSC = p->pscValue[1];
 				TIM_SetAutoreload(TIM3, p->arrValue[1]);
-#endif
 			}
+#endif
+#ifdef M2_EN_PORT
 			if (step_motors[2].steps)
 			{
 #if (USE_ENCODER == 1)
@@ -233,23 +267,22 @@ void stepm_proc(uint8_t id)
 				}
 #endif
 				step_motors[2].isInProc = true;
-#ifdef M2_EN_PORT
 				GPIO_WriteBit(M2_DIR_PORT, M2_DIR_PIN, p->dir[2] ? Bit_RESET : Bit_SET);
 				GPIO_SetBits(M2_EN_PORT, M2_EN_PIN);
 				M2_TIM->PSC = p->pscValue[2];
 				TIM_SetAutoreload(M2_TIM, p->arrValue[2]);
-#endif
 			}
+#endif
+#ifdef M3_EN_PORT
 			if (step_motors[3].steps)
 			{
 				step_motors[3].isInProc = true;
-#ifdef M3_EN_PORT
 				GPIO_WriteBit(M3_DIR_PORT, M3_DIR_PIN, p->dir[3] ? Bit_RESET : Bit_SET);
 				GPIO_SetBits(M3_EN_PORT, M3_EN_PIN);
 				M3_TIM->PSC = p->pscValue[3];
 				TIM_SetAutoreload(M3_TIM, p->arrValue[3]);
-#endif
 			}
+#endif
 			steps_buf_p1++;
 
 			if (steps_buf_p1 >= STEPS_BUF_SZ)
@@ -258,17 +291,20 @@ void stepm_proc(uint8_t id)
 			__enable_irq();
 		}
 	}
+#endif
 }
 
 void stepm_EmergeStop(void)
 {
+#if (STEPS_MOTORS > 0)
 	int i;
-	for (i = 0; i < 4; i++)
+	for (i = 0; i < STEPS_MOTORS; i++)
 	{
 		stepm_powerOff(i);
 		step_motors[i].isInProc = false;
 		step_motors[i].steps = 0;
 	}
+#endif
 	steps_buf_sz = steps_buf_p1 = steps_buf_p2 = 0;
 }
 
@@ -324,12 +360,14 @@ int32_t stepm_getRemainLines(void)
 
 int32_t stepm_inProc(void)
 {
-	int i;
 	if (steps_buf_sz > 0)
 		return true;
-	for (i = 0; i < 4; i++)
+#if (STEPS_MOTORS > 0)
+	int i;
+	for (i = 0; i < STEPS_MOTORS; i++)
 		if (step_motors[i].isInProc)
 			return true;
+#endif
 	return false;
 }
 
@@ -340,26 +378,32 @@ uint32_t stepm_LinesBufferIsFull(void)
 
 int32_t stepm_getCurGlobalStepsNum(uint8_t id)
 {
+#if (STEPS_MOTORS > 0)
 	return step_motors[id].globalSteps;
+#else
+	return 0;
+#endif
 }
 
 void stepm_ZeroGlobalCrd(void)
 {
+#if (STEPS_MOTORS > 0)
 	int i;
 	for (i = 0; i < 4; i++)
-	{
 		step_motors[i].globalSteps = 0;
-	}
+#endif
 }
 
 #if (USE_STEP_DEBUG == 1)
 void step_dump()
 {
+	#if (USE_LCD == 1)
 	LINE_DATA *p = (LINE_DATA *)(&cur_steps_buf);
 	for (int i = 0; i < 4; i++)
 	{
 		scr_gotoxy(1, 7 + i);
 		scr_printf("%d,%d,%d,%d [%d]   ", p->steps[i], p->dir[i], p->pscValue[i], p->arrValue[i], p->f[i]); // TODO
 	}
+	#endif
 }
 #endif

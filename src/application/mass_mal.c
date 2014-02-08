@@ -2,6 +2,8 @@
 #include "sdcard.h"
 #include "mass_mal.h"
 
+#if (USE_SDCARD == 1)
+
 u32 Mass_Memory_Size[2];
 u32 Mass_Block_Size[2];
 u32 Mass_Block_Count[2];
@@ -53,6 +55,7 @@ u16 MAL_Init(u8 lun)
 	}
 	return status;
 }
+
 /*******************************************************************************
 * Function Name  : MAL_Write
 * Description    : Write sectors
@@ -107,3 +110,5 @@ u16 MAL_Read(u8 lun, u32 Memory_Offset, u32 *Readbuff, u16 Transfer_Length)
 u16 MAL_GetStatus(u8 lun) {
 	return lun == 0 ? MAL_OK : MAL_FAIL;
 }
+
+#endif

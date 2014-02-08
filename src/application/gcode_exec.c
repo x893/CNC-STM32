@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+#include <stdbool.h>
 
 #ifdef _WINDOWS
 	#include "stdafx.h"
@@ -8,17 +9,21 @@
 	#include "global.h"
 #endif
 
+#include "screen_io.h"
 #include "gcode.h"
 
-#define ENABLE_SHOW_MAX_TIME_STEPS 640
-#define MAX_STR_SIZE 150
+#define ENABLE_SHOW_MAX_TIME_STEPS	640
+#define MAX_STR_SIZE				150
+
 // #define NO_ACCELERATION_CORRECTION
 
 SM_PARAM _smParam;
 bool isPause = false;
 
+#if (USE_LCD == 1)
 double k_scr;
 short prev_scrX, prev_scrY;
+#endif
 
 int curGCodeMode;
 uint32_t commonTimeIdeal, commonTimeReal, startWorkTime;
@@ -51,9 +56,9 @@ typedef struct {
 	int lineNum;
 } GCODE_CMD;
 
-#define MVECTOR_SZ 3
-#define TABLE_CENTER_X MAX_TABLE_SIZE_X/4
-#define TABLE_CENTER_Y MAX_TABLE_SIZE_Y/4
+#define MVECTOR_SZ		3
+#define TABLE_CENTER_X	(MAX_TABLE_SIZE_X / 4)
+#define TABLE_CENTER_Y	(MAX_TABLE_SIZE_Y / 4)
 
 struct {
 #ifndef NO_ACCELERATION_CORRECTION
@@ -66,38 +71,52 @@ struct {
 	int32_t stepsX, stepsY, stepsZ;
 } linesBuffer;
 
-short crdXtoScr(double x) { return (short)(x*k_scr + 0.5) + 8; }
-short crdYtoScr(double y) {
-	short v = (short)(y*k_scr + 0.5);
-	return v > 239 ? 0 : 239 - v;
+#if (USE_LCD == 1)
+short crdXtoScr(double x)
+{
+	return (short)(x * k_scr + 0.5) + 8;
 }
+
+short crdYtoScr(double y)
+{
+	short v = (short)(y * k_scr + 0.5);
+	return v > (LCD_HEIGHT - 1) ? 0 : LCD_HEIGHT - 1 - v;
+}
+#endif
 
 void initGcodeProc(void)
 {
-	double kx = 310.0 / MAX_TABLE_SIZE_X;
-	double ky = 238.0 / MAX_TABLE_SIZE_Y;
+#if (USE_LCD == 1)
+	double kx = ((double)(LCD_WIDTH  - 10)) / MAX_TABLE_SIZE_X;
+	double ky = ((double)(LCD_HEIGHT - 2)) / MAX_TABLE_SIZE_Y;
 	k_scr = kx > ky ? ky : kx;
-
-	ili9320_Clear(0);
+	LCD_Clear(Black);
+#endif
 
 	memset(&linesBuffer, 0, sizeof(linesBuffer));
+
 #ifndef NO_ACCELERATION_CORRECTION
 	linesBuffer.mvectPtrCur = 0;
 	linesBuffer.mvector[0].isNullCmd = true;
 	linesBuffer.mvectCnt = 1;
 #endif
-	prev_scrX = crdXtoScr(TABLE_CENTER_X); prev_scrY = crdYtoScr(TABLE_CENTER_Y);
+#if (USE_LCD == 1)
+	prev_scrX = crdXtoScr(TABLE_CENTER_X);
+	prev_scrY = crdYtoScr(TABLE_CENTER_Y);
+#endif
 	linesBuffer.stepsFromStartX = linesBuffer.stepsFromStartY = linesBuffer.stepsFromStartZ = linesBuffer.stepsFromStartE = 0;
 	linesBuffer.stepsX = linesBuffer.stepsY = linesBuffer.stepsZ = 0;
+
 #if (USE_EXTRUDER == 1)
 	isExtruderOn = false;
 #endif
+
 	minX = maxX = minY = maxY = minZ = maxZ = 0;
 	gc_init();
 	stepm_init();
 	commonTimeIdeal = commonTimeReal = 0;
 	isGcodeStop = false;
-	startWorkTime = RTC_GetCounter();
+	startWorkTime = Seconds();
 }
 
 //---------------------------------------------------------------------
@@ -105,11 +124,13 @@ void initGcodeProc(void)
 void cnc_gfile(char *fileName, int mode)
 {
 	int n;
-	FIL fid;
 	int lineNum;
 	uint8_t hasMoreLines;
 
 	initGcodeProc();
+
+#if (USE_SDCARD == 1)
+	FIL fid;
 	FRESULT res = f_open(&fid, fileName, FA_READ);
 	if (res != FR_OK)
 	{
@@ -117,44 +138,50 @@ void cnc_gfile(char *fileName, int mode)
 		scr_printf("Error open file:'%s'\nStatus:%d [%d]", fileName, (int)res, SD_errno);
 		return;
 	}
+#endif
 	curGCodeMode = mode;
 
+#if (USE_LCD == 1)
 	if ((curGCodeMode & GFILE_MODE_MASK_SHOW) != 0)
 	{
-		GUI_Rectangle(crdXtoScr(0), crdYtoScr(MAX_TABLE_SIZE_Y), crdXtoScr(MAX_TABLE_SIZE_X), crdYtoScr(0), Red, false);
-		GUI_Line(prev_scrX, 30, prev_scrX, 240 - 30, Green);
-		GUI_Line(50, prev_scrY, 320 - 50, prev_scrY, Green);
+		scr_Rectangle(crdXtoScr(0), crdYtoScr(MAX_TABLE_SIZE_Y), crdXtoScr(MAX_TABLE_SIZE_X), crdYtoScr(0), Red, false);
+		scr_Line(prev_scrX, 30, prev_scrX, 240 - 30, Green);
+		scr_Line(50, prev_scrY, 320 - 50, prev_scrY, Green);
 	}
+
 	if ((curGCodeMode & GFILE_MODE_MASK_EXEC) != 0)
 	{
 		scr_fontColor(Blue, Black);
 		scr_gotoxy(3, 14);
 		scr_puts("C-Cancel  A-Pause 0/1-encoder");
 	}
+#endif
+
 	lineNum = 1;
 	hasMoreLines = true;
 	do
 	{
-		// char str[MAX_STR_SIZE];
 		static char fileBuf[16000];
-		//char fileBuf[MAX_STR_SIZE];
 		char *p = fileBuf, *str;
 
 		while (true)
 		{
 			*p = 0;
 			str = p + 1;
-			if ((fileBuf + sizeof(fileBuf)-str) < (MAX_STR_SIZE + 1))
+			if ((fileBuf + sizeof(fileBuf) - str) < (MAX_STR_SIZE + 1))
 				break;
+#if (USE_SDCARD == 1)
 			if (f_gets(str, MAX_STR_SIZE, &fid) == NULL)
 			{
 				hasMoreLines = false;
 				break;
 			}
+#endif
 			str_trim(str);
 			*p = (uint8_t)strlen(str) + 1;
 			p += *p + 1;
 		}
+
 		for (p = fileBuf; !isGcodeStop && *p != 0; lineNum++, p += *p + 1)
 		{
 			uint8_t st;
@@ -222,12 +249,16 @@ void cnc_gfile(char *fileName, int mode)
 					break;
 				}
 				scr_printf(" in line [%d]:\n '%s'", lineNum, str);
+#if (USE_SDCARD == 1)
 				f_close(&fid); return;
+#endif
 			}
 		}
 	} while (!isGcodeStop && hasMoreLines);
 
+#if (USE_SDCARD == 1)
 	f_close(&fid);
+#endif
 
 	if ((curGCodeMode & GFILE_MODE_MASK_EXEC) == 0)
 	{
@@ -237,8 +268,8 @@ void cnc_gfile(char *fileName, int mode)
 		int t1 = commonTimeIdeal / 1000;
 		int t2 = commonTimeReal / 1000;
 
-		GUI_Line(scrX - 8, scrY, scrX + 8, scrY, Red);
-		GUI_Line(scrX, scrY - 8, scrX, scrY + 8, Red);
+		scr_Line(scrX - 8, scrY, scrX + 8, scrY, Red);
+		scr_Line(scrX, scrY - 8, scrX, scrY + 8, Red);
 		scr_fontColor(Green, Black); scr_gotoxy(1, 0);
 		scr_printf("Time %02d:%02d:%02d(%02d:%02d:%02d) N.cmd:%d",
 			t1 / 3600, (t1 / 60) % 60, t1 % 60,
@@ -276,16 +307,23 @@ void cnc_dwell(int pause)
 //=================================================================================================================================
 
 extern const char axisName[5];
+
 const double axisK[4] = {
 	SM_X_STEPS_PER_MM,
 	SM_Y_STEPS_PER_MM,
 	SM_Z_STEPS_PER_MM,
 	SM_E_STEPS_PER_MM
 };
+
 uint8_t cnc_waitSMotorReady(void)
 {
+#if (USE_LCD == 1)
 	static uint32_t time = 0;
+#endif
+
+#if (USE_STEP_DEBUG == 1)
 	static uint8_t isStepDump = false;
+#endif
 	int i;
 
 	do
@@ -312,23 +350,26 @@ uint8_t cnc_waitSMotorReady(void)
 				}
 #endif
 			}
+#if (USE_STEP_DEBUG == 1)
 			if (isStepDump)
-				step_dump();
-			if (time != RTC_GetCounter())
 			{
+				step_dump();
+			}
+#endif
+
 #if (USE_LCD == 1)
+			if (time != Seconds())
+			{
 				uint32_t t;
-				// scr_gotoxy(2,12);
-				// scr_fontColor(_smParam.maxSpindleTemperature >  extrudT_getTemperatureReal()? Green:Red,Black);
-				// scr_printf("spindle t:%dC  ", extrudT_getTemperatureReal());
-				time = RTC_GetCounter();
+				time = Seconds();
 				t = time - startWorkTime;
 				scr_gotoxy(30, 12);
 				scr_fontColor(Cyan, Black);
 				scr_printf("%02d:%02d:%02d", t / 3600, (t / 60) % 60, t % 60);
-#endif
 			}
+#endif
 		}
+#if (USE_KEYBOARD == 1)
 		switch (kbd_getKey())
 		{
 		case KEY_C:
@@ -350,12 +391,17 @@ uint8_t cnc_waitSMotorReady(void)
 #endif
 			break;
 		case KEY_7:
+#if (USE_STEP_DEBUG == 1)
 			isStepDump = true;
+#endif
 			break;
 		case KEY_8:
+#if (USE_STEP_DEBUG == 1)
 			isStepDump = false;
+#endif
 			break;
 		}
+#endif
 	} while (stepm_LinesBufferIsFull());
 	if (limits_chk())
 	{
@@ -401,9 +447,6 @@ uint8_t sendLine(uint32_t fxyze[], uint32_t abs_dxyze[], uint8_t dir_xyze[])
 
 		if ((curGCodeMode & GFILE_MODE_MASK_SHOW) != 0)
 		{
-			double x, y;
-			short scrX, scrY;
-
 			if (dir_xyze[0])	linesBuffer.stepsX += abs_dxyze[0];
 			else				linesBuffer.stepsX -= abs_dxyze[0];
 
@@ -413,6 +456,10 @@ uint8_t sendLine(uint32_t fxyze[], uint32_t abs_dxyze[], uint8_t dir_xyze[])
 			if (dir_xyze[2])	linesBuffer.stepsZ += abs_dxyze[2];
 			else				linesBuffer.stepsZ -= abs_dxyze[2];
 
+#if (USE_LCD == 1)
+			double x, y;
+			short scrX, scrY;
+
 			x = (double)linesBuffer.stepsX / SM_X_STEPS_PER_MM;
 			y = (double)linesBuffer.stepsY / SM_Y_STEPS_PER_MM;
 
@@ -420,9 +467,10 @@ uint8_t sendLine(uint32_t fxyze[], uint32_t abs_dxyze[], uint8_t dir_xyze[])
 			scrY = crdYtoScr(TABLE_CENTER_Y + y);
 
 			if (scrX != prev_scrX || prev_scrY != scrY)
-				GUI_Line(prev_scrX, prev_scrY, scrX, scrY, calcColor((uint8_t)(linesBuffer.stepsZ * 5 / SM_X_STEPS_PER_MM) & 0x1F));
+				scr_Line(prev_scrX, prev_scrY, scrX, scrY, calcColor((uint8_t)(linesBuffer.stepsZ * 5 / SM_X_STEPS_PER_MM) & 0x1F));
 			prev_scrX = scrX;
 			prev_scrY = scrY;
+#endif
 		}
 		return true;
 	}
@@ -469,9 +517,11 @@ uint8_t sendLine(uint32_t fxyze[], uint32_t abs_dxyze[], uint8_t dir_xyze[])
 	}
 #endif
 
-	if (!cnc_waitSMotorReady()) return false;
+	if (!cnc_waitSMotorReady())
+		return false;
 	if (isPause)
 	{
+#if (USE_KEYBOARD == 1)
 		scr_fontColor(Black, White);
 		scr_gotoxy(1, 13);
 		scr_puts(" PAUSE..'B'-continue 'C'-cancel");
@@ -482,13 +532,16 @@ uint8_t sendLine(uint32_t fxyze[], uint32_t abs_dxyze[], uint8_t dir_xyze[])
 		{
 			switch (kbd_getKey())
 			{
-			case KEY_C: return false;
-			case KEY_B: isPause = false;
+			case KEY_C:
+				return false;
+			case KEY_B:
+				isPause = false;
 			}
 		}
 		scr_fontColor(White, Black);
 		scr_gotoxy(1, 13);
 		scr_clrEndl();
+#endif
 	}
 	stepm_addMove(abs_dxyze, fxyze, dir_xyze);
 	return true;
@@ -1034,7 +1087,7 @@ uint8_t cnc_line(
 
 	DBG("\n AX:%d AY:%d AZ:%d", newX, newY, newZ);
 
-	if (kbd_getKey() == KEY_C)
+	if (IS_KEY_C())
 		return false;
 	if (x < minX) minX = x;
 	if (x > maxX) maxX = x;

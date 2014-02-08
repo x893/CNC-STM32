@@ -4,8 +4,9 @@
 #include "usb_regs.h"
 #include "usb_mem.h"
 #include "usb_conf.h"
-#include "hw_config.h"
 #include "mass_mal.h"
+
+#if (USE_SDCARD == 1)
 
 vu32 Block_Read_count = 0;
 vu32 Block_offset;
@@ -129,3 +130,5 @@ void Write_Memory(u8 lun, u32 Memory_Offset, u32 Transfer_Length)
 		TransferState = TXFR_IDLE;
 	}
 }
+
+#endif

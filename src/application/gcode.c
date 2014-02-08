@@ -6,12 +6,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #include <math.h>
 
 #ifdef _WINDOWS
-#include "stdafx.h"
+	#include "stdafx.h"
 #else
-#include "global.h"
+	#include "global.h"
 #endif
 
 #include "gcode.h"

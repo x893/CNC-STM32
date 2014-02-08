@@ -1,50 +1,45 @@
 #include <string.h>
+#include <stdbool.h>
 #include "global.h"
-#include "scr_io.h"
+#include "screen_io.h"
 
 #define CONF_FILE_NAME "sm.conf"
 
 #define MAX_FILE_LIST_SZ 256
 #define MAX_FILE_NAME_SZ 80
-
 #define FILE_LIST_ROWS 8
+
+void SystemStartup(void);
+uint8_t SystemProcess(void);
+void SystemStatus(uint32_t seconds);
 
 char fileList[MAX_FILE_LIST_SZ][MAX_FILE_NAME_SZ];
 char loadedFileName[MAX_FILE_NAME_SZ];
 int fileListSz = 0, curFile = 0, firstFileInWin = 0;
 FATFS fatfs;
 
-//FLASH_VALUES commonValues;
-
-//==============================================================================
-void delayMs(uint32_t msec)
-{
-	uint32_t tmp = 7000 * msec;
-	while (tmp--) __NOP();
-}
-
+/***************************************************
+ *	Replace CR/LF to EOL char.
+ */
 char *str_trim(char *str)
 {
-	char ch;
-	while ((ch = *str) != 0)
+	char ch, *p = str;
+	while ((ch = *p) != '\0')
 	{
 		if (ch == '\n' || ch == '\r')
 		{
-			*str = 0;
+			*p = 0;
 			break;
 		}
-		str++;
+		p++;
 	}
 	return str;
 }
-
-void initSmParam(int8_t isSaveFile)
+/***************************************************
+ *	Initialize _smParam and load from config file
+ */
+void initSmParam(void)
 {
-	FIL fid;
-	FRESULT  fres;
-	char str[256], *p;
-	int i;
-
 	_smParam.smoothStartF_from0[0] = SM_SMOOTH_START_X*K_FRQ;
 	_smParam.smoothStartF_from0[1] = SM_SMOOTH_START_Y*K_FRQ;
 	_smParam.smoothStartF_from0[2] = SM_SMOOTH_START_Z*K_FRQ;
@@ -58,17 +53,23 @@ void initSmParam(int8_t isSaveFile)
 	_smParam.maxFeedRate[1] = SM_Y_MAX_STEPS_PER_SEC*K_FRQ;
 	_smParam.maxFeedRate[2] = SM_Z_MAX_STEPS_PER_SEC*K_FRQ;
 	_smParam.maxSpindleTemperature = MAX_SPINDEL_TEMPERATURE;
-	fres = f_open(&fid, CONF_FILE_NAME, FA_READ);
 
+#if (USE_SDCARD == 1)
+	FIL fid;
+	char str[256], *p;
+	int i;
+	FRESULT fres = f_open(&fid, CONF_FILE_NAME, FA_READ);
 	if (fres == FR_OK)
 	{
 		scr_printf("\nloading %s", CONF_FILE_NAME);
 		for (i = 0; i < 3; i++)
 		{
 			scr_puts(".");
-			if (f_gets(str, sizeof(str), &fid) == NULL) break;
+			if (f_gets(str, sizeof(str), &fid) == NULL)
+				break;
 			DBG("\nc:%d:'%s'", i, str);
-			if (f_gets(str, sizeof(str), &fid) == NULL) break;
+			if (f_gets(str, sizeof(str), &fid) == NULL)
+				break;
 			DBG("\nd:%d:'%s'", i, str);
 			p = str;
 			_smParam.smoothStartF_from0[i] = strtod_M(p, &p);
@@ -76,28 +77,39 @@ void initSmParam(int8_t isSaveFile)
 			_smParam.smoothAF[i] = strtod_M(p, &p);
 			_smParam.maxFeedRate[i] = strtod_M(p, &p);
 		}
-		if (f_gets(str, sizeof(str), &fid) != NULL) {
+		if (f_gets(str, sizeof(str), &fid) != NULL)
+		{
 			DBG("t:'%s'", str);
-			if (f_gets(str, sizeof(str), &fid) != NULL) _smParam.maxSpindleTemperature = strtod_M(str, &p);
+			if (f_gets(str, sizeof(str), &fid) != NULL)
+				_smParam.maxSpindleTemperature = strtod_M(str, &p);
 		}
 		scr_puts("*");
 		f_close(&fid);
 		scr_puts(" OK");
 	}
-	
-	if (!isSaveFile) return;
-	
-	//--------------------------------------
+#endif
+}
+/***************************************************
+ *	Save _smParam to config file
+ */
+void saveSmParam(void)
+{
+#if (USE_SDCARD == 1)
+	FIL fid;
+	int i;
+
 	f_unlink(CONF_FILE_NAME);
-	if ((fres = f_open(&fid, CONF_FILE_NAME, FA_CREATE_ALWAYS | FA_WRITE)) != FR_OK)
+
+	FRESULT fres = f_open(&fid, CONF_FILE_NAME, FA_CREATE_ALWAYS | FA_WRITE);
+	if (fres != FR_OK)
 	{
 		win_showErrorWin();
 		scr_printf("Error save file:'%s'\n Status:%d [%d/%d]", CONF_FILE_NAME, fres, SD_errno, SD_step);
 		scr_puts("\n\n\t PRESS C-KEY");
-		while (kbd_getKey() != KEY_C);
+		WAIT_KEY_C();
 		return;
 	}
-	
+
 	scr_printf("\nSave into %s", CONF_FILE_NAME);
 	for (i = 0; i < 3; i++)
 	{
@@ -115,39 +127,50 @@ void initSmParam(int8_t isSaveFile)
 	scr_puts("*");
 	f_close(&fid);
 	scr_puts(" - OK");
+#endif
 }
-
+/***************************************************
+ *	Show status
+ */
 void showStatusString(void)
 {
-	static uint8_t sec = 0, limits = 0xFF;
-	RTC_t rtc;
+	static uint8_t sec = 0, limits = 0;
 
-	rtc_gettime(&rtc);
-	if (rtc.sec != sec)
-	{
+	if (Seconds() != sec)
+	{	// Display every second
 		scr_setfullTextWindow();
 		scr_gotoxy(2, TEXT_Y_MAX - 1);
 		scr_fontColor(White, Black);
+#if (USE_RTC == 1)
+		RTC_t rtc;
+		rtc_gettime(&rtc);
 		scr_printf("%02d.%02d.%02d %02d:%02d:%02d ", rtc.mday, rtc.month, rtc.year - 2000, rtc.hour, rtc.min, rtc.sec);
+#else
+		scr_printf("%02d:%02d:%02d ", ((Seconds() / 3600) % 24), ((Seconds() / 60) % 60), (Seconds() % 60));
+#endif
 
 #if (USE_EXTRUDER == 1)
 		scr_fontColor(_smParam.maxSpindleTemperature > extrudT_getTemperatureReal() ? Green : Red, Black);
 		scr_printf("t:%dC", extrudT_getTemperatureReal());
 #endif
+		SystemStatus(sec);
+
 		// scr_clrEndl();
-		sec = rtc.sec;
-		limits = 0xff;
+		sec = Seconds();
+		limits = 0xFF;
 	}
 
 	if (limits != limits_chk())
 	{
 		limits = limits_chk();
-		GUI_Rectangle(304, 232, 309, 239, limitX_chk() ? Red : Green, true);
-		GUI_Rectangle(310, 232, 315, 239, limitY_chk() ? Red : Green, true);
-		GUI_Rectangle(314, 232, 319, 239, limitZ_chk() ? Red : Green, true);
+		scr_Rectangle(283, 224, 293, 239, limitX_chk() ? Red : Green, true);
+		scr_Rectangle(296, 224, 306, 239, limitY_chk() ? Red : Green, true);
+		scr_Rectangle(309, 224, 319, 239, limitZ_chk() ? Red : Green, true);
 	}
 }
-
+/***************************************************
+ *	Show critical status
+ */
 void showCriticalStatus(char *msg, int st)
 {
 	win_showErrorWin();
@@ -155,13 +178,25 @@ void showCriticalStatus(char *msg, int st)
 	scr_printf(msg, st);
 	while (1);
 }
-
+/***************************************************
+ *	Show critical status
+ */
+void showNonCriticalStatus(char *msg, int st)
+{
+	win_showErrorWin();
+	scr_gotoxy(2, 2);
+	scr_printf(msg, st);
+}
+/***************************************************
+ *	Read file list
+ */
+const char path[] = "0:*.*";
 void readFileList(void)
 {
+#if (USE_SDCARD == 1) || defined( USE_USB_OTG_HS )
 	FRESULT fres;
 	FILINFO finfo;
 	DIR dirs;
-	char path[50] = { "" };
 	static char lfn[_MAX_LFN + 1];
 	int i;
 
@@ -176,9 +211,12 @@ void readFileList(void)
 	finfo.lfsize = sizeof(lfn);
 	for (fileListSz = 0; f_readdir(&dirs, &finfo) == FR_OK && fileListSz < MAX_FILE_LIST_SZ;)
 	{
-		scr_gotoxy(0, 3); scr_printf("files:[%d]", fileListSz);
-		if (!finfo.fname[0]) break;
-		if (finfo.fname[0] == '.') continue;
+		scr_gotoxy(0, 3);
+		scr_printf("files:[%d]", fileListSz);
+		if (!finfo.fname[0])
+			break;
+		if (finfo.fname[0] == '.')
+			continue;
 		if (!(finfo.fattrib & AM_DIR) && strcmp(CONF_FILE_NAME, *finfo.lfname ? finfo.lfname : finfo.fname) != 0)
 			strncpy(&fileList[fileListSz++][0], *finfo.lfname ? finfo.lfname : finfo.fname, MAX_FILE_NAME_SZ);
 	}
@@ -203,9 +241,12 @@ void readFileList(void)
 		}
 		scr_printf("\npos in win/cur file:%d/%d", firstFileInWin, curFile);
 	}
-	scr_puts("\n         ---- OK -----");
+	scr_puts("\n---- OK -----");
+#endif
 }
-
+/***************************************************
+ *	Draw file list
+ */
 void drawFileList(void)
 {
 	if (curFile >= fileListSz)
@@ -229,14 +270,14 @@ void drawFileList(void)
 	}
 }
 
+#if (USE_KEYBOARD == 1)
 uint8_t questionYesNo(char *msg, char *param)
 {
 	win_showMsgWin();
 	scr_printf(msg, param);
 	scr_gotoxy(5, 6); scr_puts("'D' - OK,  'C' - Cancel");
-
 	while (true)
-		switch (kbd_getKey())
+		switch(kbd_getKey())
 		{
 			case KEY_D:
 				return true;
@@ -245,6 +286,7 @@ uint8_t questionYesNo(char *msg, char *param)
 		}
 }
 
+#if (USE_RTC == 1)
 void setTime(void)
 {
 	RTC_t rtc;
@@ -305,44 +347,64 @@ void setTime(void)
 
 	if (c == KEY_D) rtc_settime(&rtc);
 }
+#endif	/* USE_RTC == 1 */
+#endif	/* USE_KEYBOARD == 1*/
 
-//==============================================================================
-
+/***************************************************
+ *	Main
+ */
 int main()
 {
-	bool rereadDir = true, redrawScr = true, redrawDir = true;
-	char str[150];
+	bool rereadDir = false, redrawScr = true, redrawDir = false;
 
 	SystemStartup();
 
+#if (USE_SDCARD == 1)
+	rereadDir = true;
 	FRESULT fres = f_mount(0, &fatfs);
 	if (fres != FR_OK)
 		showCriticalStatus(" Mount SD error [code:%d]\n SD card used for any CNC process\n Only RESET possible at now", fres);
+#endif
 
-	initSmParam(false);
-	scr_puts("\n         ---- OK -----");
-	while (kbd_getKey() != KEY_D);
+	initSmParam();
+	WAIT_KEY_D();
 
 	while (1)
 	{
+		switch (SystemProcess())
+		{
+		case SYS_READ_FLASH:
+			rereadDir = true;
+			break;
+		}
+
 		if (rereadDir)
 		{
+			rereadDir = false;
 			readFileList();
 			redrawScr = true;
-			rereadDir = false;
 		}
 
 		if (redrawScr)
 		{
 			redrawScr = false;
-			ili9320_Clear(0);
+			LCD_Clear(Black);
+#if (USE_KEYBOARD == 1)
 			win_showMenu(18, 144, 36, 4);
 			scr_puts(
-				"0 - start gcode\t 1 - manual mode\n"
-				"2 - show gcode\t 3 - delete file\n"
-				"4 - set time\t 5 - file info\n"
+				"0 - start gcode   1 - manual mode\n"
+				"2 - show gcode    3 - delete file\n"
+				"4 - set time      5 - file info\n"
 				//"6 - scan mode\t "
 				"7 - save conf.file (v1.1)");
+#else
+		scr_Rectangle( 16, 145, 100, 216, White, false);
+		scr_Rectangle( 16, 145, 100, 216, Grey, true);
+		scr_Rectangle(104, 145, 188, 216, White, false);
+		scr_Rectangle(104, 145, 188, 216, Grey, true);
+		scr_Rectangle(192, 145, 276, 216, White, false);
+		scr_Rectangle(192, 145, 276, 216, Grey, true);
+#endif
 			redrawDir = true;
 		}
 		if (redrawDir)
@@ -350,9 +412,10 @@ int main()
 			redrawDir = false;
 			drawFileList();
 		}
-		// ---------------------
+
 		showStatusString();
-		// ---------------------
+
+#if (USE_KEYBOARD == 1)
 		switch (kbd_getKey())
 		{
 		case KEY_A:
@@ -371,32 +434,51 @@ int main()
 			curFile -= FILE_LIST_ROWS;
 			redrawDir = true;
 			break;
+	//
+	// Start GCode
+	//
 		case KEY_0:
 		{
 			uint32_t stime;
+			FLASH_KEYS();
 
-			while (kbd_getKey() != -1);
-			stime = RTC_GetCounter();
+			stime = Seconds();
 			cnc_gfile(&fileList[curFile][0], GFILE_MODE_MASK_EXEC);
+
 			while (stepm_inProc())
 			{
-				scr_fontColor(Yellow, Blue); scr_gotoxy(1, 13);
-				scr_printf(" remain moves: %d", stepm_getRemainLines()); scr_clrEndl();
+				scr_fontColor(Yellow, Blue);
+				scr_gotoxy(1, 13);
+				scr_printf(" remain moves: %d", stepm_getRemainLines());
+				scr_clrEndl();
 			}
+
 			stepm_EmergeStop();
-			scr_fontColor(Yellow, Blue); scr_gotoxy(1, 13); scr_puts("   FINISH. PRESS C-KEY"); scr_clrEndl();
-			stime = RTC_GetCounter() - stime;
-			scr_fontColor(Yellow, Blue); scr_gotoxy(1, 14); scr_printf(" work time: %02d:%02d", stime / 60, stime % 60);
+
+			scr_fontColor(Yellow, Blue); scr_gotoxy(1, 13);
+			scr_puts("   FINISH. PRESS C-KEY");
 			scr_clrEndl();
-			while (kbd_getKey() != -1);
-			while (kbd_getKey() != KEY_C);
+			stime = Seconds() - stime;
+			scr_fontColor(Yellow, Blue);
+			scr_gotoxy(1, 14);
+			scr_printf(" work time: %02d:%02d", stime / 60, stime % 60);
+			scr_clrEndl();
+
+			FLASH_KEYS();
+			WAIT_KEY_C();
 			redrawScr = true;
 			break;
 		}
+	//
+	// Manual Mode
+	//
 		case KEY_1:
 			manualMode();
 			redrawScr = true;
 			break;
+	//
+	// Show GCode
+	//
 		case KEY_2:
 			while (kbd_getKey() != -1);
 			cnc_gfile(&fileList[curFile][0], GFILE_MODE_MASK_SHOW | GFILE_MODE_MASK_CHK);
@@ -406,6 +488,9 @@ int main()
 			redrawScr = true;
 			break;
 			//------------------------------------------
+	//
+	// Delete file
+	//
 		case KEY_3:
 			if (questionYesNo("Delete file:\n'%s'?", &fileList[curFile][0]))
 			{
@@ -415,10 +500,19 @@ int main()
 			else
 				redrawScr = true;
 			break;
+#if (USE_RTC == 1)
+	//
+	// Set time
+	//
 		case KEY_4:
 			setTime();
 			redrawScr = true;
 			break;
+#endif
+#if (USE_SDCARD == 1)
+	//
+	// File info
+	//
 		case KEY_5:
 		{
 			FILINFO finf;
@@ -426,11 +520,16 @@ int main()
 			int c, n;
 
 			memset(&finf, 0, sizeof(finf));
+
 			win_showMsgWin();
 			scr_setScrollOn(false);
 			scr_printf("file:'%s'", &fileList[curFile][0]);
+
 			f_stat(&fileList[curFile][0], &finf);
-			scr_gotoxy(0, 1); scr_printf("File size:%d\n", (uint32_t)finf.fsize);
+
+			scr_gotoxy(0, 1);
+			scr_printf("File size:%d\n", (uint32_t)finf.fsize);
+
 			fres = f_open(&fid, &fileList[curFile][0], FA_READ);
 			if (fres != FR_OK)
 			{
@@ -438,7 +537,10 @@ int main()
 			}
 			else
 			{
-				scr_fontColorInvers(); scr_setScrollOn(false);
+				char str[150];
+				scr_fontColorInvers();
+				scr_setScrollOn(false);
+				// Read lines from 3 to 6 from file and display it
 				for (n = 2; n < 7 && f_gets(str, sizeof(str), &fid) != NULL; n++)
 				{
 					scr_gotoxy(0, n);
@@ -453,9 +555,13 @@ int main()
 				c = kbd_getKey();
 				if (c == KEY_B)
 				{
+					char str[150];
 					scr_fontColorInvers();
-					for (n = 2; n < 7 && f_gets(str, sizeof(str), &fid) != NULL; n++) {
-						scr_gotoxy(0, n); scr_puts(str_trim(str)); scr_clrEndl();
+					for (n = 2; n < 7 && f_gets(str, sizeof(str), &fid) != NULL; n++)
+					{
+						scr_gotoxy(0, n);
+						scr_puts(str_trim(str));
+						scr_clrEndl();
 					}
 				}
 			} while (c != KEY_C);
@@ -463,19 +569,27 @@ int main()
 			rereadDir = true;
 		}
 		break;
+#endif
+	//
+	// Scan mode
+	//
 		case KEY_6:
-			//	initSensor();
-			//	scanMode();
-			redrawScr = true;
+			// initSensor();
+			// scanMode();
+			// redrawScr = true;
 			break;
+	//
+	// Save conf. file
+	//
 		case KEY_7:
 			win_showMsgWin();
-			initSmParam(true);
+			saveSmParam();
 			scr_printf("\n\n\n        PRESS C-KEY");
-			while (kbd_getKey() != KEY_C);
+			WAIT_KEY_C();
 			redrawScr = true;
 			break;
 		}
+#endif
 	}
 }
 
@@ -494,8 +608,7 @@ void assert_failed(uint8_t* file, uint32_t line)
 		ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
 	/* Infinite loop */
 	while (1)
-	{
-	}
+	{ }
 }
 
 #endif

@@ -5,6 +5,8 @@
 #include "usb_init.h"
 #include "usb_int.h"
 
+#if (USE_USB == 1)
+
 volatile u16 wIstr;				/* ISTR register last read value */
 volatile u8 bIntPackSOF = 0;	/* SOFs received between 2 consecutive packets */
 
@@ -141,3 +143,5 @@ void USB_Istr(void)
 	}
 #endif
 } /* USB_Istr */
+
+#endif

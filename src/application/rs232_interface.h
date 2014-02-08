@@ -27,12 +27,9 @@
 #define RCV_ERR_LOST_DATA -4
 
 #if (USE_RS232 == 1)
-	void rs232_init(void);
 	void rf_putc(char c);
 	void rf_puts(const char *str);
 	void rf_printf(const char* str, ...);
-#else
-	#define rs232_init()
 #endif
 
 #endif /* RS232_INTERFACE_H_ */

@@ -3,6 +3,8 @@
 #include "usb_conf.h"
 #include "usb_pwr.h"
 
+#if (USE_USB == 1)
+
 vu32 bDeviceState = UNCONNECTED; /* USB device status */
 volatile bool fSuspendEnabled = true;  /* true when suspend is possible */
 
@@ -42,15 +44,14 @@ RESULT PowerOn(void)
 	/*while(!CablePluggedIn());*/
 	USB_Cable_Config(ENABLE);
 
-	/*** CNTR_PWDN = 0 ***/
-	wRegVal = CNTR_FRES;
+	wRegVal = CNTR_FRES;	/*** CNTR_PWDN = 0 ***/
 	_SetCNTR(wRegVal);
 
-	/*** CNTR_FRES = 0 ***/
-	wInterrupt_Mask = 0;
+	wInterrupt_Mask = 0;	/*** CNTR_FRES = 0 ***/
 	_SetCNTR(wInterrupt_Mask);
-	/*** Clear pending interrupts ***/
-	_SetISTR(0);
+
+	_SetISTR(0);			/*** Clear pending interrupts ***/
+
 	/*** Set interrupt mask ***/
 	wInterrupt_Mask = CNTR_RESETM | CNTR_SUSPM | CNTR_WKUPM;
 	_SetCNTR(wInterrupt_Mask);
@@ -67,17 +68,12 @@ RESULT PowerOn(void)
 *******************************************************************************/
 RESULT PowerOff()
 {
-	/* disable all ints and force USB reset */
-	_SetCNTR(CNTR_FRES);
-	/* clear interrupt status register */
-	_SetISTR(0);
-	/* Disable the Pull-Up*/
-	USB_Cable_Config(DISABLE);
-	/* switch-off device */
-	_SetCNTR(CNTR_FRES + CNTR_PDWN);
+	_SetCNTR(CNTR_FRES);			/* disable all ints and force USB reset */
+	_SetISTR(0);					/* clear interrupt status register */
+	USB_Cable_Config(DISABLE);		/* Disable the Pull-Up*/
+	_SetCNTR(CNTR_FRES + CNTR_PDWN);/* switch-off device */
 	/* sw variables reset */
 	/* ... */
-
 	return USB_SUCCESS;
 }
 
@@ -173,7 +169,6 @@ void Resume_Init(void)
 
 	/* reverse suspend preparation */
 	/* ... */
-
 }
 
 /*******************************************************************************
@@ -238,3 +233,4 @@ void Resume(RESUME_STATE eResumeSetVal)
 		break;
 	}
 }
+#endif

@@ -1,7 +1,7 @@
 #ifndef __USB_DESC_H
 #define __USB_DESC_H
 
-#include "STM32Fxxx.h"
+#include "global.h"
 
 #define MASS_SIZ_DEVICE_DESC              18
 #define MASS_SIZ_CONFIG_DESC              32

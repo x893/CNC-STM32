@@ -2,39 +2,35 @@
 
 const u8 MASS_DeviceDescriptor[MASS_SIZ_DEVICE_DESC] =
 {
-    0x12,   /* bLength  */
-    0x01,   /* bDescriptorType */
-    0x00,   /* bcdUSB, version 2.00 */
+    0x12,	/* bLength  */
+    0x01,	/* bDescriptorType */
+    0x00,	/* bcdUSB, version 2.00 */
     0x02,
-    0x00,   /* bDeviceClass : each interface define the device class */
-    0x00,   /* bDeviceSubClass */
-    0x00,   /* bDeviceProtocol */
-    0x40,   /* bMaxPacketSize0 0x40 = 64 */
-    0x83,   /* idVendor     (0483) */
+    0x00,	/* bDeviceClass : each interface define the device class */
+    0x00,	/* bDeviceSubClass */
+    0x00,	/* bDeviceProtocol */
+    0x40,	/* bMaxPacketSize0 0x40 = 64 */
+    0x83,	/* idVendor     (0483) */
     0x04,
-    0x20,   /* idProduct */
+    0x20,	/* idProduct */
     0x57,
-    0x00,   /* bcdDevice 2.00*/
+    0x00,	/* bcdDevice 2.00*/
     0x02,
-    1,              /* index of string Manufacturer  */
-    /**/
-    2,              /* index of string descriptor of product*/
-    /* */
-    3,              /* */
-    /* */
-    /* */
-    0x01    /*bNumConfigurations */
+    1,		/* index of string Manufacturer  */
+    2,		/* index of string descriptor of product*/
+    3,		/* */
+    0x01	/*bNumConfigurations */
   };
 const u8 MASS_ConfigDescriptor[MASS_SIZ_CONFIG_DESC] =
   {
 
-    0x09,   /* bLength: Configuation Descriptor size */
-    0x02,   /* bDescriptorType: Configuration */
+    0x09,	/* bLength: Configuation Descriptor size */
+    0x02,	/* bDescriptorType: Configuration */
     MASS_SIZ_CONFIG_DESC,
 
     0x00,
-    0x01,   /* bNumInterfaces: 1 interface */
-    0x01,   /* bConfigurationValue: */
+    0x01,	/* bNumInterfaces: 1 interface */
+    0x01,	/* bConfigurationValue: */
     /*      Configuration value */
     0x00,   /* iConfiguration: */
     /*      Index of string descriptor */
@@ -114,5 +110,3 @@ const u8 MASS_StringInterface[MASS_SIZ_STRING_INTERFACE] =
     /* Interface 0: "ST Mass" */
     'S', 0, 'T', 0, ' ', 0, 'M', 0, 'a', 0, 's', 0, 's', 0
   };
-
-/******************* (C) COPYRIGHT 2008 STMicroelectronics *****END OF FILE****/

@@ -1,10 +1,11 @@
 #include "usb_scsi.h"
-#include "hw_config.h"
 #include "usb_regs.h"
 #include "usb_mem.h"
 #include "usb_conf.h"
 #include "usb_bot.h"
 #include "memory.h"
+
+#if (USE_USB_MSD == 1)
 
 u8 Bot_State;
 u8 Bulk_Data_Buff[BULK_MAX_PACKET_SIZE];  /* data buffer*/
@@ -302,4 +303,4 @@ void Bot_Abort(u8 Direction)
 	}
 }
 
-/******************* (C) COPYRIGHT 2008 STMicroelectronics *****END OF FILE****/
+#endif

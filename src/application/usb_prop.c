@@ -1,11 +1,12 @@
 #include "usb_desc.h"
 #include "usb_pwr.h"
 #include "usb_bot.h"
-#include "hw_config.h"
 #include "memory.h"
 #include "mass_mal.h"
 #include "usb_prop.h"
 #include "usb_lib.h"
+
+#if (USE_USB_MSD == 1)
 
 u32 Max_Lun = 0;
 
@@ -392,3 +393,5 @@ u8 *Get_Max_Lun(u16 Length)
 	}
 	return((u8*)(&Max_Lun));
 }
+
+#endif

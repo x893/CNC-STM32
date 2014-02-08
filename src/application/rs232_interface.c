@@ -1,57 +1,17 @@
 #include <string.h>
 #include <stdarg.h>
-
 #include "global.h"
-#include "Crc32.h"
 
 #if (USE_RS232 == 1)
 
 uint8_t bufferBytes[1024];
-volatile uint32_t indexGet, indexPut, countBytes;
-
-void rs232_init(void)
-{
-	GPIO_InitTypeDef GPIO_InitStructure;
-	NVIC_InitTypeDef NVIC_InitStructure;
-	USART_InitTypeDef USART_InitStructure;
-
-	RS232_USART_CLK();
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-
-	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_0);
-	NVIC_InitStructure.NVIC_IRQChannel = RS232_USART_IRQ;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_Init(&NVIC_InitStructure);
-
-	GPIO_InitStructure.GPIO_Pin = RS232_USART_TX_PIN;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
-	GPIO_Init(RS232_USART_TX_PORT, &GPIO_InitStructure);
-
-	GPIO_InitStructure.GPIO_Pin = RS232_USART_RX_PIN;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
-	GPIO_Init(RS232_USART_RX_PORT, &GPIO_InitStructure);
-
-	USART_InitStructure.USART_BaudRate = 115200;
-	USART_InitStructure.USART_WordLength = USART_WordLength_8b;
-	USART_InitStructure.USART_StopBits = USART_StopBits_1;
-	USART_InitStructure.USART_Parity = USART_Parity_No;
-	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
-	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
-
-	USART_Init(RS232_USART, &USART_InitStructure);
-	USART_Cmd(RS232_USART, ENABLE);
-	indexGet = indexPut = countBytes = 0;
-	USART_ITConfig(RS232_USART, USART_IT_RXNE, ENABLE);
-	USART_ITConfig(RS232_USART, USART_IT_TXE, DISABLE);
-}
+volatile uint32_t indexGet = 0, indexPut = 0, countBytes = 0;
 
 void rs232_proc()
 {
-	if (USART_GetITStatus(RS232_USART, USART_IT_RXNE) != RESET)
+	if (USART_RX_READY())
 	{
-		USART_SendData(RS232_USART, USART_ReceiveData(RS232_USART));
+		USART_SEND(USART_READ());
 	}
 	if (USART_GetITStatus(RS232_USART, USART_IT_TXE) != RESET)
 	{
@@ -197,4 +157,3 @@ void rf_printf(const char* str, ...)
 	rf_puts(sout);
 }
 #endif
-

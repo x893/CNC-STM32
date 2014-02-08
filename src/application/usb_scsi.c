@@ -1,9 +1,10 @@
-#include "hw_config.h"
 #include "usb_scsi.h"
 #include "mass_mal.h"
 #include "usb_bot.h"
 #include "usb_regs.h"
 #include "memory.h"
+
+#if (USE_USB_MSD == 1)
 
 extern u8 Bulk_Data_Buff[BULK_MAX_PACKET_SIZE];
 extern u8 Bot_State;
@@ -358,3 +359,4 @@ bool SCSI_Address_Management(u8 lun, u8 Cmd, u32 LBA, u32 BlockNbr)
 	}
 	return (true);
 }
+#endif

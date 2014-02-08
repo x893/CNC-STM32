@@ -1,7 +1,7 @@
 #ifndef __MASS_MAL_H
 #define __MASS_MAL_H
 
-#include "stm32fxxx.h"
+#include "global.h"
 
 #define MAL_OK   0
 #define MAL_FAIL 1

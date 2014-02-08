@@ -1,7 +1,7 @@
 #ifndef __usb_prop_H
 #define __usb_prop_H
 
-#include "STM32Fxxx.h"
+#include "global.h"
 #include "usb_core.h"
 
 #define Mass_Storage_GetConfiguration		NOP_Process

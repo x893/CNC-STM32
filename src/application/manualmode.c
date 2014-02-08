@@ -3,6 +3,8 @@
 
 const char axisName[5] = "XYZE";
 
+#if (USE_KEYBOARD == 1)
+
 void manualMode(void)
 {
 	static uint8_t limits = 0xFF;
@@ -17,7 +19,8 @@ void manualMode(void)
 	uint8_t dir[4] = { 0, 0, 0, 0 };
 	uint32_t steps[4] = { 0, 0, 0, 0 };
 
-	ili9320_Clear(0); scr_setfullTextWindow();
+	LCD_Clear(Black);
+	scr_setfullTextWindow();
 	scr_gotoxy(6, 0); scr_fontColor(Green, Black);
 	scr_puts("CNC MANUAL MODE");
 	scr_fontColor(Yellow, Black);
@@ -119,9 +122,10 @@ void manualMode(void)
 		if (limits != limits_chk())
 		{
 			limits = limits_chk();
-			GUI_Rectangle(304, 232, 309, 239, limitX_chk() ? Red : Green, true);
-			GUI_Rectangle(310, 232, 315, 239, limitY_chk() ? Red : Green, true);
-			GUI_Rectangle(314, 232, 319, 239, limitZ_chk() ? Red : Green, true);
+			scr_Rectangle(304, 232, 309, 239, limitX_chk() ? Red : Green, true);
+			scr_Rectangle(310, 232, 315, 239, limitY_chk() ? Red : Green, true);
+			scr_Rectangle(314, 232, 319, 239, limitZ_chk() ? Red : Green, true);
 		}
 	}
 }
+#endif

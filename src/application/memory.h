@@ -1,7 +1,7 @@
 #ifndef __memory_H
 #define __memory_H
 
-#include "STM32Fxxx.h"
+#include "global.h"
 
 #define TXFR_IDLE     0
 #define TXFR_ONGOING  1

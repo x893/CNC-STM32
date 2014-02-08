@@ -1,5 +1,7 @@
 #include "global.h"
 
+#if (USE_KEYBOARD == 1)
+
 volatile uint8_t _keyBuffer[6], _keyPressedCounter = 0;
 
 void kbd_init(void)
@@ -61,3 +63,5 @@ int kbd_getKey(void)
 {
 	return _keyPressedCounter == 0 ? -1 : _keyBuffer[--_keyPressedCounter];
 }
+
+#endif
