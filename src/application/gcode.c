@@ -310,6 +310,8 @@ uint8_t gc_execute_line(char *line)
 		int int_value = (int)value;
 		switch (letter)
 		{
+		case 'N':
+			break;
 		case 'G':
 			switch (int_value)
 			{
@@ -327,11 +329,12 @@ uint8_t gc_execute_line(char *line)
 			case 92: gc.next_action = NEXT_ACTION_RESET_XYZ_G92; break;
 			case 64:
 			case 40:
-			case 17: // G17 Выбор рабочей плоскости X-Y
-			case 94: // Feedrate per minute
-			case 98: // Feedrate per minute (group type A)
-			case 97: // Constant spindle speed M T Takes an S address integer, which is interpreted as rev/min (rpm). The default speed mode per system parameter if no mode is programmed. 
-			case 49: // Tool length offset compensation cancel
+			case 17:	// G17 Выбор рабочей плоскости X-Y
+			case 94:	// Feedrate per minute
+			case 98:	// Feedrate per minute (group type A)
+			case 97:	// Constant spindle speed M T Takes an S address integer, which is interpreted as rev/min (rpm). The default speed mode per system parameter if no mode is programmed. 
+			case 49:	// Tool length offset compensation cancel
+			case 80:	// Cancel canned cycle
 				break;
 			default: FAIL(GCSTATUS_UNSUPPORTED_STATEMENT);
 			}
@@ -348,7 +351,7 @@ uint8_t gc_execute_line(char *line)
 				gc.next_action = NEXT_ACTION_STOP;
 				break;
 			case 3: gc.spindle_on = 1; break;
-				//	case 4: gc.spindle_direction = -1; break;
+			//	case 4: gc.spindle_direction = -1; break;
 			case 5: gc.spindle_on = 0; break;
 #if (USE_EXTRUDER == 1)
 			case 101: //  M101 Turn extruder 1 on Forward 
@@ -363,7 +366,7 @@ uint8_t gc_execute_line(char *line)
 			case 109: // Set Extruder Temperature Example: M109 S190 
 				gc.next_action = NEXT_ACTION_EXTRUDER_WAIT_T;
 				break;
-				//	case 102: //  M102 Turn extruder 1 on Reverse 
+			//	case 102: //  M102 Turn extruder 1 on Reverse 
 #endif
 			case 23: // Thread gradual pullout ON
 			case 24: // Thread gradual pullout OFF
@@ -388,7 +391,7 @@ uint8_t gc_execute_line(char *line)
 			break;
 		}
 		if (gc.status_code)
-			return(gc.status_code);
+			return (gc.status_code);
 	}
 	if (gc.status_code)
 		return(gc.status_code);

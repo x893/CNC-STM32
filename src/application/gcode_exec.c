@@ -35,6 +35,7 @@ bool isGcodeStop;
 
 double minX, maxX, minY, maxY, minZ, maxZ;
 
+#define CRDS_SIZE	4
 #define CRD_X 0
 #define CRD_Y 1
 #define CRD_Z 2
@@ -42,8 +43,8 @@ double minX, maxX, minY, maxY, minZ, maxZ;
 
 #ifndef NO_ACCELERATION_CORRECTION
 typedef struct {
-	uint32_t steps[STEPS_MOTORS], frq[STEPS_MOTORS];
-	uint8_t isNullCmd, dir[STEPS_MOTORS], changeDir;
+	uint32_t steps[CRDS_SIZE], frq[CRDS_SIZE];
+	uint8_t isNullCmd, dir[CRDS_SIZE], changeDir;
 	double length;
 	int32_t cos_a;
 	uint32_t feed_rate;
@@ -126,14 +127,18 @@ char cncFileBuf[16000];
 const TPKey_t TPPause	= TPKEY(  0, 220, 319, 239, 0, NULL);
 const TPKey_t kbdGFileC	= TPKEY(  0, 220,  76, 239, KEY_C, "CANCEL");
 const TPKey_t kbdGFileA	= TPKEY( 84, 220, 156, 239, KEY_A, "PAUSE");
+#if (USE_ENCODER == 1)
 const TPKey_t kbdGFile0	= TPKEY(164, 220, 236, 239, KEY_0, "ON ENC");
 const TPKey_t kbdGFile1	= TPKEY(244, 220, 319, 239, KEY_1, "OFF ENC");
+#endif
 const TPKey_p kbdGFile[] = {
 	&TPPause,
 	&kbdGFileC,
 	&kbdGFileA,
+#if (USE_ENCODER == 1)
 	&kbdGFile0,
 	&kbdGFile1,
+#endif
 	NULL
 };
 #endif
@@ -367,7 +372,7 @@ uint8_t cnc_waitSMotorReady(void)
 				if (i == 2)
 				{
 					int32_t enVal = encoderZvalue();
-					double encValmm = (double)(enVal*MM_PER_360) / ENCODER_Z_CNT_PER_360;
+					double encValmm = (double)(enVal * MM_PER_360) / ENCODER_Z_CNT_PER_360;
 					scr_gotoxy(1 + 2 * 10, 4); scr_printf("errZ:%f  ", encValmm - n);
 					if (isEncoderCorrection)
 					{
@@ -585,7 +590,7 @@ uint8_t sendLine(uint32_t fxyze[], uint32_t abs_dxyze[], uint8_t dir_xyze[])
 			case KEY_C:
 				isPause = false;
 	#if (USE_KEYBOARD == 2)
-		SetTouchKeys(tp_save);
+				SetTouchKeys(tp_save);
 	#endif
 				return false;
 			case KEY_B:
@@ -795,12 +800,15 @@ bool smothLine(
 	return sendLine(fxyze, abs_dxyze, dir_xyze);
 #else
 	linesBuffer.mvectPtrCur++;
-	if (linesBuffer.mvectPtrCur >= MVECTOR_SZ) linesBuffer.mvectPtrCur = 0;
+	if (linesBuffer.mvectPtrCur >= MVECTOR_SZ)
+		linesBuffer.mvectPtrCur = 0;
 	//-------------------
 	p_next = &linesBuffer.mvector[n = linesBuffer.mvectPtrCur];
-	if ((--n) < 0) n = MVECTOR_SZ - 1;
+	if ((--n) < 0)
+		n = MVECTOR_SZ - 1;
 	p_cur = &linesBuffer.mvector[n];
-	if ((--n) < 0) n = MVECTOR_SZ - 1;
+	if ((--n) < 0)
+		n = MVECTOR_SZ - 1;
 	p_prev = &linesBuffer.mvector[n];
 	//------------------
 
@@ -977,6 +985,7 @@ bool smothLine(
 			{
 				has_max_frq = false;
 				if (labs(f1 - f2) > df_out && dd_f1 > 0)
+				{
 					if (f1  < f2)
 					{
 						sBreakage_out -= tmp_dd;
@@ -990,6 +999,7 @@ bool smothLine(
 							f1 -= dd_f1;
 						}
 					}
+				}
 				break;
 			}
 		}
@@ -1001,8 +1011,8 @@ bool smothLine(
 	}
 	DBG("\n crd_out=%d sBreakage_out=%d fBreakage_out=%d", crd_out, sBreakage_out, fBreakage_out);
 	uint8_t isProcess = true;
-	uint32_t remainSteps[STEPS_MOTORS];
-
+	
+	uint32_t remainSteps[CRDS_SIZE];
 	for (i = 0; i < STEPS_MOTORS; i++)
 		remainSteps[i] = p_cur->steps[i];
 

@@ -93,7 +93,6 @@ void stepm_proc(uint8_t id);
 #ifdef M0_TIM_IRQHandler
 void M0_TIM_IRQHandler(void)
 {
-	TIM_ClearITPendingBit(M0_TIM, TIM_IT_Update);
 	stepm_proc(0);
 }
 #endif
@@ -101,14 +100,12 @@ void M0_TIM_IRQHandler(void)
 #ifdef M1_TIM_IRQHandler
 void M1_TIM_IRQHandler(void)
 {
-	TIM_ClearITPendingBit(M1_TIM, TIM_IT_Update);
 	stepm_proc(1);
 }
 #endif
 #ifdef M2_TIM_IRQHandler
 void M2_TIM_IRQHandler(void)
 {
-	TIM_ClearITPendingBit(M2_TIM, TIM_IT_Update);
 	stepm_proc(2);
 }
 #endif
@@ -116,7 +113,6 @@ void M2_TIM_IRQHandler(void)
 #ifdef M3_TIM_IRQHandler
 void M3_TIM_IRQHandler(void)
 {
-	TIM_ClearITPendingBit(M3_TIM, TIM_IT_Update);
 	stepm_proc(3);
 }
 #endif

@@ -29,101 +29,97 @@
 	#define ENCODER_PINS	(GPIO_Pin_6 | GPIO_Pin_7)
 #endif
 
-#define STEPS_MOTORS	4
+/*
+ *	Motor number for encoder
+ */
+#define MX_ENCODER			2
+
+/*
+ *	One ENABLE for all motors
+ */
+// #define MX_EN_PORT			GPIOE
+// #define MX_EN_PIN			GPIO_Pin_6
 
 //------- stepmotor -------------------------------------
 // 74hc14 - inverter on the step motors board. STEP on falling edge
 //  _______        ______
 //         x      |
 //         |______|
+#define MX_STEP_ON			GPIO_SetBits
+#define MX_STEP_OFF			GPIO_ResetBits
 
 #define M0_TIM				TIM2
+#define M0_TIM_IRQn			TIM2_IRQn
 #define M0_TIM_IRQHandler	TIM2_IRQHandler
-#define M0_TIM_INIT()		\
-	do {													\
-		NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn;			\
-		NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;		\
-		NVIC_Init(&NVIC_InitStructure);							\
-		RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);	\
-		TIM_TimeBaseInit(M0_TIM, &TIM_TimeBase);				\
-		M0_TIM->EGR = TIM_PSCReloadMode_Update;					\
-		TIM_ARRPreloadConfig(M0_TIM, ENABLE);					\
-		TIM_ITConfig(M0_TIM, TIM_IT_Update, ENABLE);			\
-		TIM_Cmd(M0_TIM, ENABLE);								\
-	} while (0)
-#define M0_EN_PORT		GPIOA
-#define M0_EN_PIN		GPIO_Pin_1
-#define M0_DIR_PORT		GPIOA
-#define M0_DIR_PIN		GPIO_Pin_2
-#define M0_STEP_PORT	GPIOA
-#define M0_STEP_PIN		GPIO_Pin_3
+#define M0_TIM_CLK			RCC_APB1Periph_TIM2
+#ifndef MX_EN_PORT
+	#define M0_EN_PORT		GPIOA
+	#define M0_EN_PIN		GPIO_Pin_1
+#endif
+#define M0_DIR_PORT			GPIOA
+#define M0_DIR_PIN			GPIO_Pin_2
+#define M0_STEP_PORT		GPIOA
+#define M0_STEP_PIN			GPIO_Pin_3
 
 #define M1_TIM				TIM3
+#define M1_TIM_IRQn			TIM3_IRQn
 #define M1_TIM_IRQHandler	TIM3_IRQHandler
-#define M1_TIM_INIT()		\
-	do {													\
-		NVIC_InitStructure.NVIC_IRQChannel = TIM3_IRQn;			\
-		NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;		\
-		NVIC_Init(&NVIC_InitStructure);							\
-		RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);	\
-		TIM_TimeBaseInit(M1_TIM, &TIM_TimeBase);				\
-		M1_TIM->EGR = TIM_PSCReloadMode_Update;					\
-		TIM_ARRPreloadConfig(M1_TIM, ENABLE);					\
-		TIM_ITConfig(M1_TIM, TIM_IT_Update, ENABLE);			\
-		TIM_Cmd(M1_TIM, ENABLE);								\
-	} while (0)
-#define M1_EN_PORT		GPIOE
-#define M1_EN_PIN		GPIO_Pin_0
-#define M1_DIR_PORT		GPIOB
-#define M1_DIR_PIN		GPIO_Pin_9
-#define M1_STEP_PORT	GPIOB
-#define M1_STEP_PIN		GPIO_Pin_1
+#define M1_TIM_CLK			RCC_APB1Periph_TIM3
+#ifndef MX_EN_PORT
+	#define M1_EN_PORT		GPIOE
+	#define M1_EN_PIN		GPIO_Pin_0
+#endif
+#define M1_DIR_PORT			GPIOB
+#define M1_DIR_PIN			GPIO_Pin_9
+#define M1_STEP_PORT		GPIOB
+#define M1_STEP_PIN			GPIO_Pin_1
 
 #define M2_TIM				TIM4
+#define M2_TIM_IRQn			TIM4_IRQn
 #define M2_TIM_IRQHandler	TIM4_IRQHandler
-#define M2_TIM_INIT()		\
-	do {														\
-		NVIC_InitStructure.NVIC_IRQChannel = TIM4_IRQn;			\
-		NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;		\
-		NVIC_Init(&NVIC_InitStructure);							\
-		RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE);	\
-		TIM_TimeBaseInit(M2_TIM, &TIM_TimeBase);				\
-		M2_TIM->EGR = TIM_PSCReloadMode_Update;					\
-		TIM_ARRPreloadConfig(M2_TIM, ENABLE);					\
-		TIM_ITConfig(M2_TIM, TIM_IT_Update, ENABLE);			\
-		TIM_Cmd(M2_TIM, ENABLE);								\
-	} while (0)
-#define M2_EN_PORT		GPIOB
-#define M2_EN_PIN		GPIO_Pin_11
-#define M2_DIR_PORT		GPIOB
-#define M2_DIR_PIN		GPIO_Pin_12
-#define M2_STEP_PORT	GPIOD
-#define M2_STEP_PIN		GPIO_Pin_12
+#define M2_TIM_CLK			RCC_APB1Periph_TIM4
+#ifndef MX_EN_PORT
+	#define M2_EN_PORT		GPIOB
+	#define M2_EN_PIN		GPIO_Pin_11
+#endif
+#define M2_DIR_PORT			GPIOB
+#define M2_DIR_PIN			GPIO_Pin_12
+#define M2_STEP_PORT		GPIOD
+#define M2_STEP_PIN			GPIO_Pin_12
 
-//	M3 not used
-#define M3_TIM_INIT()
 /*
 #define M3_TIM				TIM5
+#define M3_TIM_IRQn			TIM5_IRQn
 #define M3_TIM_IRQHandler	TIM5_IRQHandler
-#define M3_TIM_INIT()		\
-	do {													\
-	NVIC_InitStructure.NVIC_IRQChannel = TIM5;				\
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 3;		\
-	NVIC_Init(&NVIC_InitStructure);							\
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM5, ENABLE);	\
-	TIM_TimeBaseInit(TIM5, &TIM_TimeBase);					\
-	TIM5->EGR = TIM_PSCReloadMode_Update;					\
-	TIM_ARRPreloadConfig(TIM5, ENABLE);						\
-	TIM_ITConfig(TIM5, TIM_IT_Update, ENABLE);				\
-	TIM_Cmd(TIM5, ENABLE);									\
-	} while (0)
+#define M3_TIM_CLK			RCC_APB1Periph_TIM5
+#ifndef MX_EN_PORT
 	#define M3_EN_PORT		GPIOB
 	#define M3_EN_PIN		GPIO_Pin_11
-	#define M3_DIR_PORT		GPIOD
-	#define M3_DIR_PIN		GPIO_Pin_6
-	#define M3_STEP_PORT	GPIOB
-	#define M3_STEP_PIN		GPIO_Pin_10
-	*/
+#endif
+#define M3_DIR_PORT			GPIOD
+#define M3_DIR_PIN			GPIO_Pin_6
+#define M3_STEP_PORT		GPIOB
+#define M3_STEP_PIN			GPIO_Pin_10
+*/
+
+#ifdef M3_STEP_PORT
+	#define STEPS_MOTORS	4
+#else
+#ifdef M2_STEP_PORT
+	#define STEPS_MOTORS	3
+#else
+#ifdef M1_STEP_PORT
+	#define STEPS_MOTORS	2
+#else
+#ifdef M0_STEP_PORT
+	#define STEPS_MOTORS	1
+#else
+	#define STEPS_MOTORS	0
+#endif
+#endif
+#endif
+#endif
+
 
 void LedOn(void);
 void LedOff(void);

@@ -17,17 +17,17 @@
 #endif
 
 #ifdef LIMIT_X_PORT
-	static __INLINE uint8_t limitX_chk(void) { return ((LIMIT_X_PORT->IDR & LIMIT_X_PIN) == LIMIT_X_STATE ? 0 : 1); }
+	static __INLINE uint8_t limitX_chk(void) { return ((LIMIT_X_PORT->IDR & LIMIT_X_PIN) == LIMIT_X_STATE ? 1 : 0); }
 #else
 	#define limitX_chk()	0
 #endif
 #ifdef LIMIT_Y_PORT
-	static __INLINE uint8_t limitY_chk(void) { return ((LIMIT_Y_PORT->IDR & LIMIT_Y_PIN) == LIMIT_Y_STATE ? 0 : 1); }
+	static __INLINE uint8_t limitY_chk(void) { return ((LIMIT_Y_PORT->IDR & LIMIT_Y_PIN) == LIMIT_Y_STATE ? 1 : 0); }
 #else
 	#define limitY_chk()	0
 #endif
 #ifdef LIMIT_Z_PORT
-	static __INLINE uint8_t limitZ_chk(void) { return ((LIMIT_Z_PORT->IDR & LIMIT_Z_PIN) == LIMIT_Z_STATE ? 0 : 1); }
+	static __INLINE uint8_t limitZ_chk(void) { return ((LIMIT_Z_PORT->IDR & LIMIT_Z_PIN) == LIMIT_Z_STATE ? 1 : 0); }
 #else
 	#define limitZ_chk()	0
 #endif
