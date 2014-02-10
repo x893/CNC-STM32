@@ -12,6 +12,8 @@
 #include "stm32f429i_discovery_lcd.h"
 #include "fonts.c"
 
+void delayMs(uint16_t msec);
+
 #define POLY_Y(Z)	((int32_t)((Points + Z)->X))
 #define POLY_X(Z)	((int32_t)((Points + Z)->Y))   
 #define ABS(X)  	((X) > 0 ? (X) : -(X))
@@ -25,10 +27,6 @@ uint16_t CurrentBackColor = 0xFFFF;
 /* Default LCD configuration with LCD Layer 1 */
 uint32_t CurrentFrameBuffer = LCD_FRAME_BUFFER;
 uint32_t CurrentLayer = LCD_BACKGROUND_LAYER;
-
-#ifndef USE_Delay
-void lcd_delay(__IO uint32_t nCount);
-#endif /* USE_Delay*/
 
 void PutPixel(int16_t x, int16_t y);
 void LCD_PolyLineRelativeClosed(pPoint Points, uint16_t PointCount, uint16_t Closed);
@@ -1611,7 +1609,7 @@ void LCD_PowerOn(void)
 	LCD_WriteData(0x06);
 
 	LCD_WriteCommand(LCD_GRAM);
-	lcd_delay(200);
+	delayMs(200);
 
 	LCD_WriteCommand(LCD_GAMMA);
 	LCD_WriteData(0x01);
@@ -1650,7 +1648,7 @@ void LCD_PowerOn(void)
 	LCD_WriteData(0x0F);
 
 	LCD_WriteCommand(LCD_SLEEP_OUT);
-	lcd_delay(200);
+	delayMs(200);
 	LCD_WriteCommand(LCD_DISPLAY_ON);
 	/* GRAM start writing */
 	LCD_WriteCommand(LCD_GRAM);
@@ -1907,18 +1905,3 @@ void PutPixel(int16_t x, int16_t y)
 		return;
 	LCD_DrawLine(x, y, 1, LCD_DIR_HORIZONTAL);
 }
-
-#ifndef USE_Delay
-/**
-  * @brief  Inserts a delay time.
-  * @param  nCount: specifies the delay time length.
-  * @retval None
-  */
-void lcd_delay(__IO uint32_t nCount)
-{
-	__IO uint32_t index = 0;
-	for (index = nCount; index != 0; index--)
-	{
-	}
-}
-#endif /* USE_Delay*/

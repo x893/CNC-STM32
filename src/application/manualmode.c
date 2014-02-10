@@ -3,7 +3,7 @@
 
 const char axisName[5] = "XYZE";
 
-#if (USE_KEYBOARD == 1)
+#if (USE_KEYBOARD != 0)
 
 void manualMode(void)
 {
@@ -45,7 +45,7 @@ void manualMode(void)
 				scr_gotoxy(1, TEXT_Y_MAX - 3 + i);
 				scr_printf("steps %c:%d      ", axisName[i], stepm_getCurGlobalStepsNum(i));
 			}
-#if (USE_ENCODER == 1)
+	#if (USE_ENCODER == 1)
 			if (i == 2)
 			{
 				int32_t v = encoderZvalue();
@@ -53,7 +53,7 @@ void manualMode(void)
 				scr_gotoxy(1 + 2 * 10, TEXT_Y_MAX - 5);
 				scr_printf("errZ:%f  ", (double)(v*MM_PER_360) / ENCODER_Z_CNT_PER_360 - n);
 			}
-#endif
+	#endif
 			dir[i] = 0;
 			steps[i] = 0;
 		}
@@ -66,10 +66,10 @@ void manualMode(void)
 		case KEY_0:
 			while (stepm_inProc() && kbd_getKey() != KEY_C) {}
 			stepm_ZeroGlobalCrd();
-#if (USE_ENCODER == 1)
+	#if (USE_ENCODER == 1)
 			encoderZreset();
 			encoderCorrectionCntUp = encoderCorrectionCntDown = encoderCorrectionDelta = encoderCorrectionMaxDelta = 0;
-#endif
+	#endif
 			break;
 		case KEY_6: steps[0] = k; dir[0] = 1; stepm_addMove(steps, frq, dir); break;
 		case KEY_4: steps[0] = k; dir[0] = 0; stepm_addMove(steps, frq, dir); break;

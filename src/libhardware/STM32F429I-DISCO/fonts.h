@@ -12,7 +12,7 @@
 #define __FONTS_H
 
 #ifdef __cplusplus
-	extern "C" {
+extern "C" {
 #endif
 
 #include <stdint.h>
@@ -35,7 +35,7 @@ extern sFONT Font8x8;
 #define LINE(x) ((x) * (((sFONT *)LCD_GetFont())->Height))
 
 #ifdef __cplusplus
-	}
+}
 #endif
   
 #endif /* __FONTS_H */

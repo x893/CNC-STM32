@@ -2,12 +2,14 @@
 #define __STM32LCD_H__
 
 #ifdef __cplusplus
-	extern "C" {
+extern "C" {
 #endif 
 
 #include <stdint.h>
 
-#if (USE_LCD == 1)
+#include "stm32f429i_discovery_ioe.h"
+
+#if (USE_LCD == 2)
 
 	#include "stm32f429i_discovery_lcd.h"
 
@@ -42,7 +44,7 @@
 #endif
 
 #ifdef __cplusplus
-	}
+}
 #endif
 
 #endif

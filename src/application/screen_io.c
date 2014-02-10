@@ -3,18 +3,27 @@
 #include <stdbool.h>
 #include "screen_io.h"
 
-#if (USE_LCD == 1)
+#if (USE_LCD != 0)
 
 #define screen_font_from_c
 #include "screen_font.h"
 
-uint16_t fontColor = 0xFFFF, fontBkColor = 0;
-uint16_t fix_fontColor = 0xFFFF, fix_fontBkColor = 0;
-int8_t cur_col = 0, cur_row = 0,
+#define BORDER_PADDING	5
+
+uint16_t
+	fontColor = White,
+	fontBkColor = Black,
+	fix_fontColor = White,
+	fix_fontBkColor = Black;
+int8_t
+	cur_col = 0,
+	cur_row = 0,
 	cur_width = LCD_WIDTH / FONT_STEP_X,
 	cur_height = LCD_HEIGHT / FONT_STEP_Y;
 bool flagScroll = true;
-uint16_t cur_x_ofs = 0, cur_y_ofs = 0;
+uint16_t
+	cur_x_ofs = 0,
+	cur_y_ofs = 0;
 
 void scr_setfullTextWindow(void)
 {
@@ -32,7 +41,7 @@ void scr_setTextWindow(uint16_t x, uint16_t y, uint8_t maxCol, uint8_t maxRow)
 	cur_height = ((maxRow * FONT_STEP_Y + y) >= LCD_HEIGHT) ? (LCD_HEIGHT - y) / FONT_STEP_Y : maxRow;
 }
 
-void scr_setScrollOn(uint8_t flag)
+void scr_setScroll(uint8_t flag)
 {
 	flagScroll = flag;
 }
@@ -424,34 +433,58 @@ void win_showWindow(
 	uint16_t cText
 	)
 {
-	uint16_t x1 = x0 + (uint16_t)colSz * FONT_STEP_X + 10;
-	uint16_t y1 = y0 + (uint16_t)rowSz * FONT_STEP_Y + 10;
+	uint16_t x1 = x0 + (uint16_t)colSz * FONT_STEP_X + BORDER_PADDING * 2;
+	uint16_t y1 = y0 + (uint16_t)rowSz * FONT_STEP_Y + BORDER_PADDING * 2;
 	scr_Rectangle(x0, y0, x1, y1, cBorder, false);
 	scr_Rectangle(x0 + 1, y0 + 1, x1 - 1, y1 - 1, cBorder, false);
 	scr_Rectangle(x0 + 2, y0 + 2, x1 - 2, y1 - 2, cBorder, false);
 	scr_Rectangle(x0 + 3, y0 + 3, x1 - 3, y1 - 3, cFill, true);
 	scr_setTextWindow(
-		x0 + 5,
-		y0 + 5,
-		(x1 - x0 - 10) / FONT_STEP_X,
-		(y1 - y0 - 10) / FONT_STEP_Y
+		x0 + BORDER_PADDING,
+		y0 + BORDER_PADDING,
+		(x1 - x0 - BORDER_PADDING * 2) / FONT_STEP_X,
+		(y1 - y0 - BORDER_PADDING * 2) / FONT_STEP_Y
 	);
 	scr_fontColor(cText, cFill);
 }
 
+#define WIN_WIDTH	32
+#define WIN_HEIGHT	8
+#define WIN_X_TOP	FONT_STEP_X * 4 - BORDER_PADDING
+#define WIN_Y_LEFT	FONT_STEP_Y * 4 - BORDER_PADDING
+
+#if (USE_KEYBOARD == 2)
+const TPKey_t kbdWinC = TPKEY(
+	WIN_X_TOP,
+	WIN_Y_LEFT,
+	WIN_WIDTH  * FONT_STEP_X,
+	WIN_HEIGHT * FONT_STEP_Y,
+	KEY_C, NULL);
+const TPKey_p kbdWin[] = {
+	&kbdWinC,
+	NULL
+};
+#endif
+
+void win_showWin(uint16_t cBorder, uint16_t cFill, uint16_t cText)
+{
+	win_showWindow(
+		WIN_X_TOP,
+		WIN_Y_LEFT,
+		WIN_WIDTH, WIN_HEIGHT,
+		cBorder, cFill, cText
+	);
+	SetTouchKeys(kbdWin);
+	scr_gotoxy(0, 0);
+	scr_setScroll(true);
+}
+	
 /****************************************************************************
  *
  ****************************************************************************/
 void win_showErrorWin(void)
 {
-	win_showWindow(
-		FONT_STEP_X * 4 - 5,
-		FONT_STEP_Y * 4 - 5,
-		32, 7,
-		Yellow, Red, White
-	);
-	scr_gotoxy(0, 0);
-	scr_setScrollOn(true);
+	win_showWin(Yellow, Red, White);
 }
 
 /****************************************************************************
@@ -459,14 +492,7 @@ void win_showErrorWin(void)
  ****************************************************************************/
 void win_showMsgWin(void)
 {
-	win_showWindow(
-		FONT_STEP_X * 4 - 5,
-		FONT_STEP_Y * 4 - 5,
-		32, 8,
-		Magenta, Blue2, Cyan
-	);
-	scr_gotoxy(0, 0);
-	scr_setScrollOn(true);
+	win_showWin(Magenta, Blue2, Black);
 }
 
 /****************************************************************************
@@ -488,7 +514,7 @@ void win_showMenu(uint16_t x, uint16_t y, uint8_t col, uint8_t row)
 {
 	win_showWindow(x, y, col, row, Green, Cyan, Black);
 	scr_gotoxy(0, 0);
-	scr_setScrollOn(false);
+	scr_setScroll(false);
 }
 
 /****************************************************************************
@@ -511,7 +537,7 @@ void win_showMenuScroll(
 
 	scr_setTextWindow(x + 5, y + 5, col, row);
 	scr_gotoxy(0, -(int8_t)startPos);
-	scr_setScrollOn(false);
+	scr_setScroll(false);
 }
 
 #endif

@@ -4,15 +4,13 @@
 #if   defined( STM32F10X_HD )
 	#include "stm32f10x-board.h"
 #elif defined( STM32F4XX ) || defined( STM32F429_439xx )
-	#include "stm32f429i_discovery.h"
+	#include "stm32f429i-disco.h"
 #endif
 
 #if (USE_DEBUG_MODE == 1)
 	#undef USE_RS232
 	#define USE_RS232	1
-#endif
 
-#if (USE_DEBUG_MODE == 1)
 	#define DBG(...) { rf_printf(__VA_ARGS__); }
 #else
 	#define DBG(...) { }

@@ -11,6 +11,8 @@
 #include "stm32f429i_discovery_sdram.h"
 #include "stm32f4xx_fmc.h"
 
+void delayMs(uint16_t msec);
+
 /**
   * @brief  Configures the FMC and GPIOs to interface with the SDRAM memory.
   *         This function must be called before any read/write operation
@@ -352,17 +354,3 @@ void SDRAM_ReadBuffer(uint32_t* pBuffer, uint32_t uwReadAddress, uint32_t uwBuff
 		write_pointer += 4;
 	} 
 }
-
-#ifndef USE_Delay
-/**
-  * @brief  Inserts a delay time.
-  * @param  nCount: specifies the delay time length.
-  * @retval None
-  */
-void sdram_delay(__IO uint32_t nCount)
-{
-	__IO uint32_t index = 0; 
-	for(index = (100000 * nCount); index != 0; index--)
-	{ }
-}
-#endif /* USE_Delay */

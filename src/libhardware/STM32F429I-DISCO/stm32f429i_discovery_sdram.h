@@ -12,7 +12,7 @@
 #define __STM32429I_DISCO_SDRAM_H
 
 #ifdef __cplusplus
-	extern "C" {
+extern "C" {
 #endif
 
 #include "stm32f4xx.h"
@@ -50,16 +50,6 @@
   * @brief  FMC SDRAM Bank Remap
   */    
 /* #define SDRAM_BANK_REMAP */   
-
-
-
-/**
- * @brief Uncomment the line below if you want to use user defined Delay function
- *        (for precise timing), otherwise default _delay_ function defined within
- *         this driver is used (less precise timing).  
- */
- 
-void delayMs(uint16_t ms);
 
 /**
   * @brief  FMC SDRAM Mode definition register defines

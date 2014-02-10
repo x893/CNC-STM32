@@ -3,10 +3,10 @@
 
 struct SysTickTimers_s {
 	uint32_t Seconds;
-	volatile uint16_t Timer1ms;
+	volatile uint16_t Timer;
 	uint16_t LedTimer;
 	uint16_t MS1000;
-#if (USE_KEYBOARD == 1)
+#if (USE_KEYBOARD != 0)
 	uint8_t KbdTimer;
 #endif
 #if (USE_EXTRUDER == 1)
@@ -16,11 +16,24 @@ struct SysTickTimers_s {
 
 void delayMs(uint16_t msec)
 {
-	SysTickTimers.Timer1ms = msec;
-	while (SysTickTimers.Timer1ms != 0)
+	SysTickTimers.Timer = 1;
+	while (SysTickTimers.Timer != 0)
+	{ }
+	SysTickTimers.Timer = msec;
+	while (SysTickTimers.Timer != 0)
 	{
 		// __WFI();
 	}
+}
+
+uint16_t GetKbdTimer(void)
+{
+	return SysTickTimers.KbdTimer;
+}
+
+void SetKbdTimer(uint16_t msec)
+{
+	SysTickTimers.KbdTimer = msec;
 }
 
 uint32_t Seconds(void)
@@ -31,8 +44,8 @@ void SysTick_Handler(void)
 {
 	register struct SysTickTimers_s *vars = &SysTickTimers;
 
-	if (vars->Timer1ms != 0)
-		vars->Timer1ms--;
+	if (vars->Timer != 0)
+		vars->Timer--;
 
 	vars->MS1000++;
 	if (vars->MS1000 == 1000)
@@ -59,6 +72,9 @@ void SysTick_Handler(void)
 		vars->KbdTimer = 0;
 		kbd_proc();
 	}
+#elif (USE_KEYBOARD == 2)
+	if (vars->KbdTimer != 0)
+		vars->KbdTimer--;
 #endif
 
 #if (USE_EXTRUDER == 1)

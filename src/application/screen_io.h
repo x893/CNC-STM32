@@ -3,7 +3,7 @@
 
 #include "global.h"
 
-#if (USE_LCD == 1)
+#if (USE_LCD != 0)
 
 	#define TEXT_Y_MAX 15
 
@@ -14,7 +14,7 @@
 	void scr_fontColorNormal(void);
 	void scr_setfullTextWindow(void);
 	void scr_setTextWindow(uint16_t x, uint16_t y, uint8_t maxCol, uint8_t maxRow);
-	void scr_setScrollOn(uint8_t flag);
+	void scr_setScroll(uint8_t flag);
 	void scr_putc(char);
 	void scr_puts(const char*);
 	void scr_clrEndl(void);
@@ -41,7 +41,7 @@
 	#define scr_clrEndl()
 	#define scr_fontColorInvers()
 	#define scr_fontColorNormal()
-	#define scr_setScrollOn(x)
+	#define scr_setScroll(x)
 	#define scr_Rectangle(...)
 	#define scr_Line(...)
 

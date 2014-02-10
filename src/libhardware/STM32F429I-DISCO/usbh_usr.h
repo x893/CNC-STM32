@@ -11,11 +11,11 @@
 #define __USH_USR_H__
 
 #ifdef __cplusplus
- extern "C" {
+extern "C" {
 #endif
 
 #include <stdio.h>
-#include "stm32f429i_discovery.h"
+#include "global.h"
 #include "usbh_core.h"
 #include "usbh_msc_core.h"
 
@@ -60,6 +60,7 @@ void USBH_USR_BackgroundProcess (void);
 void Fail_Handler(void);
 void TimingDelay_Decrement(void);
 void Delay(__IO uint32_t nTime);
+
 #ifdef __cplusplus
 }
 #endif

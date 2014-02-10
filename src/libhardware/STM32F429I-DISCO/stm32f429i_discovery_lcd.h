@@ -13,7 +13,7 @@
 #define __STM32F429I_DISCOVERY_LCD_H
 
 #ifdef __cplusplus
-	extern "C" {
+extern "C" {
 #endif 
 
 #include "stm32f4xx.h"
@@ -32,21 +32,6 @@ typedef struct
 
 #define LCD_FRAME_BUFFER	((uint32_t)0xD0000000)
 #define BUFFER_OFFSET		((uint32_t)0x50000) 
-/**
- * @brief Uncomment the line below if you want to use user defined Delay function
- *	   (for precise timing), otherwise default _delay_ function defined within
- *		this driver is used (less precise timing).  
- */
-/* #define USE_Delay */
-
-#ifdef USE_Delay
-	#include "main.h" 
-	#define _delay_	Delay	/* !< User can provide more timing precise _delay_ function
-								(with 10ms time base), using SysTick for example */
-#else
-	#define _delay_	delay	/* !< Default _delay_ function with less precise timing */
-#endif
-
 
 /** 
   * @brief  LCD Control pin  
@@ -196,7 +181,7 @@ typedef struct
 
 /** @defgroup STM32F429I_DISCOVERY_LCD_Exported_Macros
   * @{
-  */ 
+  */
 #define ASSEMBLE_RGB(R, G, B)	((((R)& 0xF8) << 8) | (((G) & 0xFC) << 3) | (((B) & 0xF8) >> 3))  
 
 /**
@@ -256,7 +241,7 @@ void	LCD_CtrlLinesWrite(GPIO_TypeDef* GPIOx, uint16_t CtrlPins, BitAction BitVal
 void	LCD_SPIConfig(void);
   
 #ifdef __cplusplus
-	}
+}
 #endif
 
 #endif /* __STM32F429I_DISCOVERY_LCD_H */

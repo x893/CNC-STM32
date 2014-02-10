@@ -1,4 +1,6 @@
 #include "global.h"
+#include "screen_font.h"
+#include <string.h>
 
 #ifdef USE_STM32F429I_DISCO
 
@@ -16,6 +18,20 @@ void Led3On(void)	{	GPIO_SetBits(LED3_PORT, LED3_PIN);		}
 void Led3Off(void)	{	GPIO_ResetBits(LED3_PORT, LED3_PIN);	}
 void Led4On(void)	{	GPIO_SetBits(LED4_PORT, LED4_PIN);		}
 void Led4Off(void)	{	GPIO_ResetBits(LED4_PORT, LED4_PIN);	}
+
+void WaitButtonPress(void)
+{
+	while (GPIO_ReadInputDataBit(BUTTON_PORT, BUTTON_PIN) != Bit_RESET) { }
+	while (GPIO_ReadInputDataBit(BUTTON_PORT, BUTTON_PIN) != Bit_SET) { }
+}
+uint8_t IsButtonPress(void)
+{
+	return
+		((GPIO_ReadInputDataBit(BUTTON_PORT, BUTTON_PIN) == Bit_RESET)
+		? 0
+		: 1
+		);
+}
 
 /***************************************************
  *	Initialize hardware
@@ -99,9 +115,11 @@ void SystemStartup(void)
 
 #endif
 
-#if (USE_KEYBOARD == 1)
-	kbd_init();
-#endif
+	/* Initialize Button */
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;
+	GPIO_InitStructure.GPIO_Pin = BUTTON_PIN;
+	GPIO_Init(BUTTON_PORT, &GPIO_InitStructure);
 
 	stepm_init();
 
@@ -114,6 +132,7 @@ void SystemStartup(void)
 
 	GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_IN;
 	GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_UP;
+
 #ifdef LIMIT_X_PORT
 	PIN_SET_MODE(LIMIT_X_PORT, LIMIT_X_PIN);
 #endif
@@ -128,7 +147,7 @@ void SystemStartup(void)
 	rtc_init();
 #endif
 
-#if (USE_LCD == 1)
+#if (USE_LCD == 2)
 	LCD_Init();
 	LCD_LayerInit();
 	LTDC_Cmd(ENABLE);
@@ -149,6 +168,92 @@ void SystemStartup(void)
 #if (USE_USB == 1)
 	USBH_Init(&USB_OTG_Core, USB_OTG_HS_CORE_ID, &USB_Host, &USBH_MSC_cb, &USR_Callbacks);  
 #endif
+
+	if (IOE_Config() != IOE_OK && IOE_Config() != IOE_OK)
+	{
+		LEDRED_ON();
+	}
+}
+
+const TPKey_p * TPKeys;
+
+uint16_t GetKbdTimer(void);
+void SetKbdTimer(uint16_t msec);
+
+int kbd_getKey(void)
+{
+	static uint16_t tp_last = 0;
+	static uint16_t x, y;
+
+	const TPKey_p * keys = TPKeys;
+
+	if (keys != NULL && GetKbdTimer() == 0)
+	{
+		TP_STATE* TPState = IOE_TP_GetState();
+		if (TPState->TouchDetected)
+		{
+			x = LCD_WIDTH - 1 - TPState->Y;
+			y = TPState->X;
+			tp_last = TPState->TouchDetected;
+		}
+		else if (tp_last)
+		{
+			const TPKey_t * key;
+			tp_last = 0;
+				
+			while ((key = *keys++) != NULL)
+			{
+				if (key->KeyCode != 0)
+				{
+					if (x >= key->XTop && x <= key->XBottom
+					&&	y >= key->YLeft && y <= key->YRight
+						)
+					{
+						SetKbdTimer(50);
+						return key->KeyCode;
+					}
+				}
+			}
+		}
+		SetKbdTimer(50);
+	}
+	return -1;
+}
+
+const TPKey_p * SetTouchKeys(const TPKey_p * keys)
+{
+	const TPKey_p * tp_current = TPKeys;
+	const char *text;
+	const TPKey_t * key;
+	TPKeys = keys;
+	if (keys != NULL)
+		while ((key = *keys++) != NULL)
+		{
+			if (key->KeyCode == 0)
+			{
+				scr_Rectangle( key->XTop, key->YLeft, key->XBottom, key->YRight, Black, true);
+			}
+			else if (key->Text != NULL)
+			{
+				scr_Rectangle( key->XTop, key->YLeft, key->XBottom, key->YRight, White, true);
+				text = key->Text;
+				uint16_t width = strlen(text) * FONT_STEP_X;
+				uint16_t x = (key->XTop + key->XBottom - width) / 2;
+				uint16_t y = (key->YLeft + key->YRight - FONT_STEP_Y) / 2;
+				while (*text != 0)
+				{
+					LCD_PutChar(
+						x,
+						y,
+						*text++,
+						Black,
+						White
+					);
+					x += FONT_STEP_X;
+				}
+			}
+		}
+	return tp_current;
 }
 
 uint8_t SystemProcess(void)

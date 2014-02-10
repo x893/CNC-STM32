@@ -220,7 +220,7 @@ int USBH_USR_MSC_Application(void)
 	&&	USBH_USR_ApplicationState != USH_USR_PROCESS
 		)
 	{
-		FRESULT fres = f_mount(0, &fatfs);
+		FRESULT fres = f_mount(&fatfs, "0:", 1);
 		if (fres != FR_OK )
 		{
 			USBH_USR_ApplicationState = USH_USR_FS_NOMOUNT;

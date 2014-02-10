@@ -7,9 +7,10 @@
   * @brief   USB bsp
   ******************************************************************************
   */ 
+#include "global.h"
+
 #include "usb_bsp.h"
 #include "usb_conf.h"
-#include "stm32f429i_discovery.h"
 
 #define TIM_MSEC_DELAY				0x01
 #define TIM_USEC_DELAY				0x02
@@ -156,9 +157,7 @@ void USB_OTG_BSP_uDelay (const uint16_t usec)
 	do
 	{
 		if ( ++count > utime )
-		{
 			return ;
-		}
 	}
 	while (1);
 }

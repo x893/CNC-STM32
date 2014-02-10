@@ -294,9 +294,10 @@ uint8_t gc_execute_line(char *line)
 	char letter;
 	double value, oldPosition[3], dx, dy, dz, moveLength, offset[3], radius = 0;
 	int pause_value = 0;
-	gc.status_code = GCSTATUS_OK;
 	uint8_t radius_mode = false;
 
+	gc.status_code = GCSTATUS_OK;
+	
 	if (line[0] == ';'
 		|| line[0] == '('
 		|| line[0] == '%'

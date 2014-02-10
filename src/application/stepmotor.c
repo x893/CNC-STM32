@@ -112,7 +112,16 @@ void stepm_init(void)
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_0);
 
 	#ifdef M0_EN_PORT
-	M0_TIM_INIT();
+		NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn;
+		NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;
+		NVIC_Init(&NVIC_InitStructure);
+
+		RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
+		TIM_TimeBaseInit(M0_TIM, &TIM_TimeBase);
+		M0_TIM->EGR = TIM_PSCReloadMode_Update;
+		TIM_ARRPreloadConfig(M0_TIM, ENABLE);
+		TIM_ITConfig(M0_TIM, TIM_IT_Update, ENABLE);
+		TIM_Cmd(M0_TIM, ENABLE);
 	#endif
 
 	#ifdef M1_EN_PORT
@@ -144,26 +153,34 @@ void stepm_proc(uint8_t id)
 		{
 #ifdef M0_EN_PORT
 		case 0:
-			if (step_motors[id].clk) GPIO_SetBits(M0_STEP_PORT, M0_STEP_PIN);
-			else GPIO_ResetBits(M0_STEP_PORT, M0_STEP_PIN);
+			if (step_motors[id].clk)
+				GPIO_SetBits(M0_STEP_PORT, M0_STEP_PIN);
+			else
+				GPIO_ResetBits(M0_STEP_PORT, M0_STEP_PIN);
 			break;
 #endif
 #ifdef M1_EN_PORT
 		case 1:
-			if (step_motors[id].clk) GPIO_SetBits(M1_STEP_PORT, M1_STEP_PIN);
-			else GPIO_ResetBits(M1_STEP_PORT, M1_STEP_PIN);
+			if (step_motors[id].clk)
+				GPIO_SetBits(M1_STEP_PORT, M1_STEP_PIN);
+			else
+				GPIO_ResetBits(M1_STEP_PORT, M1_STEP_PIN);
 			break;
 #endif
 #ifdef M2_EN_PORT
 		case 2:
-			if (step_motors[id].clk) GPIO_SetBits(M2_STEP_PORT, M2_STEP_PIN);
-			else GPIO_ResetBits(M2_STEP_PORT, M2_STEP_PIN);
+			if (step_motors[id].clk)
+				GPIO_SetBits(M2_STEP_PORT, M2_STEP_PIN);
+			else
+				GPIO_ResetBits(M2_STEP_PORT, M2_STEP_PIN);
 			break;
 #endif
 #ifdef M3_EN_PORT
 		case 3:
-			if (step_motors[id].clk) GPIO_SetBits(M3_STEP_PORT, M3_STEP_PIN);
-			else GPIO_ResetBits(M3_STEP_PORT, M3_STEP_PIN);
+			if (step_motors[id].clk)
+				GPIO_SetBits(M3_STEP_PORT, M3_STEP_PIN);
+			else
+				GPIO_ResetBits(M3_STEP_PORT, M3_STEP_PIN);
 			break;
 #endif
 		default:
@@ -397,7 +414,7 @@ void stepm_ZeroGlobalCrd(void)
 #if (USE_STEP_DEBUG == 1)
 void step_dump()
 {
-	#if (USE_LCD == 1)
+	#if (USE_LCD != 0)
 	LINE_DATA *p = (LINE_DATA *)(&cur_steps_buf);
 	for (int i = 0; i < 4; i++)
 	{

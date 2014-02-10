@@ -20,9 +20,9 @@
 SM_PARAM _smParam;
 bool isPause = false;
 
-#if (USE_LCD == 1)
-double k_scr;
-short prev_scrX, prev_scrY;
+#if (USE_LCD != 0)
+	double k_scr;
+	short prev_scrX, prev_scrY;
 #endif
 
 int curGCodeMode;
@@ -42,15 +42,15 @@ double minX, maxX, minY, maxY, minZ, maxZ;
 
 #ifndef NO_ACCELERATION_CORRECTION
 typedef struct {
-	uint32_t steps[4], frq[4];
-	uint8_t isNullCmd, dir[4], changeDir;
+	uint32_t steps[STEPS_MOTORS], frq[STEPS_MOTORS];
+	uint8_t isNullCmd, dir[STEPS_MOTORS], changeDir;
 	double length;
 	int32_t cos_a;
 	uint32_t feed_rate;
 } MVECTOR;
 #endif
 
-#define MAX_SHOW_GCODE_LINES 2
+#define MAX_SHOW_GCODE_LINES	2
 typedef struct {
 	char cmd[MAX_STR_SIZE];
 	int lineNum;
@@ -71,7 +71,7 @@ struct {
 	int32_t stepsX, stepsY, stepsZ;
 } linesBuffer;
 
-#if (USE_LCD == 1)
+#if (USE_LCD != 0)
 short crdXtoScr(double x)
 {
 	return (short)(x * k_scr + 0.5) + 8;
@@ -86,7 +86,7 @@ short crdYtoScr(double y)
 
 void initGcodeProc(void)
 {
-#if (USE_LCD == 1)
+#if (USE_LCD != 0)
 	double kx = ((double)(LCD_WIDTH  - 10)) / MAX_TABLE_SIZE_X;
 	double ky = ((double)(LCD_HEIGHT - 2)) / MAX_TABLE_SIZE_Y;
 	k_scr = kx > ky ? ky : kx;
@@ -100,7 +100,7 @@ void initGcodeProc(void)
 	linesBuffer.mvector[0].isNullCmd = true;
 	linesBuffer.mvectCnt = 1;
 #endif
-#if (USE_LCD == 1)
+#if (USE_LCD != 0)
 	prev_scrX = crdXtoScr(TABLE_CENTER_X);
 	prev_scrY = crdYtoScr(TABLE_CENTER_Y);
 #endif
@@ -120,6 +120,23 @@ void initGcodeProc(void)
 }
 
 //---------------------------------------------------------------------
+char cncFileBuf[16000];
+
+#if (USE_KEYBOARD == 2)
+const TPKey_t TPPause	= TPKEY(  0, 220, 319, 239, 0, NULL);
+const TPKey_t kbdGFileC	= TPKEY(  0, 220,  76, 239, KEY_C, "CANCEL");
+const TPKey_t kbdGFileA	= TPKEY( 84, 220, 156, 239, KEY_A, "PAUSE");
+const TPKey_t kbdGFile0	= TPKEY(164, 220, 236, 239, KEY_0, "ON ENC");
+const TPKey_t kbdGFile1	= TPKEY(244, 220, 319, 239, KEY_1, "OFF ENC");
+const TPKey_p kbdGFile[] = {
+	&TPPause,
+	&kbdGFileC,
+	&kbdGFileA,
+	&kbdGFile0,
+	&kbdGFile1,
+	NULL
+};
+#endif
 
 void cnc_gfile(char *fileName, int mode)
 {
@@ -129,48 +146,55 @@ void cnc_gfile(char *fileName, int mode)
 
 	initGcodeProc();
 
-#if (USE_SDCARD == 1)
+#if (USE_SDCARD != 0)
 	FIL fid;
 	FRESULT res = f_open(&fid, fileName, FA_READ);
 	if (res != FR_OK)
 	{
 		win_showErrorWin();
+	#if   (USE_SDCARD == 1)
 		scr_printf("Error open file:'%s'\nStatus:%d [%d]", fileName, (int)res, SD_errno);
+	#elif (USE_SDCARD == 2)
+		scr_printf("Error open file:'%s'\nStatus:%d", fileName, (int)res);
+	#endif
 		return;
 	}
 #endif
 	curGCodeMode = mode;
 
-#if (USE_LCD == 1)
+#if (USE_LCD != 0)
 	if ((curGCodeMode & GFILE_MODE_MASK_SHOW) != 0)
 	{
 		scr_Rectangle(crdXtoScr(0), crdYtoScr(MAX_TABLE_SIZE_Y), crdXtoScr(MAX_TABLE_SIZE_X), crdYtoScr(0), Red, false);
 		scr_Line(prev_scrX, 30, prev_scrX, 240 - 30, Green);
 		scr_Line(50, prev_scrY, 320 - 50, prev_scrY, Green);
 	}
+#endif
 
 	if ((curGCodeMode & GFILE_MODE_MASK_EXEC) != 0)
 	{
+#if   (USE_KEYBOARD == 1)
 		scr_fontColor(Blue, Black);
 		scr_gotoxy(3, 14);
 		scr_puts("C-Cancel  A-Pause 0/1-encoder");
-	}
+#elif (USE_KEYBOARD == 2)
+		SetTouchKeys(kbdGFile);
 #endif
+	}
 
 	lineNum = 1;
 	hasMoreLines = true;
 	do
 	{
-		static char fileBuf[16000];
-		char *p = fileBuf, *str;
+		char *p = cncFileBuf, *str;
 
 		while (true)
 		{
 			*p = 0;
 			str = p + 1;
-			if ((fileBuf + sizeof(fileBuf) - str) < (MAX_STR_SIZE + 1))
+			if ((cncFileBuf + sizeof(cncFileBuf) - str) < (MAX_STR_SIZE + 1))
 				break;
-#if (USE_SDCARD == 1)
+#if (USE_SDCARD != 0)
 			if (f_gets(str, MAX_STR_SIZE, &fid) == NULL)
 			{
 				hasMoreLines = false;
@@ -182,7 +206,7 @@ void cnc_gfile(char *fileName, int mode)
 			p += *p + 1;
 		}
 
-		for (p = fileBuf; !isGcodeStop && *p != 0; lineNum++, p += *p + 1)
+		for (p = cncFileBuf; !isGcodeStop && *p != 0; lineNum++, p += *p + 1)
 		{
 			uint8_t st;
 
@@ -249,20 +273,21 @@ void cnc_gfile(char *fileName, int mode)
 					break;
 				}
 				scr_printf(" in line [%d]:\n '%s'", lineNum, str);
-#if (USE_SDCARD == 1)
-				f_close(&fid); return;
+#if (USE_SDCARD != 0)
+				f_close(&fid);
+				return;
 #endif
 			}
 		}
 	} while (!isGcodeStop && hasMoreLines);
 
-#if (USE_SDCARD == 1)
+#if (USE_SDCARD != 0)
 	f_close(&fid);
 #endif
 
 	if ((curGCodeMode & GFILE_MODE_MASK_EXEC) == 0)
 	{
-#if (USE_LCD == 1)
+#if (USE_LCD != 0)
 		short scrX = crdXtoScr(TABLE_CENTER_X);
 		short scrY = crdYtoScr(TABLE_CENTER_Y);
 		int t1 = commonTimeIdeal / 1000;
@@ -270,7 +295,8 @@ void cnc_gfile(char *fileName, int mode)
 
 		scr_Line(scrX - 8, scrY, scrX + 8, scrY, Red);
 		scr_Line(scrX, scrY - 8, scrX, scrY + 8, Red);
-		scr_fontColor(Green, Black); scr_gotoxy(1, 0);
+		scr_fontColor(Green, Black);
+		scr_gotoxy(1, 0);
 		scr_printf("Time %02d:%02d:%02d(%02d:%02d:%02d) N.cmd:%d",
 			t1 / 3600, (t1 / 60) % 60, t1 % 60,
 			t2 / 3600, (t2 / 60) % 60, t2 % 60,
@@ -317,7 +343,7 @@ const double axisK[4] = {
 
 uint8_t cnc_waitSMotorReady(void)
 {
-#if (USE_LCD == 1)
+#if (USE_LCD != 0)
 	static uint32_t time = 0;
 #endif
 
@@ -331,11 +357,12 @@ uint8_t cnc_waitSMotorReady(void)
 		if (stepm_getRemainLines() > 1)
 		{
 			scr_fontColor(Yellow, Black);
-			for (i = 0; i < 3; i++)
+			for (i = 0; i < STEPS_MOTORS; i++)
 			{
 				int32_t globalSteps = stepm_getCurGlobalStepsNum(i);
 				double n = (double)globalSteps / axisK[i];
-				scr_gotoxy(1 + i * 10, 3); scr_printf("%c:%f ", axisName[i], n);
+				scr_gotoxy(1 + i * 10, 3);
+				scr_printf("%c:%f ", axisName[i], n);
 #if (USE_ENCODER == 1)
 				if (i == 2)
 				{
@@ -344,20 +371,20 @@ uint8_t cnc_waitSMotorReady(void)
 					scr_gotoxy(1 + 2 * 10, 4); scr_printf("errZ:%f  ", encValmm - n);
 					if (isEncoderCorrection)
 					{
-						scr_gotoxy(1, 6);	scr_printf("dZ:%d[%d]    ", encoderCorrectionDelta, encoderCorrectionMaxDelta);
-						scr_gotoxy(15, 6); scr_printf("Up:%d Dn:%d  ", encoderCorrectionCntUp, encoderCorrectionCntDown);
+						scr_gotoxy(1, 6);
+						scr_printf("dZ:%d[%d]    ", encoderCorrectionDelta, encoderCorrectionMaxDelta);
+						scr_gotoxy(15, 6);
+						scr_printf("Up:%d Dn:%d  ", encoderCorrectionCntUp, encoderCorrectionCntDown);
 					}
 				}
 #endif
 			}
 #if (USE_STEP_DEBUG == 1)
 			if (isStepDump)
-			{
 				step_dump();
-			}
 #endif
 
-#if (USE_LCD == 1)
+#if (USE_LCD != 0)
 			if (time != Seconds())
 			{
 				uint32_t t;
@@ -369,7 +396,7 @@ uint8_t cnc_waitSMotorReady(void)
 			}
 #endif
 		}
-#if (USE_KEYBOARD == 1)
+#if (USE_KEYBOARD != 0)
 		switch (kbd_getKey())
 		{
 		case KEY_C:
@@ -403,14 +430,29 @@ uint8_t cnc_waitSMotorReady(void)
 		}
 #endif
 	} while (stepm_LinesBufferIsFull());
+
 	if (limits_chk())
 	{
 		stepm_EmergeStop();
-		scr_fontColor(Red, Black);	scr_gotoxy(7, 11); scr_puts("LIMITS ERROR!"); scr_clrEndl();
+		scr_fontColor(Red, Black);
+		scr_gotoxy(7, 11);
+		scr_puts("LIMITS ERROR!");
+		scr_clrEndl();
 		return false;
 	}
 	return true;
 }
+
+#if (USE_KEYBOARD == 2)
+const TPKey_t TPPauseB	= TPKEY(  0, 220, 156, 239, KEY_B, "CONTINUE");
+const TPKey_t TPPauseC	= TPKEY(164, 220, 319, 239, KEY_C, "CANCEL");
+const TPKey_p kbdPause[] = {
+	&TPPause,
+	&TPPauseB,
+	&TPPauseC,
+	NULL
+};
+#endif
 
 uint8_t sendLine(uint32_t fxyze[], uint32_t abs_dxyze[], uint8_t dir_xyze[])
 {
@@ -456,7 +498,7 @@ uint8_t sendLine(uint32_t fxyze[], uint32_t abs_dxyze[], uint8_t dir_xyze[])
 			if (dir_xyze[2])	linesBuffer.stepsZ += abs_dxyze[2];
 			else				linesBuffer.stepsZ -= abs_dxyze[2];
 
-#if (USE_LCD == 1)
+#if (USE_LCD != 0)
 			double x, y;
 			short scrX, scrY;
 
@@ -519,28 +561,46 @@ uint8_t sendLine(uint32_t fxyze[], uint32_t abs_dxyze[], uint8_t dir_xyze[])
 
 	if (!cnc_waitSMotorReady())
 		return false;
+
 	if (isPause)
 	{
-#if (USE_KEYBOARD == 1)
+#if (USE_KEYBOARD != 0)
+	#if (USE_KEYBOARD == 2)
+		const TPKey_p * tp_save;
+		tp_save = SetTouchKeys(kbdPause);
+	#endif
+	#if (USE_KEYBOARD == 1)
 		scr_fontColor(Black, White);
 		scr_gotoxy(1, 13);
 		scr_puts(" PAUSE..'B'-continue 'C'-cancel");
 		scr_clrEndl();
-		while (stepm_inProc()) {}
+	#endif
+		while (stepm_inProc()) { }
 		stepm_EmergeStop();
+
 		while (isPause)
 		{
 			switch (kbd_getKey())
 			{
 			case KEY_C:
+				isPause = false;
+	#if (USE_KEYBOARD == 2)
+		SetTouchKeys(tp_save);
+	#endif
 				return false;
 			case KEY_B:
 				isPause = false;
 			}
 		}
+
+	#if (USE_KEYBOARD == 1)
 		scr_fontColor(White, Black);
 		scr_gotoxy(1, 13);
 		scr_clrEndl();
+	#endif
+	#if (USE_KEYBOARD == 2)
+		SetTouchKeys(tp_save);
+	#endif
 #endif
 	}
 	stepm_addMove(abs_dxyze, fxyze, dir_xyze);
@@ -941,9 +1001,9 @@ bool smothLine(
 	}
 	DBG("\n crd_out=%d sBreakage_out=%d fBreakage_out=%d", crd_out, sBreakage_out, fBreakage_out);
 	uint8_t isProcess = true;
-	uint32_t remainSteps[4];
+	uint32_t remainSteps[STEPS_MOTORS];
 
-	for (i = 0; i < 4; i++)
+	for (i = 0; i < STEPS_MOTORS; i++)
 		remainSteps[i] = p_cur->steps[i];
 
 	// =========== Input braking / acceleration
@@ -953,7 +1013,7 @@ bool smothLine(
 		frq = frq_in + df_in;
 		while (isProcess && ((df_in < 0 && frq >(int32_t)p_cur->frq[crd_in]) || (df_in > 0 && frq < (int32_t)p_cur->frq[crd_in])))
 		{
-			for (i = 0; i < 4; i++)
+			for (i = 0; i < STEPS_MOTORS; i++)
 			{
 				fxyze[i] = (uint32_t)((uint64_t)frq * (uint64_t)p_cur->steps[i] / p_cur->steps[crd_in]);
 				abs_dxyze[i] = (uint64_t)fxyze[i] * SM_SMOOTH_TFEED / K_FRQ / 1000;
@@ -961,11 +1021,11 @@ bool smothLine(
 			if (crd_out >= 0 && abs_dxyze[crd_out] >(remainSteps[crd_out] - sBreakage_out))
 			{
 				n = remainSteps[crd_out] - sBreakage_out;
-				for (i = 0; i < 4; i++)
+				for (i = 0; i < STEPS_MOTORS; i++)
 					abs_dxyze[i] = (uint64_t)n*p_cur->steps[i] / p_cur->steps[crd_out];
 				isProcess = false;
 			}
-			for (i = 0; i < 4; i++)
+			for (i = 0; i < STEPS_MOTORS; i++)
 				if (abs_dxyze[i] != 0 && remainSteps[i] <= abs_dxyze[i])
 				{
 					for (i = 0; i < 4; i++)
@@ -976,7 +1036,7 @@ bool smothLine(
 
 			if (!sendLine(fxyze, abs_dxyze, p_cur->dir))
 				return false;
-			for (i = 0; i < 4; i++)
+			for (i = 0; i < STEPS_MOTORS; i++)
 				remainSteps[i] -= abs_dxyze[i];
 			frq += df_in;
 		}
@@ -996,7 +1056,7 @@ bool smothLine(
 	// =========== Line with established frequency
 	if (remainSteps[crd_out] >(uint32_t)sBreakage_out)
 	{
-		for (i = 0; i < 4; i++)
+		for (i = 0; i < STEPS_MOTORS; i++)
 		{
 			uint32_t dd = (int64_t)sBreakage_out*p_cur->steps[i] / p_cur->steps[crd_out];
 			abs_dxyze[i] = (dd <= remainSteps[i]) ? remainSteps[i] - dd : 0;
@@ -1047,15 +1107,16 @@ bool smothLine(
 		}
 		if (!sendLine(fxyze, abs_dxyze, p_cur->dir))
 			return false;
-		for (i = 0; i < 4; i++)
+		for (i = 0; i < STEPS_MOTORS; i++)
 			remainSteps[i] -= abs_dxyze[i];
 	}
 	// Set the input speed to the next line
-	for (i = 0; i < 4; i++)
+	for (i = 0; i < STEPS_MOTORS; i++)
 		p_cur->frq[i] = fxyze[i];
 #endif
 	return true;
 }
+
 
 uint8_t cnc_line(
 	double x, double y, double z,
@@ -1069,15 +1130,19 @@ uint8_t cnc_line(
 		newY = lround(y * SM_Y_STEPS_PER_360 / MM_PER_360),
 		newZ = lround(z * SM_Z_STEPS_PER_360 / MM_PER_360),
 		newE = lround(extruder_length * SM_E_STEPS_PER_MM);
+
 	int32_t dx = newX - linesBuffer.stepsFromStartX;
 	int32_t dy = newY - linesBuffer.stepsFromStartY;
 	int32_t dz = newZ - linesBuffer.stepsFromStartZ;
 	int32_t de = newE - linesBuffer.stepsFromStartE;
+
 	linesBuffer.stepsFromStartX = newX;
 	linesBuffer.stepsFromStartY = newY;
 	linesBuffer.stepsFromStartZ = newZ;
 	linesBuffer.stepsFromStartE = newE;
+
 	uint32_t time_msec = (uint32_t)(moveLength * (60000.0 / feed_rate));
+
 	commonTimeIdeal += time_msec;
 
 	if ((dx != 0 || dy != 0 || dx != 0) && time_msec == 0)
@@ -1089,6 +1154,7 @@ uint8_t cnc_line(
 
 	if (IS_KEY_C())
 		return false;
+
 	if (x < minX) minX = x;
 	if (x > maxX) maxX = x;
 	if (y < minY) minY = y;
