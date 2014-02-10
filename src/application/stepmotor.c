@@ -166,6 +166,13 @@ void stepm_init(void)
 	TIM_TimeBaseInitTypeDef  TIM_TimeBase;
 
 	mx_enable = 0;
+	for (int i = 0; i < STEPS_MOTORS; i++)
+	{
+		step_motors[i].steps = 0;
+		step_motors[i].clk = true;
+		step_motors[i].isInProc = false;
+		step_motors[i].globalSteps = 0;
+	}
 
 	PIN_SPEED_MID();
 	PIN_OUTPUT_PP();
@@ -175,14 +182,6 @@ void stepm_init(void)
 	
 	PIN_INPUT_PU();
 	stepm_in_ports_init(mx_limits, &GPIO_InitStructure);
-
-	for (int i = 0; i < STEPS_MOTORS; i++)
-	{
-		step_motors[i].steps = 0;
-		step_motors[i].clk = true;
-		step_motors[i].isInProc = false;
-		step_motors[i].globalSteps = 0;
-	}
 
 	TIM_TimeBase.TIM_Prescaler = 1799;	// any
 	TIM_TimeBase.TIM_Period = 100;		// any
@@ -203,7 +202,7 @@ void stepm_init(void)
 		RCC_APB1PeriphClockCmd(mx_timer->Clock, ENABLE);
 		TIM_TimeBaseInit(mx_timer->Timer, &TIM_TimeBase);
 		mx_timer->Timer->EGR = TIM_PSCReloadMode_Update;
-
+		TIM_ClearITPendingBit(mx_timer->Timer, TIM_IT_Update);
 		TIM_ARRPreloadConfig(mx_timer->Timer, ENABLE);
 		TIM_ITConfig(mx_timer->Timer, TIM_IT_Update, ENABLE);
 		mx_timer++;

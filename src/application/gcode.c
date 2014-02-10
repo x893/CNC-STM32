@@ -150,9 +150,11 @@ void gc_init(void)
 	gc.feed_rate = SM_DEFAULT_FEED_RATE;
 	gc.seek_rate = SM_DEFAULT_SEEK_RATE;
 	gc.absolute_mode = true;
-	// gc.startPosX = commonValues.startX; gc.startPosY = commonValues.startY;
+	// gc.startPosX = commonValues.startX;
+	// gc.startPosY = commonValues.startY;
 	// gc.startPosZ = commonValues.startZ;
-	gc.extruder_k = 1; //commonValues.extruder_k;
+	gc.extruder_k = 1;
+	// commonValues.extruder_k;
 	gc.next_action = NEXT_ACTION_DEFAULT;
 }
 

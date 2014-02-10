@@ -101,18 +101,28 @@ void initGcodeProc(void)
 	linesBuffer.mvector[0].isNullCmd = true;
 	linesBuffer.mvectCnt = 1;
 #endif
+
 #if (USE_LCD != 0)
 	prev_scrX = crdXtoScr(TABLE_CENTER_X);
 	prev_scrY = crdYtoScr(TABLE_CENTER_Y);
 #endif
-	linesBuffer.stepsFromStartX = linesBuffer.stepsFromStartY = linesBuffer.stepsFromStartZ = linesBuffer.stepsFromStartE = 0;
-	linesBuffer.stepsX = linesBuffer.stepsY = linesBuffer.stepsZ = 0;
+
+	linesBuffer.stepsFromStartX =
+	linesBuffer.stepsFromStartY =
+	linesBuffer.stepsFromStartZ =
+	linesBuffer.stepsFromStartE = 0;
+	linesBuffer.stepsX =
+	linesBuffer.stepsY =
+	linesBuffer.stepsZ = 0;
 
 #if (USE_EXTRUDER == 1)
 	isExtruderOn = false;
 #endif
 
-	minX = maxX = minY = maxY = minZ = maxZ = 0;
+	minX = maxX =
+	minY = maxY =
+	minZ = maxZ = 0;
+
 	gc_init();
 	stepm_init();
 	commonTimeIdeal = commonTimeReal = 0;
@@ -225,25 +235,32 @@ void cnc_gfile(char *fileName, int mode)
 				if (linesBuffer.gcodePtrCur > (MAX_SHOW_GCODE_LINES - 1))
 					linesBuffer.gcodePtrCur = 0;
 				gp = &linesBuffer.gcode[linesBuffer.gcodePtrCur];
-				strcpy(gp->cmd, str); gp->lineNum = lineNum;
+				strcpy(gp->cmd, str);
+				gp->lineNum = lineNum;
+#if (USE_LCD != 0) && (MAX_SHOW_GCODE_LINES > 0)
 				scr_fontColor(Green, Black);
 				//	if(stepm_getRemainLines() > 1) {
 				for (i = 0, n = linesBuffer.gcodePtrCur + 1; i < MAX_SHOW_GCODE_LINES; i++, n++)
 				{
-					if (n >(MAX_SHOW_GCODE_LINES - 1))
+					if (n > (MAX_SHOW_GCODE_LINES - 1))
 						n = 0;
 					gp = &linesBuffer.gcode[n];
 					scr_gotoxy(1, i);
-					if (gp->lineNum) scr_printf("%d:%s", gp->lineNum, gp->cmd);
+					if (gp->lineNum)
+						scr_printf("%d:%s", gp->lineNum, gp->cmd);
 					scr_clrEndl();
 				}
 				//	}
+#endif
 			}
+
 			DBG("\n   [gcode:%d] %s", lineNum, str);
 			st = gc_execute_line(str);
 			if (st != GCSTATUS_OK)
 			{
-				scr_fontColor(Red, Black); scr_gotoxy(1, 12);
+#if (USE_LCD != 0)
+				scr_fontColor(Red, Black);
+				scr_gotoxy(1, 11);
 				switch (st)
 				{
 				case GCSTATUS_BAD_NUMBER_FORMAT:
@@ -262,7 +279,7 @@ void cnc_gfile(char *fileName, int mode)
 					scr_puts("UNSUPPORTED_PARAM");
 					break;
 				case GCSTATUS_UNSOPORTED_FEEDRATE:
-					scr_puts("GCSTATUS_UNSOPORTED_FEEDRATE");
+					scr_puts("GCSTATUS_UNSUPPORTED_FEEDRATE");
 					break;
 				case GCSTATUS_TABLE_SIZE_OVER_X:
 					scr_puts("GCSTATUS_TABLE_SIZE_OVER_X");
@@ -277,11 +294,12 @@ void cnc_gfile(char *fileName, int mode)
 					scr_puts("GCSTATUS_CANCELED");
 					break;
 				}
-				scr_printf(" in line [%d]:\n '%s'", lineNum, str);
+				scr_printf(" at line %d:\n %s", lineNum, str);
+#endif
 #if (USE_SDCARD != 0)
 				f_close(&fid);
-				return;
 #endif
+				return;
 			}
 		}
 	} while (!isGcodeStop && hasMoreLines);
@@ -439,10 +457,12 @@ uint8_t cnc_waitSMotorReady(void)
 	if (limits_chk())
 	{
 		stepm_EmergeStop();
+#if (USE_LCD != 0)
 		scr_fontColor(Red, Black);
 		scr_gotoxy(7, 11);
 		scr_puts("LIMITS ERROR!");
 		scr_clrEndl();
+#endif
 		return false;
 	}
 	return true;
