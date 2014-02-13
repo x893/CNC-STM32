@@ -48,16 +48,14 @@ extern "C" {
 */
 #define USE_SDCARD		2
 #define USE_ENCODER		0
-
-/*
- *	Motor number for encoder
- */
+// Motor number for encoder
 #define MX_ENCODER			2
 #define MX_STEP_ON			GPIO_SetBits
 #define MX_STEP_OFF			GPIO_ResetBits
 
 /*
- *	One ENABLE for all motors
+ *	Define ENABLE for motors but not connected
+ *	or connect this pin to /RESET pin of steppers
  */
 #define MX_EN_PORT			GPIOB
 #define MX_EN_PIN			GPIO_Pin_7
@@ -66,11 +64,8 @@ extern "C" {
 #define M0_TIM_IRQn			TIM2_IRQn
 #define M0_TIM_IRQHandler	TIM2_IRQHandler
 #define M0_TIM_CLK			RCC_APB1Periph_TIM2
-
-#ifndef MX_EN_PORT
-	#define M0_EN_PORT		GPIOX
-	#define M0_EN_PIN		GPIO_Pin_X
-#endif
+//	#define M0_EN_PORT		GPIOX
+//	#define M0_EN_PIN		GPIO_Pin_X
 #define M0_DIR_PORT			GPIOE
 #define M0_DIR_PIN			GPIO_Pin_2
 #define M0_STEP_PORT		GPIOE
@@ -80,10 +75,8 @@ extern "C" {
 #define M1_TIM_IRQn			TIM3_IRQn
 #define M1_TIM_IRQHandler	TIM3_IRQHandler
 #define M1_TIM_CLK			RCC_APB1Periph_TIM3
-#ifndef MX_EN_PORT
-	#define M1_EN_PORT		GPIOX
-	#define M1_EN_PIN		GPIO_Pin_X
-#endif
+//	#define M1_EN_PORT		GPIOX
+//	#define M1_EN_PIN		GPIO_Pin_X
 #define M1_DIR_PORT			GPIOE
 #define M1_DIR_PIN			GPIO_Pin_4
 #define M1_STEP_PORT		GPIOE
@@ -93,10 +86,8 @@ extern "C" {
 #define M2_TIM_IRQn			TIM4_IRQn
 #define M2_TIM_IRQHandler	TIM4_IRQHandler
 #define M2_TIM_CLK			RCC_APB1Periph_TIM4
-#ifndef MX_EN_PORT
-	#define M2_EN_PORT		GPIOX
-	#define M2_EN_PIN		GPIO_Pin_X
-#endif
+//	#define M2_EN_PORT		GPIOX
+//	#define M2_EN_PIN		GPIO_Pin_X
 #define M2_DIR_PORT			GPIOE
 #define M2_DIR_PIN			GPIO_Pin_6
 #define M2_STEP_PORT		GPIOC

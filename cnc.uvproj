@@ -439,9 +439,9 @@
               <FilePath>.\src\application\rs232_interface.c</FilePath>
             </File>
             <File>
-              <FileName>stm32f10x_it.c</FileName>
+              <FileName>interrupt.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\src\application\stm32f10x_it.c</FilePath>
+              <FilePath>.\src\application\interrupt.c</FilePath>
             </File>
             <File>
               <FileName>encoder.c</FileName>
@@ -1574,9 +1574,9 @@
               <FilePath>.\src\application\rs232_interface.c</FilePath>
             </File>
             <File>
-              <FileName>stm32f10x_it.c</FileName>
+              <FileName>interrupt.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\src\application\stm32f10x_it.c</FilePath>
+              <FilePath>.\src\application\interrupt.c</FilePath>
             </File>
             <File>
               <FileName>encoder.c</FileName>

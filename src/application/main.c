@@ -383,7 +383,7 @@ const TPKey_p kbdSelectFile[] = {
 	NULL
 };
 
-const TPKey_t TPKeyC	= TPKEY(  0, 208,  319, 239, KEY_C, NULL);
+const TPKey_t TPKeyC	= TPKEY(  0, 208,  319, 239, KEY_C, "Press C");
 const TPKey_p kbdLast2Lines[] = {
 	&TPKeyC,
 	NULL
@@ -481,12 +481,13 @@ int main()
 	//
 		case KEY_0:
 		{
-			uint32_t stime;
 			FLASH_KEYS();
 
+#if (USE_LCD == 1)
+			uint32_t stime;
 			stime = Seconds();
+#endif
 			cnc_gfile(&fileList[currentFile][0], GFILE_MODE_MASK_EXEC);
-
 			while (stepm_inProc())
 			{
 				scr_fontColor(Yellow, Blue);
@@ -494,9 +495,9 @@ int main()
 				scr_printf(" remain moves: %d", stepm_getRemainLines());
 				scr_clrEndl();
 			}
-
 			stepm_EmergeStop();
 
+#if (USE_LCD == 1)
 			scr_fontColor(Yellow, Blue);
 			scr_gotoxy(0, 13);
 			scr_puts("   FINISH. PRESS C-KEY");
@@ -507,8 +508,10 @@ int main()
 			scr_gotoxy(0, 14);
 			scr_printf("   work time: %02d:%02d", stime / 60, stime % 60);
 			scr_clrEndl();
-			
+#endif
+#if (USE_LCD == 2)
 			SetTouchKeys(kbdLast2Lines);
+#endif
 			FLASH_KEYS();
 			WAIT_KEY_C();
 
