@@ -411,7 +411,7 @@ int main()
 " Only RESET possible at now", fres);
 		WAIT_KEY_C();
 	}
-#elif (USE_SDCARD == 2)
+#elif (USE_SDCARD == 2) && (USE_KEYBOARD != 0)
 	FRESULT fres;
 #endif
 

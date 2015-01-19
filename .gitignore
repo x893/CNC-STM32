@@ -153,7 +153,10 @@ $RECYCLE.BIN/
 
 # Keil
 *.uvgui.*
+*.uvguix.*
 *.uvopt
+*.uvoptx
+*.uvproj.saved_uv4
 *.dep
 *.bak
 

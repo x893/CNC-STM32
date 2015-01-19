@@ -85,12 +85,13 @@
 
 /* Old STM32F40XX definition, maintained for legacy purpose */
 #ifdef STM32F40XX
-  #define STM32F40_41xxx
+	#undef  STM32F40_41xxx
+	#define STM32F40_41xxx
 #endif /* STM32F40XX */
 
 /* Old STM32F427X definition, maintained for legacy purpose */
 #ifdef STM32F427X
-  #define STM32F427_437xx
+	#define STM32F427_437xx
 #endif /* STM32F427X */
 
 /*  Tip: To avoid modifying this file each time you need to switch between these
@@ -98,7 +99,7 @@
   */
 
 #if !defined (STM32F40_41xxx) && !defined (STM32F427_437xx) && !defined (STM32F429_439xx) && !defined (STM32F401xx)
- #error "Please select first the target STM32F4xx device used in your application (in stm32f4xx.h file)"
+	#error "Please select first the target STM32F4xx device used in your application (in stm32f4xx.h file)"
 #endif
 
 #if !defined  (USE_STDPERIPH_DRIVER)
@@ -119,7 +120,7 @@
   */           
 
 #if !defined  (HSE_VALUE) 
-  #define HSE_VALUE    ((uint32_t)25000000) /*!< Value of the External oscillator in Hz */
+	#define HSE_VALUE    ((uint32_t)25000000) /*!< Value of the External oscillator in Hz */
   
 #endif /* HSE_VALUE */
 

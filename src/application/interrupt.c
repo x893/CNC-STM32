@@ -28,12 +28,18 @@ void delayMs(uint16_t msec)
 
 uint16_t GetKbdTimer(void)
 {
+#if (USE_KEYBOARD != 0)
 	return SysTickTimers.KbdTimer;
+#else
+	return 0;
+#endif
 }
 
 void SetKbdTimer(uint16_t msec)
 {
+#if (USE_KEYBOARD != 0)
 	SysTickTimers.KbdTimer = msec;
+#endif
 }
 
 uint32_t Seconds(void)

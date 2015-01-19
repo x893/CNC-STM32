@@ -3,8 +3,10 @@
 
 #if   defined( STM32F10X_HD )
 	#include "stm32f10x-board.h"
-#elif defined( STM32F4XX ) || defined( STM32F429_439xx )
+#elif defined( STM32F429_439xx )
 	#include "stm32f429i-disco.h"
+#elif defined( STM32F40_41xxx )
+	#include "stm32f4-disco.h"
 #endif
 
 #if (USE_DEBUG_MODE == 1)

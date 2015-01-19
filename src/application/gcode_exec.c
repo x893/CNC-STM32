@@ -155,7 +155,9 @@ const TPKey_p kbdGFile[] = {
 
 void cnc_gfile(char *fileName, int mode)
 {
+#if (USE_LCD != 0) && (MAX_SHOW_GCODE_LINES > 0)
 	int n;
+#endif
 	int lineNum;
 	uint8_t hasMoreLines;
 
@@ -228,15 +230,17 @@ void cnc_gfile(char *fileName, int mode)
 			str = p + 1;
 			if ((curGCodeMode & GFILE_MODE_MASK_EXEC) != 0)
 			{
-				int i;
 				GCODE_CMD *gp;
-
+#if (USE_LCD != 0) && (MAX_SHOW_GCODE_LINES > 0)
+				int i;
+#endif
 				linesBuffer.gcodePtrCur++;
 				if (linesBuffer.gcodePtrCur > (MAX_SHOW_GCODE_LINES - 1))
 					linesBuffer.gcodePtrCur = 0;
 				gp = &linesBuffer.gcode[linesBuffer.gcodePtrCur];
 				strcpy(gp->cmd, str);
 				gp->lineNum = lineNum;
+
 #if (USE_LCD != 0) && (MAX_SHOW_GCODE_LINES > 0)
 				scr_fontColor(Green, Black);
 				//	if(stepm_getRemainLines() > 1) {

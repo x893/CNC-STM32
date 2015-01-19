@@ -6,15 +6,15 @@
 #define STEPS_BUF_SIZE	8
 
 #if (STEPS_MOTORS > 0)
-typedef struct
-{
-	uint32_t steps[STEPS_MOTORS];
-	uint32_t pscValue[STEPS_MOTORS];
-	uint32_t arrValue[STEPS_MOTORS];
-	uint32_t f[STEPS_MOTORS];
-	uint8_t  dir[STEPS_MOTORS];
-} LINE_DATA;
-volatile LINE_DATA steps_buf[STEPS_BUF_SIZE];
+	typedef struct
+	{
+		uint32_t steps[STEPS_MOTORS];
+		uint32_t pscValue[STEPS_MOTORS];
+		uint32_t arrValue[STEPS_MOTORS];
+		uint32_t f[STEPS_MOTORS];
+		uint8_t  dir[STEPS_MOTORS];
+	} LINE_DATA;
+	volatile LINE_DATA steps_buf[STEPS_BUF_SIZE];
 #endif
 
 volatile int8_t steps_buf_count;
@@ -122,14 +122,14 @@ const mx_pin_init_t mx_limits[] = {
 #endif
 
 #if (STEPS_MOTORS > 0)
-volatile struct
-{
+	volatile struct
+	{
 		  int32_t	globalSteps;
 		 uint32_t	steps;
 			 bool	clk;
 			 bool	dir;
 	volatile bool	isInProc;
-} step_motors[STEPS_MOTORS];
+	} step_motors[STEPS_MOTORS];
 #endif
 
 void stepm_ports_init(const mx_pin_init_t * mx_port, GPIO_InitTypeDef * GPIO_InitStructure)
